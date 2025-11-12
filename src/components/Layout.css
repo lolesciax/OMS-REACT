@@ -1,0 +1,269 @@
+/* Layout Styles */
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f9f9f9;
+}
+
+/* FIXED HEADER */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 50px;
+  border-bottom: 1px solid #ddd;
+  background-color: #fff;
+  z-index: 1000;
+  height: 70px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo img {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+}
+
+.logo h2 {
+  color: #ee4d2d;
+  font-weight: bold;
+  font-size: 22px;
+  margin: 0;
+}
+
+/* MAIN LAYOUT */
+.dashboard-main {
+  display: flex;
+  flex: 1;
+  margin-top: 70px; /* Account for fixed header */
+}
+
+/* FIXED SIDEBAR */
+.dashboard-sidebar {
+  position: fixed;
+  top: 70px;
+  left: 0;
+  bottom: 0;
+  width: 220px;
+  background-color: #fff;
+  padding: 20px;
+  border-right: 1px solid #ddd;
+  z-index: 999;
+  overflow-y: auto;
+}
+
+.dashboard-sidebar h3 {
+  color: #ee4d2d;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.dashboard-sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dashboard-sidebar li {
+  margin: 12px 0;
+}
+
+.dashboard-sidebar a {
+  text-decoration: none;
+  color: #333;
+  padding: 8px 10px;
+  border-radius: 4px;
+  display: block;
+  transition: background 0.2s ease;
+}
+
+.dashboard-sidebar a:hover,
+.dashboard-sidebar a.active {
+  background: #ee4d2d;
+  color: white;
+}
+
+/* CONTENT */
+.dashboard-content {
+  flex: 1;
+  padding: 40px;
+  background: #f9f9f9;
+  margin-left: 220px; /* Account for fixed sidebar */
+  min-height: calc(100vh - 70px);
+}
+
+/* CONTENT HEADER STYLES */
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 30px;
+  gap: 20px;
+}
+
+.content-title h1 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 28px;
+}
+
+.content-title p {
+  margin: 0;
+  color: #666;
+  font-size: 16px;
+}
+
+.content-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* PRODUCT CONTROLS */
+.product-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* BUTTON STYLES */
+.primary {
+  background: #ee4d2d;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s ease;
+}
+
+.primary:hover {
+  background: #d43c1e;
+}
+
+.secondary {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s ease;
+}
+
+.secondary:hover {
+  background: #545b62;
+}
+
+.view-store-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s ease;
+}
+
+.view-store-btn:hover {
+  background: #218838;
+}
+
+.help-link {
+  color: #ee4d2d;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 8px 16px;
+  border: 1px solid #ee4d2d;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  background: white;
+  cursor: pointer;
+}
+
+.help-link:hover {
+  background: #ee4d2d;
+  color: white;
+  text-decoration: none;
+}
+
+/* FOOTER */
+.footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+  padding: 15px;
+  border-top: 1px solid #ddd;
+  color: #555;
+  font-size: 14px;
+  margin-left: 220px; /* Account for fixed sidebar */
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header {
+    padding: 15px 20px;
+    position: relative;
+    height: auto;
+  }
+  
+  .dashboard-main {
+    flex-direction: column;
+    margin-top: 0;
+  }
+  
+  .dashboard-sidebar {
+    position: relative;
+    top: auto;
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .dashboard-content {
+    padding: 20px;
+    margin-left: 0;
+    min-height: auto;
+  }
+
+  .content-header {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .content-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .footer {
+    margin-left: 0;
+  }
+}
+

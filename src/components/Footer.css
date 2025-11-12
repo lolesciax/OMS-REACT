@@ -1,0 +1,371 @@
+/* Footer.css - Isolated Footer Style */
+.footer {
+  margin-top: 30px;
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+  padding: 3rem 0 1rem;
+  margin-top: auto;
+  font-family: 'Arial', sans-serif;
+  width: 100%;
+  position: relative;
+  left: 0;
+  box-sizing: border-box;
+  isolation: isolate; /* Critical: Prevents layout conflicts */
+  z-index: 100; /* Ensure footer stays above other elements */
+}
+
+/* Reset any potential sidebar influence */
+.customer-panel .footer,
+.login-page .footer,
+.signup-page .footer,
+[class*="customer"] .footer,
+[class*="login"] .footer,
+[class*="auth"] .footer {
+  position: relative !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  transform: none !important;
+}
+
+/* Main Content Row */
+.footer-main {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  max-width: 1200px;
+  margin: 0 auto 2rem;
+  padding: 0 2rem;
+  flex-wrap: wrap;
+  gap: 3rem;
+  position: relative;
+  z-index: 101;
+}
+
+/* Bottom Row - Payment & Social */
+.footer-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto 2rem;
+  padding: 0 2rem;
+  flex-wrap: wrap;
+  gap: 2rem;
+  border-top: 1px solid #333;
+  padding-top: 2rem;
+  position: relative;
+  z-index: 101;
+}
+
+.footer-section {
+  flex: 0 1 auto;
+  min-width: 180px;
+  text-align: center;
+  position: relative;
+  z-index: 102;
+}
+
+.footer-section h4 {
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+/* Company Info */
+.company-info p {
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  color: #b0b0b0;
+  font-size: 0.9rem;
+  max-width: 250px;
+}
+
+.contact-info p {
+  margin: 0.5rem 0;
+  color: #b0b0b0;
+  font-size: 0.85rem;
+}
+
+/* Store Info */
+.store-details p {
+  margin: 0.8rem 0;
+  color: #b0b0b0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+/* Payment Methods Section */
+.payment-methods {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 102;
+}
+
+.payment-method-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.8rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.payment-method-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.payment-icon {
+  width: 45px;
+  height: 45px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: white;
+  padding: 5px;
+  transition: transform 0.3s ease;
+}
+
+.payment-icon:hover {
+  transform: scale(1.1);
+}
+
+/* Social Links Section */
+.social-links {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  position: relative;
+  z-index: 102;
+}
+
+.social-links a {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.social-links a:hover {
+  transform: translateY(-2px);
+}
+
+.social-icon {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: white;
+  padding: 5px;
+  transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+  background: #f8f8f8;
+  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+}
+
+/* Copyright Section */
+.footer-copyright {
+  border-top: 1px solid #333;
+  padding-top: 1.5rem;
+  width: 100%;
+  position: relative;
+  z-index: 101;
+}
+
+.copyright-content {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  font-size: 0.85rem;
+  color: #b0b0b0;
+  text-align: right;
+  min-height: 20px;
+  position: relative;
+  z-index: 102;
+}
+
+/* Ensure no horizontal overflow */
+.footer-container {
+  max-width: 100%;
+  overflow: hidden;
+  position: relative;
+  z-index: 100;
+}
+
+/* Reset any admin panel sidebar styles that might be affecting customer pages */
+body:not(.admin-panel) .footer,
+body:not([class*="admin"]) .footer,
+html:not(.admin-panel) .footer {
+  left: 0 !important;
+  margin-left: 0 !important;
+  width: 100% !important;
+  transform: none !important;
+}
+
+/* Force reset for customer pages */
+.customer-panel,
+.login-page,
+.signup-page,
+.customer-dashboard,
+.customer-account {
+  /* Reset any sidebar positioning that might be inherited */
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  width: 100% !important;
+}
+
+.customer-panel .footer,
+.login-page .footer,
+.signup-page .footer {
+  /* Force footer to full width */
+  left: 0 !important;
+  margin-left: 0 !important;
+  width: 100vw !important;
+  position: relative !important;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .footer-main {
+    gap: 2.5rem;
+    padding: 0 1.5rem;
+  }
+  
+  .footer-bottom-row {
+    padding: 0 1.5rem;
+    gap: 2rem;
+  }
+  
+  .copyright-content {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 2rem 0 1rem;
+  }
+
+  .footer-main {
+    flex-direction: column;
+    gap: 2rem;
+    padding: 0 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .footer-bottom-row {
+    flex-direction: column;
+    gap: 2rem;
+    padding: 0 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .footer-section {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .payment-methods {
+    gap: 1.2rem;
+  }
+  
+  .social-links {
+    gap: 1rem;
+  }
+  
+  .payment-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .social-icon {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .copyright-content {
+    justify-content: center;
+    text-align: center;
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer {
+    padding: 1.5rem 0 1rem;
+  }
+  
+  .footer-main {
+    gap: 1.5rem;
+  }
+
+  .footer-bottom-row {
+    gap: 1.5rem;
+  }
+  
+  .footer-section h4 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .payment-methods {
+    gap: 1rem;
+  }
+  
+  .social-links {
+    gap: 0.8rem;
+  }
+  
+  .payment-icon {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .social-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .copyright-content {
+    padding: 0 0.5rem;
+    font-size: 0.8rem;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 360px) {
+  .payment-methods {
+    gap: 0.6rem;
+  }
+  
+  .social-links {
+    gap: 0.6rem;
+  }
+  
+  .payment-icon {
+    width: 30px;
+    height: 30px;
+    padding: 4px;
+  }
+  
+  .social-icon {
+    width: 28px;
+    height: 28px;
+    padding: 4px;
+  }
+  
+  .copyright-content {
+    font-size: 0.75rem;
+  }
+}

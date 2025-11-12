@@ -1,0 +1,203 @@
+/* Add these styles to your existing payment.css */
+
+/* ===== PAYMENT CARD ENHANCEMENTS ===== */
+.payment-card {
+    position: relative;
+}
+
+.payment-options label {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.payment-options label:hover {
+    border-color: #ee4d2d;
+    transform: translateY(-2px);
+}
+
+.payment-options label.selected {
+    border-color: #ee4d2d;
+    background: #fff5f5;
+    box-shadow: 0 2px 8px rgba(238, 77, 45, 0.2);
+}
+
+.payment-options input[type="radio"] {
+    margin-right: 10px;
+    accent-color: #ee4d2d;
+    transform: scale(1.2);
+}
+
+/* ===== QR SECTION ENHANCEMENTS ===== */
+.qr-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border: 1px solid #e9ecef;
+}
+
+.qr-instruction {
+    margin-top: 10px;
+    color: #666;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* ===== ORDER SUMMARY ===== */
+.order-summary {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border: 1px solid #e9ecef;
+}
+
+.order-summary h3 {
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 18px;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    color: #666;
+}
+
+.summary-total {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #ddd;
+    font-weight: bold;
+    font-size: 18px;
+    color: #ee4d2d;
+}
+
+/* ===== PAYMENT ACTIONS ===== */
+.payment-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.cancel-btn {
+    background: #666;
+    color: white;
+    flex: 1;
+}
+
+.cancel-btn:hover:enabled {
+    background: #555;
+    transform: translateY(-1px);
+}
+
+.confirm-btn.processing {
+    background: #ff9500;
+    cursor: not-allowed;
+}
+
+/* ===== PAYMENT STATUS ===== */
+.payment-status {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.payment-status.processing {
+    background: #fff3e0;
+    color: #f57c00;
+    border: 1px solid #ffb74d;
+}
+
+.payment-status.success {
+    background: #e8f5e8;
+    color: #2e7d32;
+    border: 1px solid #81c784;
+}
+
+.payment-status.failed {
+    background: #ffebee;
+    color: #c62828;
+    border: 1px solid #e57373;
+}
+
+/* ===== LOADING & ERROR STATES ===== */
+.loading-container, .error-container {
+    min-height: 100vh;
+    background: #f9f9f9;
+}
+
+.loading {
+    text-align: center;
+    padding: 60px 20px;
+    font-size: 18px;
+    color: #666;
+}
+
+.error-message {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.error-message h3 {
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.error-message p {
+    color: #888;
+    margin-bottom: 20px;
+}
+
+.btn-primary {
+    background: #ee4d2d;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.btn-primary:hover {
+    background: #d93f21;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .payment-actions {
+        flex-direction: column;
+    }
+    
+    .payment-options {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .qr-img {
+        width: 150px;
+        height: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .payment-card {
+        padding: 25px;
+        margin: 10px;
+    }
+    
+    .header {
+        padding: 15px 20px;
+    }
+}

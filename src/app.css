@@ -1,0 +1,54 @@
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #fff;
+  color: #333;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 18px;
+  color: #666;
+}
+
+/* Add this to your main layout CSS to prevent sidebar conflicts */
+body.customer-panel,
+body.login-page,
+body.signup-page {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+body.customer-panel .app,
+body.login-page .app,
+body.signup-page .app {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  width: 100% !important;
+}
+
+/* Force reset any potential sidebar styles */
+body:not(.admin-panel) {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+body:not(.admin-panel) .main-content {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  width: 100% !important;
+}
