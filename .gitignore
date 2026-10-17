@@ -11,6 +11,15 @@ node_modules
 dist
 dist-ssr
 *.local
+.tmp/
+.venv/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+.env
+.env.production
+backend/.env
+frontend/.env
 
 # Editor directories and files
 .vscode/*
