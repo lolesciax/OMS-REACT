@@ -26,7 +26,9 @@ def get_user_cart(user_id):
                       'price': product.get('price', 0) if product else None, 'image': product.get('image', '') if product else '',
                       'condition': product.get('condition', 'Pre-loved') if available else 'Unavailable',
                       'size': product.get('size', '') if product else '', 'currentStock': stock,
-                      'qty': min(item['qty'], stock) if stock > 0 else item['qty'], 'selected': bool(item.get('selected')) and stock > 0})
+                      'qty': min(item['qty'], stock) if stock > 0 else item['qty'],
+                      'requestedQty': item['qty'], 'quantityAdjusted': stock > 0 and item['qty'] > stock,
+                      'selected': bool(item.get('selected')) and stock > 0})
     return jsonify(success=True, cart=items)
 
 

@@ -1,3 +1,9 @@
+import { toast } from "../services/feedback";
+import useFormValidation from "../hooks/useFormValidation";
+import FieldError from "../components/FieldError";
+import { validateProfile } from "../utils/profileValidation";
+import { rules, storeToday } from "../utils/adminValidation";
+import PageSkeleton from "../components/PageSkeleton";
 import Image from "../components/Image";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
@@ -9,7 +15,6 @@ import CustomerLayout from "../components/CustomerLayout";
 import AddressFields from "../components/AddressFields";
 import ConfirmDialog from "../components/ConfirmDialog";
 import Icon from "../components/Icon";
-import "../styles/auth-pages.css";
 
 const profileFields = (value) => ({
   firstName: value.firstName || "",
@@ -30,13 +35,15 @@ export default function Profile() {
   const [loadFailed, setLoadFailed] = useState(false);
   const [retry, setRetry] = useState(0);
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+
   const [busy, setBusy] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
   const [addressForm, setAddressForm] = useState({});
   const [addressErrors, setAddressErrors] = useState({});
   const [removing, setRemoving] = useState(null);
   const photo = useRef(null);
+  const validation = useFormValidation("profile");
+  const [genders, setGenders] = useState([]);
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
@@ -53,6 +60,7 @@ export default function Profile() {
           throw new Error(
             data.error || "Your profile couldn’t be loaded. Please try again.",
           );
+        setGenders(data.options?.genders || []);
         setProfile(profileFields(data.user));
         setSaved(profileFields(data.user));
         setAddresses(
@@ -78,17 +86,8 @@ export default function Profile() {
     event.preventDefault();
     if (busy || !dirty) return;
     setError("");
-    setMessage("");
-    if (
-      profile.phone &&
-      !/^(09\d{9}|\+?639\d{9})$/.test(profile.phone.replace(/[\s()-]/g, ""))
-    ) {
-      setError(
-        "Enter a valid Philippine mobile number, such as 0912 345 6789.",
-      );
-      document.getElementById("profile-phone")?.focus();
-      return;
-    }
+
+    if (!validation.check(validateProfile(profile, genders, saved))) return;
     setBusy(true);
     try {
       const response = await apiFetch(
@@ -100,13 +99,16 @@ export default function Profile() {
         },
       );
       const data = await response.json();
-      if (!response.ok)
+      if (!response.ok) {
+        validation.reject(data);
         throw new Error(data.error || "Your changes couldn’t be saved.");
+      }
       const updated = profileFields(data.user || profile);
       setProfile(updated);
       setSaved(updated);
+      validation.reset();
       updateUser(data.user || profile);
-      setMessage("Your profile has been updated.");
+      toast.success("Your profile has been updated.");
     } catch (failure) {
       setError(failure.message);
     } finally {
@@ -117,8 +119,11 @@ export default function Profile() {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
+    setError("");
+
     if (
       !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||
+      file.size === 0 ||
       file.size > 2 * 1024 * 1024
     ) {
       setError("Choose a JPG, PNG, or WebP photo smaller than 2 MB.");
@@ -127,7 +132,7 @@ export default function Profile() {
     const reader = new FileReader();
     reader.onload = () => {
       setProfile((previous) => ({ ...previous, profilePic: reader.result }));
-      setMessage("Your new photo is ready. Save your changes to keep it.");
+      toast.info("Your new photo is ready. Save your changes to keep it.");
     };
     reader.onerror = () =>
       setError("The photo couldn’t be read. Please choose it again.");
@@ -168,7 +173,7 @@ export default function Profile() {
     });
     setAddressErrors({});
     setError("");
-    setMessage("");
+
   };
   const saveAddress = async (event) => {
     event.preventDefault();
@@ -196,7 +201,7 @@ export default function Profile() {
         : addresses.map((item) => (item.id === editingAddress ? value : item));
       await persistAddresses(next);
       setEditingAddress(null);
-      setMessage("Your delivery address has been saved.");
+      toast.success("Your delivery address has been saved.");
     } catch (failure) {
       setError(failure.message);
     } finally {
@@ -211,7 +216,7 @@ export default function Profile() {
       await persistAddresses(
         addresses.map((item) => ({ ...item, isDefault: item.id === id })),
       );
-      setMessage("Your default delivery address has been updated.");
+      toast.success("Your default delivery address has been updated.");
     } catch (failure) {
       setError(failure.message);
     } finally {
@@ -228,7 +233,7 @@ export default function Profile() {
         next = next.map((item, index) => ({ ...item, isDefault: index === 0 }));
       await persistAddresses(next);
       setRemoving(null);
-      setMessage("The delivery address has been removed.");
+      toast.success("The delivery address has been removed.");
     } catch (failure) {
       setRemoving(null);
       setError(failure.message);
@@ -238,13 +243,13 @@ export default function Profile() {
   };
   return (
     <CustomerLayout>
-      <div className="customer-heading">
+      <div className="customer-heading flex justify-between items-center gap-6 mb-7 max-[760px]:items-start max-[760px]:flex-col max-[760px]:gap-3">
         <div>
           <span className="ui-eyebrow">Your corner of the thrift</span>
           <h1>Your account</h1>
           <p>A few details to help your good finds get home.</p>
         </div>
-        <Link to="/order-history" className="customer-back">
+        <Link to="/order-history" className="ui-button ui-button-light">
           View your orders <Icon name="arrow" size={16} />
         </Link>
       </div>
@@ -261,15 +266,8 @@ export default function Profile() {
           )}
         </div>
       )}
-      {message && (
-        <div className="ui-message success" role="status">
-          {message}
-        </div>
-      )}
       {loading ? (
-        <div className="ui-empty" role="status">
-          Getting your details ready…
-        </div>
+        <PageSkeleton variant="profile" label="Getting your details ready" />
       ) : loadFailed ? (
         <div className="ui-empty">
           <h2>Your details are temporarily unavailable.</h2>
@@ -282,18 +280,26 @@ export default function Profile() {
           </button>
         </div>
       ) : (
-        <div className="profile-columns">
+        <div className="profile-columns grid grid-cols-[240px_minmax(0,_1fr)] gap-8 items-start max-[760px]:block">
           <aside className="profile-identity">
-            <Image
-              src={profile.profilePic}
-              fallback="/default-avatar.svg"
-              alt={`${user?.username || "Your"} profile`}
-            />
-            <h2>
-              {[saved.firstName, saved.lastName].filter(Boolean).join(" ") ||
-                user?.username}
-            </h2>
-            <p>@{user?.username}</p>
+            <div className="profile-identity-summary">
+              <Image
+                src={profile.profilePic}
+                fallback="/default-avatar.svg"
+                alt={`${user?.username || "Your"} profile`}
+              />
+              <div>
+                <h2>
+                  {[saved.firstName, saved.lastName]
+                    .filter(Boolean)
+                    .join(" ") || user?.username}
+                </h2>
+                <p>@{user?.username}</p>
+                <span className="mb-4 inline-flex rounded-full bg-[#edf3e9] px-3 py-1 text-small font-semibold text-forest">
+                  {user?.roleLabel || "Account"}
+                </span>
+              </div>
+            </div>
             <button
               className="ui-button ui-button-light"
               disabled={busy}
@@ -311,6 +317,21 @@ export default function Profile() {
               disabled={busy}
             />
             <small>JPG, PNG or WebP · Up to 2 MB</small>
+            {profile.profilePic !== "/default-avatar.svg" && (
+              <button
+                type="button"
+                className="ui-button ui-button-light mt-3"
+                disabled={busy}
+                onClick={() =>
+                  setProfile((previous) => ({
+                    ...previous,
+                    profilePic: "/default-avatar.svg",
+                  }))
+                }
+              >
+                Remove photo
+              </button>
+            )}
             <nav aria-label="Account sections">
               <a href="#profile-details">
                 <Icon name="user" size={17} />
@@ -328,24 +349,46 @@ export default function Profile() {
           </aside>
           <div>
             <section className="customer-panel" id="profile-details">
-              <h2>The basics</h2>
+              <div className="flex items-start gap-3 mb-5">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#edf3e9] text-forest">
+                  <Icon name="user" size={20} />
+                </span>
+                <div>
+                  <h2 className="!mb-1">Personal details</h2>
+                  <p className="text-body text-muted">
+                    Your contact information and preferences.
+                  </p>
+                </div>
+              </div>
               <p className="profile-section-intro">
                 Keep these details up to date so we can reach you about your
                 orders.
               </p>
-              <form onSubmit={saveProfile}>
-                <fieldset className="ui-fieldset" disabled={busy}>
-                  <div className="profile-field-grid">
+              <form
+                ref={validation.formRef}
+                onSubmit={saveProfile}
+                noValidate
+                onChange={(event) => {
+                  validation.clear(event.target.name);
+
+                }}
+              >
+                <fieldset
+                  className="ui-fieldset min-w-0 border-0 p-0 m-0"
+                  disabled={busy}
+                >
+                  <div className="profile-field-grid grid grid-cols-[1fr_1fr] gap-[0_20px] max-[760px]:block">
                     {[
                       ["firstName", "First name", "given-name"],
                       ["lastName", "Last name", "family-name"],
                     ].map(([key, label, autocomplete]) => (
-                      <div className="ui-field" key={key}>
+                      <div className="ui-field mb-5" key={key}>
                         <label htmlFor={`profile-${key}`}>{label}</label>
                         <input
                           id={`profile-${key}`}
+                          {...validation.bind(key)}
                           value={profile[key]}
-                          maxLength={80}
+                          maxLength={rules.profileNameMaxLength}
                           autoComplete={autocomplete}
                           onChange={(event) =>
                             setProfile((previous) => ({
@@ -354,9 +397,13 @@ export default function Profile() {
                             }))
                           }
                         />
+                        <FieldError
+                          id={validation.errorId(key)}
+                          error={validation.errors[key]}
+                        />
                       </div>
                     ))}
-                    <div className="ui-field">
+                    <div className="ui-field mb-5">
                       <label htmlFor="profile-email">Email address</label>
                       <input
                         id="profile-email"
@@ -369,13 +416,14 @@ export default function Profile() {
                         email.
                       </p>
                     </div>
-                    <div className="ui-field">
+                    <div className="ui-field mb-5">
                       <label htmlFor="profile-phone">Mobile number</label>
                       <input
                         id="profile-phone"
+                        {...validation.bind("phone")}
                         type="tel"
                         value={profile.phone}
-                        maxLength={16}
+                        maxLength={rules.phoneMaxLength}
                         autoComplete="tel"
                         placeholder="0912 345 6789"
                         onChange={(event) =>
@@ -385,17 +433,22 @@ export default function Profile() {
                           }))
                         }
                       />
+                      <FieldError
+                        id={validation.errorId("phone")}
+                        error={validation.errors.phone}
+                      />
                     </div>
-                    <div className="ui-field">
+                    <div className="ui-field mb-5">
                       <label htmlFor="profile-dob">
                         Birthday{" "}
                         <span className="field-optional">(optional)</span>
                       </label>
                       <input
                         id="profile-dob"
+                        {...validation.bind("dob")}
                         type="date"
                         value={profile.dob}
-                        max={new Date().toLocaleDateString("en-CA")}
+                        max={storeToday()}
                         onChange={(event) =>
                           setProfile((previous) => ({
                             ...previous,
@@ -403,14 +456,19 @@ export default function Profile() {
                           }))
                         }
                       />
+                      <FieldError
+                        id={validation.errorId("dob")}
+                        error={validation.errors.dob}
+                      />
                     </div>
-                    <div className="ui-field">
+                    <div className="ui-field mb-5">
                       <label htmlFor="profile-gender">
                         Gender{" "}
                         <span className="field-optional">(optional)</span>
                       </label>
                       <select
                         id="profile-gender"
+                        {...validation.bind("gender")}
                         value={profile.gender}
                         onChange={(event) =>
                           setProfile((previous) => ({
@@ -420,27 +478,54 @@ export default function Profile() {
                         }
                       >
                         <option value="">Prefer not to say</option>
-                        <option>Female</option>
-                        <option>Male</option>
-                        <option>Non-binary</option>
-                        <option>Other</option>
+                        {[
+                          ...new Set([
+                            ...genders,
+                            ...(saved.gender ? [saved.gender] : []),
+                          ]),
+                        ].map((value) => (
+                          <option key={value}>{value}</option>
+                        ))}
                       </select>
+                      <FieldError
+                        id={validation.errorId("gender")}
+                        error={validation.errors.gender}
+                      />
                     </div>
                   </div>
-                  <div className="profile-save-row">
+                  <FieldError
+                    id={validation.errorId("profilePic")}
+                    error={validation.errors.profilePic}
+                  />
+                  <div className="profile-save-row flex items-center justify-between gap-4 pt-[22px] border-t border-line max-[760px]:flex-wrap">
                     <span role="status">
                       {dirty
                         ? "You have unsaved changes."
                         : "Your details are up to date."}
                     </span>
-                    <button
-                      className="ui-button ui-button-dark"
-                      type="submit"
-                      disabled={!dirty}
-                    >
-                      {busy ? "Saving…" : "Save changes"}
-                      <Icon name="check" size={18} />
-                    </button>
+                    <div className="flex flex-wrap gap-3">
+                      <button
+                        type="button"
+                        className="ui-button ui-button-light"
+                        disabled={!dirty || busy}
+                        onClick={() => {
+                          setProfile({ ...saved });
+                          validation.reset();
+                          setError("");
+
+                        }}
+                      >
+                        Discard changes
+                      </button>
+                      <button
+                        className="ui-button ui-button-dark"
+                        type="submit"
+                        disabled={!dirty}
+                      >
+                        {busy ? "Saving…" : "Save changes"}
+                        <Icon name="check" size={18} />
+                      </button>
+                    </div>
                   </div>
                 </fieldset>
               </form>
@@ -449,17 +534,22 @@ export default function Profile() {
               <div className="customer-panel-heading">
                 <h2>Your delivery addresses</h2>
                 {!editingAddress && (
-                  <button disabled={busy} onClick={() => editAddress(null)}>
+                  <button
+                    className="ui-button ui-button-dark"
+                    disabled={busy}
+                    onClick={() => editAddress(null)}
+                  >
                     Add address
                   </button>
                 )}
               </div>
               {editingAddress ? (
                 <form onSubmit={saveAddress} noValidate>
-                  <div className="ui-field">
+                  <div className="ui-field mb-5">
                     <label htmlFor="account-address-title">Address name</label>
                     <input
                       id="account-address-title"
+                      maxLength={60}
                       value={addressForm.title}
                       disabled={busy}
                       onChange={(event) =>
@@ -536,6 +626,7 @@ export default function Profile() {
                       </div>
                       <div>
                         <button
+                          className="ui-button ui-button-light"
                           disabled={busy}
                           onClick={() => editAddress(address)}
                         >
@@ -547,6 +638,7 @@ export default function Profile() {
                             index === 0)
                         ) && (
                           <button
+                            className="ui-button ui-button-light"
                             disabled={busy}
                             onClick={() => makeDefault(address.id)}
                           >
@@ -554,6 +646,7 @@ export default function Profile() {
                           </button>
                         )}
                         <button
+                          className="ui-button ui-button-danger"
                           disabled={busy}
                           onClick={() => setRemoving(address)}
                         >

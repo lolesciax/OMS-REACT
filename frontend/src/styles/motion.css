@@ -1,0 +1,113 @@
+@layer components {
+  @media (prefers-reduced-motion: no-preference) {
+    .landing-hero-copy > * {
+      animation: goods-arrive 750ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    }
+    .landing-hero-copy > :nth-child(2) {
+      animation-delay: 80ms;
+    }
+    .landing-hero-copy > :nth-child(3) {
+      animation-delay: 160ms;
+    }
+    .landing-hero-copy > :nth-child(4) {
+      animation-delay: 240ms;
+    }
+    .landing-hero-copy > :nth-child(5) {
+      animation-delay: 320ms;
+    }
+    .landing-featured,
+    .landing-mini,
+    .landing-seal {
+      animation: goods-arrive 850ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    }
+    .landing-mini-1 {
+      animation-delay: 120ms;
+    }
+    .landing-mini-2 {
+      animation-delay: 220ms;
+    }
+    .landing-seal {
+      animation-delay: 300ms;
+    }
+    .landing-scroll {
+      animation: goods-arrive 750ms 400ms backwards;
+    }
+    .landing-scroll svg {
+      animation: goods-nudge 1.6s 1s 3 ease-in-out;
+    }
+    .shop-dialog,
+    .ui-dialog,
+    .auth-recovery,
+    .product-photo-viewer[open] {
+      animation: goods-arrive 240ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    }
+    .landing-shop-link svg,
+    .footer-shop-arrow svg,
+    .footer-column a svg,
+    .footer-bottom button svg {
+      transition: translate 220ms ease;
+    }
+    .landing-shop-link:hover svg,
+    .landing-shop-link:focus-visible svg {
+      translate: 3px 0;
+    }
+    .footer-shop-link:hover svg,
+    .footer-shop-link:focus-visible svg,
+    .footer-column a:hover svg,
+    .footer-column a:focus-visible svg {
+      translate: 2px -2px;
+    }
+    .footer-bottom button:hover svg,
+    .footer-bottom button:focus-visible svg {
+      translate: 0 -3px;
+    }
+    .shop-product:not(:disabled) {
+      transition:
+        border-color 200ms,
+        box-shadow 200ms,
+        translate 240ms ease;
+    }
+    .shop-product:focus-visible {
+      translate: 0 -3px;
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .shop-product:hover {
+        translate: 0 -4px;
+      }
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .landing-hero-copy > *,
+    .landing-featured,
+    .landing-mini,
+    .landing-seal,
+    .landing-scroll,
+    .landing-scroll svg,
+    .shop-dialog,
+    .ui-dialog,
+    .auth-recovery,
+    .product-photo-viewer[open] {
+      animation: none !important;
+    }
+  }
+}
+
+@keyframes goods-arrive {
+  from {
+    opacity: 0;
+    translate: 0 16px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@keyframes goods-nudge {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 5px;
+  }
+}

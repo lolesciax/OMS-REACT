@@ -1,0 +1,21 @@
+{
+  "maxAmount": 1000000,
+  "maxStock": 1000000,
+  "productText": {
+    "name": 150,
+    "category": 80,
+    "size": 80,
+    "material": 80,
+    "description": 2000
+  },
+  "conditions": ["Like New", "Excellent", "Very Good", "Good", "Fair", "Used"],
+  "profileNameMaxLength": 80,
+  "merchantNameMaxLength": 100,
+  "emailMaxLength": 254,
+  "phoneMaxLength": 30,
+  "image": {
+    "maxBytes": 5242880,
+    "maxPixels": 20000000,
+    "mimeTypes": ["image/jpeg", "image/png", "image/gif", "image/webp"]
+  }
+}

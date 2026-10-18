@@ -1,4 +1,5 @@
 import Image from "./Image";
+import NotificationBell from "./NotificationBell";
 import { useEffect, useState } from "react";
 import { apiFetch } from "../services/http";
 import { BACKEND_URL } from "../services/config";
@@ -40,14 +41,17 @@ export default function StoreHeader({ cartCount, compact = false }) {
   }, [userId, cartCount]);
   const displayCount = cartCount ?? count;
   return (
-    <header className="store-header">
+    <header className="store-header relative flex justify-between items-center gap-6 [padding:20px_max(24px,_calc((100vw_-_1280px)_/_2))] border-b border-line bg-paper max-[600px]:flex-wrap max-[600px]:gap-3 max-[600px]:py-4 max-[600px]:px-5 max-[600px]:gap-3">
       <Link className="store-brand" to="/" aria-label="Old Goods Thrift home">
         <Image src="/Shop Icon.jpg" alt="" />
         <span>
           Old Goods<span className="brand-second">Thrift.</span>
         </span>
       </Link>
-      <nav className="store-nav" aria-label="Main navigation">
+      <nav
+        className="store-nav flex items-center gap-[27px] max-[900px]:gap-4 max-[600px]:gap-3 max-[600px]:flex-wrap max-[600px]:gap-3"
+        aria-label="Main navigation"
+      >
         {!compact && (
           <NavLink to="/" end>
             Shop
@@ -70,6 +74,9 @@ export default function StoreHeader({ cartCount, compact = false }) {
               <Icon name="user" />
               <span>Account</span>
             </NavLink>
+            <span className="max-[600px]:absolute max-[600px]:right-5 max-[600px]:top-4">
+              <NotificationBell />
+            </span>
             <NavLink to="/cart" className="store-cart">
               <Icon name="bag" />
               <span>Bag</span>

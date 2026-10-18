@@ -1,4 +1,7 @@
-import { useState, useEffect } from "react";
+import { shortOrderReference } from "../utils/orderProgress";
+import Skeleton, { TableSkeleton } from "./Skeleton";
+import TableScroll from "./TableScroll";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import AdminLayout from "./AdminLayout";
 import Pagination from "./Pagination";
@@ -6,10 +9,11 @@ import Icon from "./Icon";
 import { apiFetch } from "../services/http";
 import { BACKEND_URL } from "../services/config";
 import { formatPrice } from "../utils/catalog";
+import { orderStatusLabel, isAwaitingPayment } from "../utils/orders";
 
 const labels = {
-  pending: "Payment review",
-  pending_payment: "Awaiting payment",
+  awaiting_payment: "Awaiting payment",
+  payment_review: "Payment review",
   confirmed: "Confirmed",
   processing: "Preparing",
   shipped: "Shipped",
@@ -46,15 +50,33 @@ export default function AdminOrders() {
     })();
     return () => controller.abort();
   }, [retry]);
-  const visible = orders.filter(
-    (order) =>
-      (status === "all" || order.status === status) &&
-      [order.orderNumber, order.customerName, order.username, order._id].some(
-        (value) =>
-          String(value || "")
-            .toLowerCase()
-            .includes(search.trim().toLowerCase()),
+  const visible = useMemo(
+    () =>
+      orders.filter(
+        (order) =>
+          (status === "all" ||
+            (status === "awaiting_payment"
+              ? isAwaitingPayment(order)
+              : status === "payment_review"
+                ? ["pending", "pending_payment"].includes(order.status) &&
+                  !!order.paymentProof
+                : order.status === status)) &&
+          [
+            order.orderNumber,
+            order.customerName,
+            order.username,
+            order._id,
+          ].some((value) =>
+            String(value || "")
+              .toLowerCase()
+              .includes(search.trim().toLowerCase()),
+          ),
       ),
+    [orders, status, search],
+  );
+  const currentPage = Math.min(
+    page,
+    Math.max(1, Math.ceil(visible.length / 10)),
   );
   return (
     <AdminLayout
@@ -76,8 +98,10 @@ export default function AdminOrders() {
           ["All orders", orders.length],
           [
             "Awaiting review",
-            orders.filter((order) =>
-              ["pending", "pending_payment"].includes(order.status),
+            orders.filter(
+              (order) =>
+                ["pending", "pending_payment"].includes(order.status) &&
+                !!order.paymentProof,
             ).length,
           ],
           [
@@ -93,7 +117,13 @@ export default function AdminOrders() {
         ].map(([label, value]) => (
           <div className="admin-stat" key={label}>
             <span>{label}</span>
-            <strong>{loading ? "—" : value}</strong>
+            <strong>
+              {loading ? (
+                <Skeleton className="my-1 h-8 w-20 max-w-full" />
+              ) : (
+                value
+              )}
+            </strong>
           </div>
         ))}
       </div>
@@ -103,7 +133,7 @@ export default function AdminOrders() {
         </div>
       )}
       <section className="admin-panel">
-        <div className="admin-toolbar">
+        <div className="admin-toolbar flex items-center justify-between gap-5 py-5 px-[22px] border-b border-line max-[650px]:flex-wrap max-[650px]:p-4 max-[650px]:gap-[14px]">
           <div className="admin-search">
             <Icon name="search" size={18} />
             <input
@@ -135,12 +165,8 @@ export default function AdminOrders() {
             </select>
           </label>
         </div>
-        <div
-          className="admin-table-scroll"
-          tabIndex={0}
-          aria-label="Orders table, scroll horizontally on smaller screens"
-        >
-          <table className="admin-table">
+        <TableScroll label="Customer orders">
+          <table className="admin-table" aria-busy={loading}>
             <thead>
               <tr>
                 <th scope="col">Order</th>
@@ -155,11 +181,11 @@ export default function AdminOrders() {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={6} className="admin-table-empty" role="status">
-                    Loading orders…
-                  </td>
-                </tr>
+                <TableSkeleton
+                  columns={6}
+                  label="Loading orders"
+                  thumbnail={false}
+                />
               ) : !visible.length ? (
                 <tr>
                   <td colSpan={6} className="admin-table-empty">
@@ -171,50 +197,61 @@ export default function AdminOrders() {
                   </td>
                 </tr>
               ) : (
-                visible.slice((page - 1) * 10, page * 10).map((order) => (
-                  <tr key={order._id}>
-                    <td>
-                      <Link
-                        className="admin-primary-link"
-                        to={`/admin/view-orders/${order._id}`}
-                      >
-                        {order.orderNumber || order._id.slice(-6).toUpperCase()}
-                      </Link>
-                    </td>
-                    <td>
-                      {order.customerName || order.username || "Customer"}
-                    </td>
-                    <td>
-                      {order.orderDate
-                        ? new Date(order.orderDate).toLocaleDateString(
-                            "en-PH",
-                            { month: "short", day: "numeric", year: "numeric" },
-                          )
-                        : "—"}
-                    </td>
-                    <td className="admin-number">{formatPrice(order.total)}</td>
-                    <td>
-                      <span className={`admin-badge ${order.status}`}>
-                        {order.status === "pending" && !order.paymentProof
-                          ? "Awaiting payment"
-                          : labels[order.status] || order.status}
-                      </span>
-                    </td>
-                    <td>
-                      <Link
-                        className="admin-table-action"
-                        to={`/admin/view-orders/${order._id}`}
-                      >
-                        Review <Icon name="arrow" size={15} />
-                      </Link>
-                    </td>
-                  </tr>
-                ))
+                visible
+                  .slice((currentPage - 1) * 10, currentPage * 10)
+                  .map((order) => (
+                    <tr key={order._id}>
+                      <td>
+                        <Link
+                          className="admin-primary-link"
+                          to={`/admin/view-orders/${order._id}`}
+                        >
+                          {shortOrderReference(order)}
+                        </Link>
+                      </td>
+                      <td>
+                        {order.customerName || order.username || "Customer"}
+                      </td>
+                      <td>
+                        {order.orderDate
+                          ? new Date(order.orderDate).toLocaleDateString(
+                              "en-PH",
+                              {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              },
+                            )
+                          : "—"}
+                      </td>
+                      <td className="admin-number">
+                        {formatPrice(order.total)}
+                      </td>
+                      <td>
+                        <span className={`admin-badge ${order.status}`}>
+                          {orderStatusLabel(order)}
+                        </span>
+                      </td>
+                      <td>
+                        <Link
+                          className="admin-table-action"
+                          to={`/admin/view-orders/${order._id}`}
+                        >
+                          Review <Icon name="arrow" size={15} />
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
               )}
             </tbody>
           </table>
-        </div>
-        <Pagination count={visible.length} page={page} onChange={setPage} />
+        </TableScroll>
+        <Pagination
+          loading={loading}
+          count={visible.length}
+          page={currentPage}
+          onChange={setPage}
+        />
       </section>
     </AdminLayout>
   );

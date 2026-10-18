@@ -31,7 +31,7 @@ export default function AddressFields({
     <div className="address-fields">
       {Object.entries(labels).map(([key, label]) => (
         <div
-          className={`ui-field ${key === "street" ? "field-full" : ""}`}
+          className={`ui-field mb-5 ${key === "street" ? "field-full" : ""}`}
           key={key}
         >
           <label htmlFor={`${prefix}-${key}`}>{label}</label>

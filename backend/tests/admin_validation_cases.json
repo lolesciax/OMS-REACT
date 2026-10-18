@@ -1,0 +1,17 @@
+[
+  {"kind":"product","input":{"name":"Shirt","category":"Tops","price":"0.01","stock":"0"},"errors":[]},
+  {"kind":"product","input":{"name":"  ","category":[],"price":"1.001","stock":"1.5","condition":"Broken"},"errors":["name","category","price","stock","condition"]},
+  {"kind":"product","input":{"name":"Shirt","category":"Tops","price":true,"stock":false},"errors":["price","stock"]},
+  {"kind":"product","input":{"name":"Shirt","category":"Tops","price":"1e3","stock":"-1"},"errors":["price","stock"]},
+  {"kind":"product","input":{"name":"Shirt","category":"Tops","price":"1000000.00","stock":"1000000"},"errors":[]},
+  {"kind":"product","input":{"name":"Shirt","category":"Tops","price":"1000000.01","stock":"1000001"},"errors":["price","stock"]},
+  {"kind":"discount","input":{"code":" save_10 ","discountType":"percentage","value":"100","minPurchase":"","applyTo":"all"},"errors":[]},
+  {"kind":"discount","input":{"code":{"$ne":null},"discountType":"percentage","value":"100.01","minPurchase":"NaN","applyTo":"category","category":{}},"errors":["code","value","minPurchase","category"]},
+  {"kind":"discount","input":{"code":"BAD!","discountType":"wrong","value":false,"applyTo":{}},"errors":["code","discountType","value","applyTo"]},
+  {"kind":"discount","input":{"code":"DATE","discountType":"fixed","value":"0.01","validUntil":"2099-02-30"},"errors":["validUntil"]},
+  {"kind":"discount","input":{"code":"DATE","discountType":"fixed","value":"0.01","validUntil":"2020-01-01"},"errors":["validUntil"]},
+  {"kind":"discount","input":{"code":"DATE","discountType":"fixed","value":"0.01","validUntil":"2099-12-31"},"errors":[]},
+  {"kind":"account","input":{"username":"staff_01","email":"name+store@example.com","password":"Long passphrase 123","phone":"+63 912 345 6789"},"errors":[]},
+  {"kind":"account","input":{"username":{},"email":"bad..name@example.com","password":"        ","phone":"1234","isAdmin":"true"},"errors":["username","email","password","phone","isAdmin"]},
+  {"kind":"account","input":{"username":"staff_01","email":"person@-example.com","password":"Password123","firstName":[],"lastName":false,"isActive":0},"errors":["email","firstName","lastName","isActive"]}
+]

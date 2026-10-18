@@ -3,6 +3,8 @@ import hashlib
 import io
 import tempfile
 import unittest
+from image_fixtures import VALID_PNG
+from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 from bson import ObjectId
@@ -14,6 +16,13 @@ from app.order_workflow import transition_order
 
 
 class WorkflowTests(unittest.TestCase):
+    def test_fulfillment_milestones_record_actual_transition_times(self):
+        for source, target, field in [('pending', 'confirmed', 'confirmedAt'), ('confirmed', 'processing', 'processingAt'), ('shipped', 'completed', 'completedAt')]:
+            with self.subTest(target=target):
+                result = transition_order({'status': source, 'paymentProof': '/proof.jpg'}, {'status': target})
+                self.assertEqual(result['status'], target)
+                self.assertIsInstance(result[field], datetime)
+                self.assertLess(abs((result[field] - datetime.utcnow()).total_seconds()), 2)
     def setUp(self):
         self.app = Flask(__name__)
         self.app.json = MongoJSONProvider(self.app)
@@ -26,6 +35,10 @@ class WorkflowTests(unittest.TestCase):
             self.app.register_blueprint(blueprint)
         self.client = self.app.test_client()
         self.db = self.app.db
+        self.policy_id = ObjectId()
+        self.db.settings.find_one.return_value = {'order': self.policy_id}
+        self.db.policy_versions.find_one.return_value = {'_id': self.policy_id, 'kind': 'order'}
+        self.db.roles.find_one.side_effect = lambda query: {'_id': ObjectId('000000000000000000000001' if query.get('code') == 'admin' else '000000000000000000000002'), 'code': query.get('code', 'customer'), 'label': query.get('code', 'Customer'), 'active': True, 'permissions': ['admin.access'] if query.get('code') == 'admin' else []}
         self.patch_db = patch('app.get_db', return_value=self.db)
         self.patch_db.start()
         self.addCleanup(self.patch_db.stop)
@@ -34,6 +47,7 @@ class WorkflowTests(unittest.TestCase):
 
     def payload(self):
         return {
+            'termsAccepted': True, 'termsVersion': str(self.policy_id),
             'userId': 'customer',
             'items': [{'id': self.pid, 'qty': 2, 'name': 'Forged', 'price': .01}],
             'total': .02, 'subtotal': .02, 'paymentMethod': 'gcash',
@@ -77,7 +91,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.db.products.update_one.assert_not_called()
 
-    def upload(self, data=b'\x89PNG\r\n\x1a\nimage', filename='proof.png'):
+    def upload(self, data=VALID_PNG, filename='proof.png'):
         return self.client.post('/api/orders/upload-payment-proof', data={
             'orderId': self.oid, 'userId': 'customer', 'paymentProof': (io.BytesIO(data), filename),
         })

@@ -25,6 +25,38 @@ def verify_password(stored, password):
 
 COOKIE_NAME = 'oms_session'
 
+JSON_REQUEST_METHODS = {
+    'auth.login': {'POST'}, 'auth.register': {'POST'}, 'auth.check_email': {'POST'},
+    'auth.check_username': {'POST'}, 'auth.request_password_reset': {'POST'}, 'auth.forgot_password': {'POST'},
+    'admin.create_user': {'POST'}, 'admin.update_user': {'PUT'}, 'admin.create_discount': {'POST'},
+    'admin.get_order_details': {'PUT'}, 'orders.orders': {'POST'}, 'orders.order_detail': {'PUT'},
+    'orders.calculate_shipping': {'POST'}, 'orders.confirm_order_receipt': {'PUT'},
+    'users.user_profile': {'PUT'}, 'users.user_addresses': {'PUT'},
+    'checkout.checkout': {'PUT', 'PATCH'}, 'checkout.quote': {'POST'},
+    'cart.add_to_cart': {'POST'}, 'cart.update_cart_item': {'PUT'}, 'cart.remove_from_cart': {'DELETE'},
+    'products.check_product_stock': {'POST'}, 'products.update_product_stock': {'PUT'},
+    'access.roles': {'POST'}, 'access.role_detail': {'PUT'}, 'access.account_options': {'PUT'},
+    'notifications.read': {'PATCH'}, 'notifications.read_all': {'POST'},
+    'policies.publish': {'PUT'},
+    'content.update': {'PUT'},
+}
+
+
+
+def protect_auth_requests():
+    """Origin checks also protect public sign-in and recovery mutations."""
+    if request.method in ('GET', 'HEAD', 'OPTIONS'):
+        return None
+    origin = request.headers.get('Origin')
+    allowed = {request.host_url.rstrip('/'), *current_app.config.get('CORS_ORIGINS', [])}
+    if (origin and origin not in allowed) or (not origin and request.headers.get('Sec-Fetch-Site') == 'cross-site'):
+        return jsonify(success=False, error='This request origin is not allowed.'), 403
+    if request.endpoint and request.endpoint.startswith('auth.'):
+        if request.content_length and request.content_length > 16 * 1024:
+            return jsonify(success=False, error='Authentication requests must be smaller than 16 KB.'), 413
+    from .rate_limits import limit_auth_account
+    return limit_auth_account()
+
 
 def password_version(user):
     return hashlib.sha256(user.get('password', '').encode()).hexdigest()
@@ -50,27 +82,33 @@ def set_session_cookie(response, token):
 
 def authenticate_session():
     token = request.cookies.get(COOKIE_NAME, '')
-    if not token:
+    if not token or len(token) > 128:
         return None
     session = current_app.db.sessions.find_one({
         '_id': hashlib.sha256(token.encode()).hexdigest(), 'expiresAt': {'$gt': datetime.utcnow()},
     })
     if not session:
         return None
-    user = current_app.db.users.find_one({'_id': session['userId']})
+    user = current_app.db.users.find_one({'_id': session['userId']}, {
+        'password': 1, 'isActive': 1, 'isAdmin': 1, 'roleId': 1, 'username': 1, 'user_id': 1,
+    })
     if not user or not user.get('isActive', True) or not hmac.compare_digest(password_version(user), session.get('passwordVersion', '')):
         return None
     g.session = session
+    from .access import access_fields
+    user = {**user, **access_fields(user)}
     g.user = user
     return user
 
 
 def authorize_request():
-    path = request.path
+    path = request.path.rstrip('/')
     if request.method == 'OPTIONS' or not path.startswith('/api/'):
         return None
     if request.url_rule is None:
         return None
+    if request.method in JSON_REQUEST_METHODS.get(request.endpoint, set()) and not request.is_json:
+        return jsonify(success=False, error='Send this request as a JSON object with Content-Type: application/json.'), 415
     if request.is_json and not isinstance(request.get_json(silent=True), dict):
         return jsonify(success=False, error='A JSON object is required'), 400
     args = request.view_args or {}
@@ -79,13 +117,14 @@ def authorize_request():
             return jsonify(success=False, error=f'Invalid {key.replace("_", " ")}'), 400
     if path.startswith('/api/admin/users/') and not ObjectId.is_valid(args.get('user_id')):
         return jsonify(success=False, error='Invalid user ID'), 400
-    if (path.startswith('/api/auth/') and path not in ('/api/auth/session', '/api/auth/logout')) or path in ('/api/health', '/api/orders/calculate-shipping'):
-        return None
-    if path.startswith('/api/products') and request.method == 'GET':
-        return None
-    if path == '/api/payments' and request.method == 'GET':
-        return None
-    if path.startswith('/api/products/check-stock/') and request.method == 'POST':
+    public_endpoints = {
+        'auth.login', 'auth.register', 'auth.check_email', 'auth.check_username',
+        'auth.captcha', 'policies.published', 'content.published',
+        'auth.request_password_reset', 'auth.forgot_password', 'health_check',
+        'orders.calculate_shipping', 'products.get_products', 'products.get_product',
+        'products.uploaded_file', 'products.check_product_stock', 'settings.public_payments',
+    }
+    if request.endpoint in public_endpoints:
         return None
     try:
         user = authenticate_session()
@@ -93,11 +132,17 @@ def authorize_request():
         return jsonify(success=False, error='The database is temporarily unavailable. Please try again shortly.'), 503
     if not user:
         return jsonify(success=False, error='Your session has expired. Please log in again.'), 401
+    from .rate_limits import limit_user_requests
+    blocked = limit_user_requests()
+    if blocked is not None:
+        return blocked
     if request.method not in ('GET', 'HEAD', 'OPTIONS'):
         supplied = request.headers.get('X-CSRF-Token', '')
         if not supplied or not hmac.compare_digest(supplied, g.session['csrfToken']):
             return jsonify(success=False, error='Your session could not be verified. Refresh and try again.'), 403
     if path in ('/api/auth/session', '/api/auth/logout', '/api/checkout', '/api/checkout/quote'):
+        return None
+    if request.endpoint and request.endpoint.startswith('notifications.'):
         return None
     aliases = {value for value in (str(user['_id']), user.get('username'), user.get('user_id')) if value}
     args = request.view_args or {}
@@ -105,7 +150,7 @@ def authorize_request():
         target = args.get('user_id')
         if target:
             if str(target) in aliases or user.get('isAdmin'):
-                owner = find_user(current_app.db, target)
+                owner = find_user(current_app.db, target, {'_id': 1})
                 if not owner:
                     return jsonify(success=False, error='User not found'), 404
                 args['user_id'] = owner['_id']
@@ -127,7 +172,7 @@ def authorize_request():
         data = request.form if request.form else request.get_json(silent=True) or {}
         supplied = data.get('userId')
         if isinstance(supplied, str) and (supplied in aliases or user.get('isAdmin')):
-            owner = find_user(current_app.db, supplied)
+            owner = find_user(current_app.db, supplied, {'_id': 1})
             if not owner:
                 return jsonify(success=False, error='User not found'), 404
             g.owner_id = owner['_id']

@@ -3,6 +3,7 @@ import re
 from datetime import date
 from uuid import uuid4
 from .uploads import save_image
+from .rules import RULES
 
 
 def text(value, label, required=False, limit=250):
@@ -17,8 +18,16 @@ def text(value, label, required=False, limit=250):
 
 
 def email(value):
-    value = text(value, 'email address', True).lower()
+    value = text(value, 'email address', True, RULES['emailMaxLength']).lower()
     if not re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+', value):
+        raise ValueError('Enter a valid email address.')
+    local, domain = value.rsplit('@', 1)
+    if not re.fullmatch(r"[a-z0-9.!#$%&'*+/=?^_`{|}~-]+", local) or len(domain) > 253:
+        raise ValueError('Enter a valid email address.')
+    labels = domain.split('.')
+    if any(not re.fullmatch(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?', label) for label in labels) or not re.fullmatch(r'(?:[a-z]{2,63}|xn--[a-z0-9-]{2,59})', labels[-1]):
+        raise ValueError('Enter a valid email domain, such as example.com.')
+    if len(local) > 64 or local.startswith('.') or local.endswith('.') or '..' in value or any(part.startswith('-') or part.endswith('-') for part in domain.split('.')):
         raise ValueError('Enter a valid email address.')
     return value
 
@@ -31,13 +40,13 @@ def username(value):
 
 
 def password(value):
-    if not isinstance(value, str) or not 8 <= len(value) <= 128:
+    if not isinstance(value, str) or not 8 <= len(value) <= 128 or not value.strip():
         raise ValueError('Password must be 8 to 128 characters long.')
     return value
 
 
 def phone(value, required=False):
-    value = text(value, 'mobile number', required, 30)
+    value = text(value, 'mobile number', required, RULES['phoneMaxLength'])
     if value and not re.fullmatch(r'(09\d{9}|\+?639\d{9})', re.sub(r'[\s()-]', '', value)):
         raise ValueError('Enter a valid Philippine mobile number, such as 0912 345 6789.')
     return value
@@ -74,25 +83,31 @@ def addresses(value):
     return result
 
 
-def profile(data):
+def _profile_value(data, existing=None):
     result = {}
     for key in ('firstName', 'lastName'):
         if key in data:
-            result[key] = text(data[key], key, limit=80)
+            from .admin_validation import clean_text
+            result[key] = clean_text(data[key], 'first name' if key == 'firstName' else 'last name', RULES['profileNameMaxLength'])
     if 'phone' in data:
         result['phone'] = phone(data['phone'])
     if 'dob' in data:
         birthday = text(data['dob'], 'birthday', limit=10)
         if birthday:
             try:
-                if date.fromisoformat(birthday) > date.today():
+                from datetime import datetime, timezone, timedelta
+                if not re.fullmatch(r'\d{4}-\d{2}-\d{2}', birthday) or date.fromisoformat(birthday) > datetime.now(timezone(timedelta(hours=8))).date():
                     raise ValueError()
             except ValueError:
                 raise ValueError('Choose a valid birthday in the past.')
         result['dob'] = birthday
     if 'gender' in data:
         value = text(data['gender'], 'gender', limit=30)
-        choices = {'': '', 'female': 'Female', 'male': 'Male', 'non-binary': 'Non-binary', 'other': 'Other'}
+        from flask import current_app
+        options = current_app.db.account_options.find_one({'_id': 'profile'}) or {}
+        choices = {'': '', **{item.lower(): item for item in options.get('genders', [])}}
+        if existing and existing.get('gender') == value:
+            choices[value.lower()] = value
         if value.lower() not in choices:
             raise ValueError('Choose a valid gender option.')
         result['gender'] = choices[value.lower()]
@@ -116,4 +131,25 @@ def profile(data):
             result['profilePic'] = '/default-avatar.svg'
         else:
             raise ValueError('Choose a valid profile photo.')
+    return result
+
+
+def profile(data, existing=None):
+    from .admin_validation import FieldValidationError
+    result, errors = {}, {}
+    for key in ('firstName', 'lastName', 'phone', 'dob', 'gender', 'addresses'):
+        if key not in data:
+            continue
+        try:
+            result.update(_profile_value({key: data[key]}, existing))
+        except ValueError as error:
+            errors[key] = str(error)
+    if errors:
+        raise FieldValidationError(errors)
+    # Validate all text fields before creating a new image file.
+    if 'profilePic' in data:
+        try:
+            result.update(_profile_value({'profilePic': data['profilePic']}, existing))
+        except ValueError as error:
+            raise FieldValidationError({'profilePic': str(error)}) from error
     return result

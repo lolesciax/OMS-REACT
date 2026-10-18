@@ -37,8 +37,13 @@ def checkout():
         data = request.get_json()
         if data.get('fromCart'):
             cart = db.carts.find_one({'user_id': owner}) or {}
-            source = [{'id': item['product_id'], 'qty': item['qty']}
-                      for item in cart.get('items', []) if item.get('selected')]
+            source = []
+            for item in cart.get('items', []):
+                if not item.get('selected'):
+                    continue
+                product = db.products.find_one({'_id': item['product_id']})
+                if product and product.get('is_active', True) and product.get('stock', 0) > 0:
+                    source.append({'id': item['product_id'], 'qty': min(item['qty'], product['stock'])})
         else:
             source = data.get('items')
         if not isinstance(source, list) or not source:
@@ -61,7 +66,7 @@ def checkout():
         # Starting checkout intentionally replaces the draft; older unpaid orders
         # remain available from order history.
         result = db.checkouts.find_one_and_update({'userId': owner}, {'$set': draft, '$unset': {
-            'shippingAddress': '', 'paymentMethod': '', 'discountCode': ''}, '$setOnInsert': {'createdAt': datetime.utcnow()}},
+            'shippingAddress': '', 'paymentMethod': '', 'discountCode': '', 'editorVersions': ''}, '$setOnInsert': {'createdAt': datetime.utcnow()}},
             upsert=True, return_document=True)
         return jsonify(success=True, checkout=hydrate(result))
     draft = db.checkouts.find_one({'userId': owner, 'expiresAt': {'$gt': datetime.utcnow()}})

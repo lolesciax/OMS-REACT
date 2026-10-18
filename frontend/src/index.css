@@ -1,53 +1,69 @@
-:root {
-  font-family: Arial, sans-serif;
-  color: #242424;
-  background: #fff;
-  color-scheme: light;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@import "tailwindcss";
+@import "./styles/experience.css";
+@import "./styles/motion.css";
+@import "./styles/skeleton.css";
+
+@theme {
+  --font-sans: "Segoe UI", Arial, sans-serif;
+  --font-serif: Georgia, serif;
+  --color-ink: #292d26;
+  --color-muted: #687064;
+  --color-paper: #fcfbf7;
+  --color-surface: #ffffff;
+  --color-line: #e2e3d9;
+  --color-accent: #a34c32;
+  --color-accent-soft: #f4e7dc;
+  --color-forest: #344c3c;
+  --text-small: 0.875rem;
+  --text-body: 1rem;
+  --text-lead: 1.125rem;
 }
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-}
-#root {
-  width: 100%;
-  min-height: 100vh;
-}
-button,
-input,
-select,
-textarea {
-  font: inherit;
-}
-button {
-  cursor: pointer;
-}
-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.65;
-}
-:focus-visible {
-  outline: 3px solid #2563eb;
-  outline-offset: 3px;
-}
-img {
-  max-width: 100%;
-}
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+
+@layer base {
+  :root {
+    @apply font-sans text-ink bg-paper antialiased;
+    color-scheme: light;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
   }
+  * {
+    @apply box-border m-0 p-0;
+  }
+  body {
+    @apply m-0 min-w-80 min-h-screen;
+  }
+  #root {
+    @apply w-full min-h-screen;
+  }
+  button,
+  input,
+  select,
+  textarea {
+    @apply [font:inherit];
+  }
+  button {
+    @apply cursor-pointer;
+  }
+  button:disabled {
+    @apply cursor-not-allowed opacity-65;
+  }
+  :focus-visible {
+    @apply outline-2 outline-forest outline-offset-4;
+  }
+  img {
+    @apply max-w-full;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+@keyframes toast-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }

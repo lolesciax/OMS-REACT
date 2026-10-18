@@ -17,6 +17,21 @@ after(() => {
   globalThis.fetch = originalFetch;
   globalThis.window = originalWindow;
 });
+
+test("successful business mutations refresh notifications without a notification mutation loop", async () => {
+  let refreshed = 0;
+  window.addEventListener("notifications:refresh", () => refreshed++);
+  globalThis.fetch = async () => Response.json({ success: true });
+  await apiFetch("/api/orders", { method: "POST" });
+  assert.equal(refreshed, 1);
+  await apiFetch("/api/notifications/read-all", { method: "POST" });
+  await apiFetch("/api/products");
+  assert.equal(refreshed, 1);
+  globalThis.fetch = async () =>
+    Response.json({ error: "Invalid" }, { status: 400 });
+  await apiFetch("/api/orders", { method: "POST" });
+  assert.equal(refreshed, 1);
+});
 test("public login failures do not attach a token or expire a session", async () => {
   globalThis.fetch = async (_url, options) => {
     assert.equal(options.headers.has("Authorization"), false);
@@ -93,4 +108,23 @@ test("mutations use the CSRF token restored from the database session", async ()
     return Response.json({ success: true });
   };
   await apiFetch("/api/checkout", { method: "PUT" });
+});
+
+test("a late session refresh cannot replace a newer sign-in CSRF token", async () => {
+  let complete;
+  globalThis.fetch = () =>
+    new Promise((resolve) => {
+      complete = resolve;
+    });
+  const old = apiFetch("/api/auth/session");
+  setCSRFToken("new-sign-in");
+  complete(
+    Response.json({ user: { _id: "old-user" }, csrfToken: "old-session" }),
+  );
+  await old;
+  globalThis.fetch = async (_url, options) => {
+    assert.equal(options.headers.get("X-CSRF-Token"), "new-sign-in");
+    return Response.json({ success: true });
+  };
+  await apiFetch("/api/checkout", { method: "PATCH" });
 });

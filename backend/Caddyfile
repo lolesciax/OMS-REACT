@@ -1,0 +1,68 @@
+# Local-only API balancer; worker credentials are provided by cluster.py.
+{
+	admin off
+	auto_https off
+	persist_config off
+	servers {
+		max_header_size 32KB
+		timeouts {
+			read_header 5s
+			read_body 30s
+			write 90s
+			idle 60s
+		}
+	}
+}
+
+http://localhost:{$OMS_BALANCER_PORT:5000}, http://127.0.0.1:{$OMS_BALANCER_PORT:5000} {
+	bind 127.0.0.1
+	request_body {
+		max_size 16MB
+	}
+	reverse_proxy 127.0.0.1:{$OMS_WORKER_PORT_1:5101} 127.0.0.1:{$OMS_WORKER_PORT_2:5102} {
+		lb_policy round_robin
+		lb_try_duration 2s
+		lb_retry_match {
+			method GET HEAD OPTIONS
+		}
+		health_uri /api/health
+		health_interval 5s
+		health_timeout 3s
+		health_status 200
+		health_headers {
+			X-OMS-Proxy-Token {$OMS_PROXY_TOKEN}
+			X-OMS-Health-Check {$OMS_PROXY_TOKEN}
+		}
+		fail_duration 10s
+		max_fails 1
+		# Rebuild an allowlist. This also removes underscore/mixed-name
+		# aliases that WSGI would otherwise normalize into trusted headers.
+		header_up -*
+		header_up Content-Type {http.request.header.Content-Type}
+		header_up Cookie {http.request.header.Cookie}
+		header_up X-CSRF-Token {http.request.header.X-CSRF-Token}
+		header_up Origin {http.request.header.Origin}
+		header_up Sec-Fetch-Site {http.request.header.Sec-Fetch-Site}
+		header_up Accept {http.request.header.Accept}
+		header_up Range {http.request.header.Range}
+		header_up If-Range {http.request.header.If-Range}
+		header_up If-None-Match {http.request.header.If-None-Match}
+		header_up If-Modified-Since {http.request.header.If-Modified-Since}
+		header_up Access-Control-Request-Method {http.request.header.Access-Control-Request-Method}
+		header_up Access-Control-Request-Headers {http.request.header.Access-Control-Request-Headers}
+		header_up X-Forwarded-For {http.request.remote.host}
+		header_up X-Forwarded-Proto {http.request.scheme}
+		header_up X-OMS-Proxy-Token {$OMS_PROXY_TOKEN}
+		transport http {
+			max_conns_per_host 50
+			dial_timeout 2s
+			response_header_timeout 60s
+		}
+	}
+	handle_errors {
+		header Content-Type application/json
+		header Cache-Control no-store
+		header X-Content-Type-Options nosniff
+		respond `{"success":false,"error":"The API is temporarily unavailable or the request was rejected."}` {err.status_code}
+	}
+}

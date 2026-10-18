@@ -1,1 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="#f5f2ed"/><path d="m145 100 55 20 55-20 65 65-45 45-25-25v120H150V185l-25 25-45-45z" fill="#d6cfc4" stroke="#a89e91" stroke-width="4"/><text x="200" y="355" text-anchor="middle" font-family="Arial,sans-serif" font-size="18" fill="#61574c">Image unavailable</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 400" role="img" aria-label="Photo unavailable">
+  <rect width="320" height="400" rx="8" fill="#f0eee8"/>
+  <circle cx="160" cy="168" r="74" fill="#e6e3d9"/>
+  <path d="m130 125 30 12 30-12 37 38-25 25-13-13v67h-58v-67l-13 13-25-25z" fill="#d4d0c4" stroke="#8b9182" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M146 132q14 18 28 0" fill="none" stroke="#8b9182" stroke-width="3"/>
+  <text x="160" y="292" text-anchor="middle" font-family="Arial,sans-serif" font-size="28" fill="#505b49">Photo unavailable</text>
+</svg>

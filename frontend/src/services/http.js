@@ -64,6 +64,14 @@ export async function apiFetch(input, { timeout = 20000, ...options } = {}) {
     )
       setCSRFToken(data.csrfToken);
     response.json = async () => data;
+    if (
+      response.ok &&
+      !["GET", "HEAD", "OPTIONS"].includes(
+        (options.method || "GET").toUpperCase(),
+      ) &&
+      !url.pathname.startsWith("/api/notifications")
+    )
+      window.dispatchEvent(new Event("notifications:refresh"));
     return response;
   } catch (error) {
     if (options.signal?.aborted) throw error;

@@ -5,7 +5,11 @@ import {
   validatePassword,
   validateConfirmPassword,
 } from "../src/utils/validation.js";
-import { canTransition } from "../src/utils/orders.js";
+import {
+  canTransition,
+  orderStatusLabel,
+  isAwaitingPayment,
+} from "../src/utils/orders.js";
 
 test("registration accepts valid email providers and strong passphrases", () => {
   assert.equal(validateEmail("customer@outlook.com"), "");
@@ -30,4 +34,18 @@ test("fulfillment controls require proof and prevent skipped or reversed steps",
   );
   assert.equal(canTransition({ status: "processing" }, "shipped"), true);
   assert.equal(canTransition({ status: "completed" }, "pending"), false);
+});
+
+test("unpaid orders stay distinct from submitted proofs throughout the workflow", () => {
+  for (const status of ["pending", "pending_payment"]) {
+    assert.equal(isAwaitingPayment({ status }), true);
+    assert.equal(orderStatusLabel({ status }), "Awaiting payment");
+    assert.equal(
+      orderStatusLabel({ status, paymentProof: "/proof.jpg" }),
+      "Payment review",
+    );
+  }
+  assert.equal(orderStatusLabel({ status: "confirmed" }), "Payment confirmed");
+  assert.equal(orderStatusLabel({ status: "completed" }), "Delivered");
+  assert.equal(isAwaitingPayment({ status: "completed" }), false);
 });

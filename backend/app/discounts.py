@@ -1,6 +1,6 @@
 """Discount eligibility and amounts are computed from current catalog prices."""
 from datetime import datetime, timedelta, timezone
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 import math
 
 
@@ -22,7 +22,12 @@ def discount_for(db, code, items):
         if expires < datetime.now(timezone(timedelta(hours=8))).date():
             raise ValueError('This discount code has expired.')
     subtotal = sum(Decimal(str(item['price'])) * item['qty'] for item in items)
-    minimum = Decimal(str(discount.get('minPurchase', discount.get('minOrder', 0)) or 0))
+    try:
+        minimum = Decimal(str(discount.get('minPurchase', discount.get('minOrder', 0)) or 0))
+        if not minimum.is_finite() or minimum < 0:
+            raise ValueError()
+    except (InvalidOperation, ValueError):
+        raise ValueError('This discount code is unavailable.')
     if subtotal < minimum:
         raise ValueError(f'This code requires an item subtotal of at least ₱{minimum:,.2f}.')
     eligible = sum(Decimal(str(item['price'])) * item['qty'] for item in items

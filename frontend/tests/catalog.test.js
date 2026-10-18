@@ -1,6 +1,10 @@
 ﻿import test from "node:test";
 import assert from "node:assert/strict";
-import { filterProducts, formatPrice } from "../src/utils/catalog.js";
+import {
+  filterProducts,
+  formatPrice,
+  isProductAvailable,
+} from "../src/utils/catalog.js";
 import { validateAddress } from "../src/utils/address.js";
 import { postLoginPath } from "../src/utils/navigation.js";
 
@@ -31,6 +35,29 @@ const collection = [
     size: "M",
   },
 ];
+
+test("landing availability excludes sold out, invalid-stock and inactive products", () => {
+  const products = [
+    { id: "ready", stock: 2, is_active: true },
+    { id: "legacy", stock: "1" },
+    { id: "sold", stock: 0 },
+    { id: "negative", stock: -1 },
+    { id: "missing" },
+    { id: "invalid", stock: "unavailable" },
+    { id: "infinite", stock: Infinity },
+    { id: "archived", stock: 2, is_active: false },
+    { id: "disabled", stock: 2, isActive: false },
+  ];
+  assert.deepEqual(
+    products.filter(isProductAvailable).map((item) => item.id),
+    ["ready", "legacy"],
+  );
+  assert.deepEqual(
+    filterProducts(products, { inStockOnly: true }).map((item) => item.id),
+    ["ready", "legacy"],
+  );
+  assert.equal(products.length, 9);
+});
 
 test("catalog search covers names, descriptions, categories, and sizes", () => {
   assert.deepEqual(
@@ -105,6 +132,14 @@ test("sign-in returns to the requested page without redirect loops or external d
   assert.equal(postLoginPath({ isAdmin: false }, "/admin/orders"), "/");
   assert.equal(postLoginPath({ isAdmin: false }, "//outside.example"), "/");
   assert.equal(postLoginPath({ isAdmin: false }, "/\\outside.example"), "/");
+  assert.equal(
+    postLoginPath({ isAdmin: false }, "/checkout?order=abc123"),
+    "/checkout?order=abc123",
+  );
+  assert.equal(
+    postLoginPath({ isAdmin: false }, "/?product=abc123"),
+    "/?product=abc123",
+  );
   assert.equal(
     postLoginPath({ isAdmin: true }, "/login?again=1"),
     "/admin/dashboard",

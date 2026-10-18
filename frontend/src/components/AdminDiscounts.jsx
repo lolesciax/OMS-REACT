@@ -1,4 +1,10 @@
-import { useEffect, useState } from "react";
+import { toast } from "../services/feedback";
+import useFormValidation from "../hooks/useFormValidation";
+import FieldError from "./FieldError";
+import { validateDiscount, rules, storeToday } from "../utils/adminValidation";
+import { TableSkeleton } from "./Skeleton";
+import TableScroll from "./TableScroll";
+import { useEffect, useState, useMemo } from "react";
 import AdminLayout from "./AdminLayout";
 import EditorDialog from "./EditorDialog";
 import ConfirmDialog from "./ConfirmDialog";
@@ -24,13 +30,14 @@ export default function AdminDiscounts() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+
   const [retry, setRetry] = useState(0);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [editor, setEditor] = useState(false);
   const [form, setForm] = useState(empty);
   const [formError, setFormError] = useState("");
+  const validation = useFormValidation("discount");
   const [busy, setBusy] = useState(false);
   const [remove, setRemove] = useState(null);
   useEffect(() => {
@@ -72,31 +79,27 @@ export default function AdminDiscounts() {
       .catch(() => {});
     return () => controller.abort();
   }, [retry]);
-  const visible = discounts.filter((discount) =>
-    [discount.code, discount.category].some((value) =>
-      String(value || "")
-        .toLowerCase()
-        .includes(search.trim().toLowerCase()),
-    ),
+  const visible = useMemo(
+    () =>
+      discounts.filter((discount) =>
+        [discount.code, discount.category].some((value) =>
+          String(value || "")
+            .toLowerCase()
+            .includes(search.trim().toLowerCase()),
+        ),
+      ),
+    [discounts, search],
+  );
+  const currentPage = Math.min(
+    page,
+    Math.max(1, Math.ceil(visible.length / 10)),
   );
   const save = async (event) => {
     event.preventDefault();
     if (busy) return;
     setFormError("");
-    if (
-      !form.code.trim() ||
-      !Number.isFinite(Number(form.value)) ||
-      Number(form.value) <= 0 ||
-      (form.discountType === "percentage" && Number(form.value) > 100) ||
-      Number(form.minPurchase) < 0
-    ) {
-      setFormError(
-        "Enter a code and a valid discount amount. Percentage discounts can be up to 100%.",
-      );
-      return;
-    }
-    if (form.applyTo === "category" && !form.category) {
-      setFormError("Choose a category for this code.");
+    if (!validation.check(validateDiscount(form))) {
+      setFormError("Review the highlighted fields before saving.");
       return;
     }
     setBusy(true);
@@ -111,12 +114,14 @@ export default function AdminDiscounts() {
         }),
       });
       const data = await response.json();
-      if (!response.ok || !data.success)
+      if (!response.ok || !data.success) {
+        validation.reject(data);
         throw new Error(
           data.error || data.message || "The discount code couldn’t be saved.",
         );
+      }
       setEditor(false);
-      setMessage("Discount code saved.");
+      toast.success("Discount code saved.");
       setRetry((value) => value + 1);
     } catch (failure) {
       setFormError(failure.message);
@@ -141,7 +146,7 @@ export default function AdminDiscounts() {
       );
       setRemove(null);
       setPage(1);
-      setMessage("Discount code deleted.");
+      toast.success("Discount code deleted.");
     } catch (failure) {
       setRemove(null);
       setError(failure.message);
@@ -152,12 +157,13 @@ export default function AdminDiscounts() {
   return (
     <AdminLayout
       title="Discount codes"
-      description="Keep discount codes, limits, and dates in one place."
+      description="Manage discount codes, minimum spend, and expiration dates."
       actions={
         <button
           className="ui-button ui-button-dark"
           onClick={() => {
             setEditor(true);
+            validation.reset();
             setForm(empty);
             setFormError("");
           }}
@@ -186,13 +192,8 @@ export default function AdminDiscounts() {
           </button>
         </div>
       )}
-      {message && (
-        <div className="ui-message success" role="status">
-          {message}
-        </div>
-      )}
       <section className="admin-panel">
-        <div className="admin-toolbar">
+        <div className="admin-toolbar flex items-center justify-between gap-5 py-5 px-[22px] border-b border-line max-[650px]:flex-wrap max-[650px]:p-4 max-[650px]:gap-[14px]">
           <div className="admin-search">
             <Icon name="search" size={18} />
             <input
@@ -210,12 +211,8 @@ export default function AdminDiscounts() {
             {discounts.length} saved {discounts.length === 1 ? "code" : "codes"}
           </span>
         </div>
-        <div
-          className="admin-table-scroll"
-          tabIndex={0}
-          aria-label="Discount codes table, scroll horizontally on smaller screens"
-        >
-          <table className="admin-table">
+        <TableScroll label="Discount codes">
+          <table className="admin-table" aria-busy={loading}>
             <thead>
               <tr>
                 <th scope="col">Code</th>
@@ -231,11 +228,11 @@ export default function AdminDiscounts() {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={7} className="admin-table-empty" role="status">
-                    Loading discount codes…
-                  </td>
-                </tr>
+                <TableSkeleton
+                  columns={7}
+                  label="Loading discount codes"
+                  thumbnail={false}
+                />
               ) : !visible.length ? (
                 <tr>
                   <td colSpan={7} className="admin-table-empty">
@@ -245,69 +242,78 @@ export default function AdminDiscounts() {
                   </td>
                 </tr>
               ) : (
-                visible.slice((page - 1) * 10, page * 10).map((discount) => {
-                  const date = expiry(discount.validUntil || discount.endDate);
-                  const expired = date && date < new Date();
-                  return (
-                    <tr key={discount._id}>
-                      <td>
-                        <strong className="admin-discount-code">
-                          {discount.code}
-                        </strong>
-                      </td>
-                      <td className="admin-number">
-                        {(discount.discountType || discount.type) ===
-                        "percentage"
-                          ? `${discount.value}%`
-                          : formatPrice(discount.value)}
-                      </td>
-                      <td>
-                        {discount.applyTo === "category"
-                          ? discount.category
-                          : "All products"}
-                      </td>
-                      <td className="admin-number">
-                        {formatPrice(
-                          discount.minPurchase ?? discount.minOrder ?? 0,
-                        )}
-                      </td>
-                      <td>
-                        {date && !Number.isNaN(date.getTime())
-                          ? date.toLocaleDateString("en-PH", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })
-                          : "No expiry"}
-                      </td>
-                      <td>
-                        <span
-                          className={`admin-badge ${expired || discount.isActive === false ? "inactive" : "active"}`}
-                        >
-                          {expired
-                            ? "Expired"
-                            : discount.isActive === false
-                              ? "Inactive"
-                              : "Active"}
-                        </span>
-                      </td>
-                      <td>
-                        <button
-                          className="admin-table-action"
-                          aria-label={`Delete code ${discount.code}`}
-                          onClick={() => setRemove(discount)}
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
+                visible
+                  .slice((currentPage - 1) * 10, currentPage * 10)
+                  .map((discount) => {
+                    const date = expiry(
+                      discount.validUntil || discount.endDate,
+                    );
+                    const expired = date && date < new Date();
+                    return (
+                      <tr key={discount._id}>
+                        <td>
+                          <strong className="admin-discount-code">
+                            {discount.code}
+                          </strong>
+                        </td>
+                        <td className="admin-number">
+                          {(discount.discountType || discount.type) ===
+                          "percentage"
+                            ? `${discount.value}%`
+                            : formatPrice(discount.value)}
+                        </td>
+                        <td>
+                          {discount.applyTo === "category"
+                            ? discount.category
+                            : "All products"}
+                        </td>
+                        <td className="admin-number">
+                          {formatPrice(
+                            discount.minPurchase ?? discount.minOrder ?? 0,
+                          )}
+                        </td>
+                        <td>
+                          {date && !Number.isNaN(date.getTime())
+                            ? date.toLocaleDateString("en-PH", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })
+                            : "No expiry"}
+                        </td>
+                        <td>
+                          <span
+                            className={`admin-badge ${expired || discount.isActive === false ? "inactive" : "active"}`}
+                          >
+                            {expired
+                              ? "Expired"
+                              : discount.isActive === false
+                                ? "Inactive"
+                                : "Active"}
+                          </span>
+                        </td>
+                        <td>
+                          <button
+                            className="admin-table-action"
+                            aria-label={`Delete code ${discount.code}`}
+                            onClick={() => setRemove(discount)}
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
               )}
             </tbody>
           </table>
-        </div>
-        <Pagination count={visible.length} page={page} onChange={setPage} />
+        </TableScroll>
+        <Pagination
+          loading={loading}
+          count={visible.length}
+          page={currentPage}
+          onChange={setPage}
+        />
       </section>
       {editor && (
         <EditorDialog
@@ -321,12 +327,24 @@ export default function AdminDiscounts() {
               {formError}
             </div>
           )}
-          <form onSubmit={save}>
-            <fieldset className="ui-fieldset" disabled={busy}>
-              <div className="ui-field">
+          <form
+            ref={validation.formRef}
+            noValidate
+            onSubmit={save}
+            onChange={(event) => {
+              validation.clear(event.target.name);
+              setFormError("");
+            }}
+          >
+            <fieldset
+              className="ui-fieldset min-w-0 border-0 p-0 m-0"
+              disabled={busy}
+            >
+              <div className="ui-field mb-5">
                 <label htmlFor="discount-code">Code</label>
                 <input
                   id="discount-code"
+                  {...validation.bind("code")}
                   autoComplete="off"
                   maxLength={40}
                   required
@@ -339,12 +357,17 @@ export default function AdminDiscounts() {
                     }))
                   }
                 />
+                <FieldError
+                  id={validation.errorId("code")}
+                  error={validation.errors.code}
+                />
               </div>
-              <div className="editor-fields">
-                <div className="ui-field">
+              <div className="editor-fields grid grid-cols-[1fr_1fr] gap-[0_18px] max-[650px]:block">
+                <div className="ui-field mb-5">
                   <label htmlFor="discount-type">Discount type</label>
                   <select
                     id="discount-type"
+                    {...validation.bind("discountType")}
                     value={form.discountType}
                     onChange={(event) =>
                       setForm((previous) => ({
@@ -357,8 +380,12 @@ export default function AdminDiscounts() {
                     <option value="percentage">Percentage</option>
                     <option value="fixed">Fixed amount (PHP)</option>
                   </select>
+                  <FieldError
+                    id={validation.errorId("discountType")}
+                    error={validation.errors.discountType}
+                  />
                 </div>
-                <div className="ui-field">
+                <div className="ui-field mb-5">
                   <label htmlFor="discount-value">
                     {form.discountType === "percentage"
                       ? "Percentage (%)"
@@ -366,9 +393,12 @@ export default function AdminDiscounts() {
                   </label>
                   <input
                     id="discount-value"
+                    {...validation.bind("value")}
                     type="number"
                     min="0.01"
-                    max={form.discountType === "percentage" ? 100 : undefined}
+                    max={
+                      form.discountType === "percentage" ? 100 : rules.maxAmount
+                    }
                     step="0.01"
                     required
                     value={form.value}
@@ -379,11 +409,16 @@ export default function AdminDiscounts() {
                       }))
                     }
                   />
+                  <FieldError
+                    id={validation.errorId("value")}
+                    error={validation.errors.value}
+                  />
                 </div>
-                <div className="ui-field">
+                <div className="ui-field mb-5">
                   <label htmlFor="discount-minimum">Minimum order (PHP)</label>
                   <input
                     id="discount-minimum"
+                    {...validation.bind("minPurchase")}
                     type="number"
                     min={0}
                     step="0.01"
@@ -396,16 +431,21 @@ export default function AdminDiscounts() {
                       }))
                     }
                   />
+                  <FieldError
+                    id={validation.errorId("minPurchase")}
+                    error={validation.errors.minPurchase}
+                  />
                 </div>
-                <div className="ui-field">
+                <div className="ui-field mb-5">
                   <label htmlFor="discount-expiry">
                     Expiration date{" "}
                     <span className="field-optional">(optional)</span>
                   </label>
                   <input
                     id="discount-expiry"
+                    {...validation.bind("validUntil")}
                     type="date"
-                    min={new Date().toLocaleDateString("en-CA")}
+                    min={storeToday()}
                     value={form.validUntil}
                     onChange={(event) =>
                       setForm((previous) => ({
@@ -414,12 +454,17 @@ export default function AdminDiscounts() {
                       }))
                     }
                   />
+                  <FieldError
+                    id={validation.errorId("validUntil")}
+                    error={validation.errors.validUntil}
+                  />
                 </div>
               </div>
-              <div className="ui-field">
+              <div className="ui-field mb-5">
                 <label htmlFor="discount-scope">Applies to</label>
                 <select
                   id="discount-scope"
+                  {...validation.bind("applyTo")}
                   value={form.applyTo}
                   onChange={(event) =>
                     setForm((previous) => ({
@@ -433,12 +478,17 @@ export default function AdminDiscounts() {
                     One category
                   </option>
                 </select>
+                <FieldError
+                  id={validation.errorId("applyTo")}
+                  error={validation.errors.applyTo}
+                />
               </div>
               {form.applyTo === "category" && (
-                <div className="ui-field">
+                <div className="ui-field mb-5">
                   <label htmlFor="discount-category">Category</label>
                   <select
                     id="discount-category"
+                    {...validation.bind("category")}
                     required
                     value={form.category}
                     onChange={(event) =>
@@ -453,9 +503,13 @@ export default function AdminDiscounts() {
                       <option key={category}>{category}</option>
                     ))}
                   </select>
+                  <FieldError
+                    id={validation.errorId("category")}
+                    error={validation.errors.category}
+                  />
                 </div>
               )}
-              <div className="editor-footer">
+              <div className="editor-footer flex justify-end gap-3 pt-5 mt-2 border-t border-line">
                 <button
                   className="ui-button ui-button-light"
                   type="button"

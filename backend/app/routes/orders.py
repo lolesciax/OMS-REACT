@@ -1,9 +1,12 @@
 from ..discounts import discount_for
 from ..validation import address as validate_address
-from ..uploads import save_image
+from ..uploads import save_image, sanitized_image, MAX_IMAGE_BYTES
+from ..admin_validation import FieldValidationError
 import binascii
 from pymongo.errors import DuplicateKeyError
 from ..order_workflow import transition_order
+from ..notifications import enqueue, prepare_document, order_event, stock_event
+from ..policies import acceptance
 from flask import Blueprint, request, jsonify, current_app, g
 from bson import ObjectId
 import json
@@ -95,7 +98,7 @@ def check_and_auto_complete_orders():
         if db is None:
             return
 
-        ten_days_ago = datetime.now() - timedelta(days=10)
+        ten_days_ago = datetime.utcnow() - timedelta(days=10)
 
         # Find orders that were shipped more than 10 days ago and are still in 'shipped' status
         orders_to_complete = db.orders.find({
@@ -108,12 +111,13 @@ def check_and_auto_complete_orders():
         for order in orders_to_complete:
             # Update order status to completed and mark as auto-completed
             result = db.orders.update_one(
-                {'_id': order['_id']},
-                {'$set': {
+                {'_id': order['_id'], 'status': 'shipped', 'shippedAt': order['shippedAt'], 'receiptConfirmedAt': {'$exists': False}},
+                enqueue({'$set': {
                     'status': 'completed',
-                    'autoCompletedAt': datetime.now(),
-                    'updatedAt': datetime.now()
-                }}
+                    'autoCompletedAt': datetime.utcnow(),
+                    'completedAt': datetime.utcnow(),
+                    'updatedAt': datetime.utcnow()
+                }}, 'orders', order['_id'], order_event({**order, 'autoCompletedAt': datetime.utcnow()}, 'completed'))
             )
             if result.modified_count:
                 completed_count += 1
@@ -177,6 +181,10 @@ def orders():
             if not isinstance(data['items'], list) or not data['items']:
                 return jsonify(success=False, error='An order must contain at least one item'), 400
             try:
+                consent = acceptance(data, 'order')
+            except FieldValidationError as error:
+                return error.response()
+            try:
                 data['shippingAddress'] = validate_address(data['shippingAddress'])
             except ValueError as error:
                 return jsonify(success=False, error=str(error)), 400
@@ -220,10 +228,11 @@ def orders():
                 return jsonify(success=False, error=str(error)), 400
 
             # Generate order number and ID
-            order_number = f"ORD-{datetime.now().strftime('%Y%m%d')}-{ObjectId()}"
+            order_number = f"ORD-{datetime.utcnow().strftime('%Y%m%d')}-{ObjectId()}"
 
             # Prepare order data with full image URLs
             order_data = {
+                'termsAcceptance': consent,
                 'orderNumber': order_number,
                 'userId': data['userId'],
                 'items': [],
@@ -234,10 +243,10 @@ def orders():
                 'total': round(subtotal + shipping_fee - discount['amount'], 2),
                 'paymentMethod': data['paymentMethod'],
                 'shippingAddress': shipping_address,
-                'status': 'pending',  # Start as 'pending'
-                'orderDate': datetime.now(),
-                'createdAt': datetime.now(),
-                'updatedAt': datetime.now(),
+                'status': 'pending_payment',
+                'orderDate': datetime.utcnow(),
+                'createdAt': datetime.utcnow(),
+                'updatedAt': datetime.utcnow(),
                 'stock_deducted': False,  # Track if stock has been deducted
                 'shippingRegion': get_shipping_region(province)  # Store shipping region for reference
             }
@@ -279,6 +288,8 @@ def orders():
                     return jsonify(success=True, orderId=str(existing['_id']), orderNumber=existing['orderNumber'],
                                    total=existing['total'], subtotal=existing['subtotal'], shippingFee=existing['shippingFee'], items=existing['items'], order=existing), 200
             try:
+                order_data.setdefault('_id', ObjectId())
+                prepare_document(order_data, 'orders', order_event(order_data, 'created'))
                 result = db.orders.insert_one(order_data)
                 inserted_id = result.inserted_id
             except DuplicateKeyError:
@@ -369,12 +380,15 @@ def order_detail(order_id):
                 return jsonify(success=False, error='Order not found'), 404
             try:
                 update_data = transition_order(existing, data)
+            except FieldValidationError as error:
+                return error.response()
             except ValueError as error:
                 return jsonify(success=False, error=str(error)), 400
 
             result = db.orders.update_one(
                 {'_id': ObjectId(order_id), 'status': existing.get('status', 'pending')},
-                {'$set': update_data}
+                enqueue({'$set': update_data}, 'orders', existing['_id'],
+                        order_event({**existing, **update_data}, update_data['status']) if update_data.get('status') in ('confirmed', 'processing', 'shipped', 'completed') else None)
             )
 
             if result.modified_count:
@@ -465,10 +479,10 @@ def confirm_order_receipt(order_id):
             path = save_image(image, 'receipts')
         except (ValueError, binascii.Error) as error:
             return jsonify(success=False, error=str(error)), 400
-        result = db.orders.update_one({'_id': ObjectId(order_id), 'userId': user_id, 'status': 'shipped'}, {'$set': {
-            'status': 'completed', 'receiptConfirmedAt': datetime.now(), 'completedAt': datetime.now(),
-            'receiptProof': path, 'updatedAt': datetime.now(),
-        }})
+        result = db.orders.update_one({'_id': ObjectId(order_id), 'userId': user_id, 'status': 'shipped'}, enqueue({'$set': {
+            'status': 'completed', 'receiptConfirmedAt': datetime.utcnow(), 'completedAt': datetime.utcnow(),
+            'receiptProof': path, 'updatedAt': datetime.utcnow(),
+        }}, 'orders', order['_id'], order_event(order, 'completed')))
         if not result.modified_count:
             os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], path.removeprefix('/static/uploads/')))
             latest = db.orders.find_one({'_id': ObjectId(order_id), 'userId': user_id})
@@ -494,25 +508,10 @@ def upload_payment_proof():
     proof = request.files.get('paymentProof')
     if not ObjectId.is_valid(order_id) or not user_id or not proof or not proof.filename:
         return jsonify(success=False, error='A valid order, user and payment proof are required'), 400
-    extension = proof.filename.rsplit('.', 1)[-1].lower()
-    if extension not in {'png', 'jpg', 'jpeg', 'gif', 'webp'}:
-        return jsonify(success=False, error='Upload a PNG, JPG, GIF or WebP image'), 400
-    proof.seek(0, 2)
-    size = proof.tell()
-    proof.seek(0)
-    if size == 0 or size > 5 * 1024 * 1024:
-        return jsonify(success=False, error='Image must be between 1 byte and 5MB'), 400
-    header = proof.read(16)
-    proof.seek(0)
-    signatures = {
-        'png': header.startswith(b'\x89PNG\r\n\x1a\n'),
-        'jpg': header.startswith(b'\xff\xd8\xff'),
-        'jpeg': header.startswith(b'\xff\xd8\xff'),
-        'gif': header.startswith((b'GIF87a', b'GIF89a')),
-        'webp': header.startswith(b'RIFF') and header[8:12] == b'WEBP',
-    }
-    if not signatures[extension]:
-        return jsonify(success=False, error='The file content does not match its image type'), 400
+    try:
+        image_data, extension = sanitized_image(proof.read(MAX_IMAGE_BYTES + 1), proof.filename)
+    except ValueError as error:
+        return jsonify(success=False, error=str(error)), 400
     query = {'_id': ObjectId(order_id), 'userId': user_id}
     order = db.orders.find_one(query)
     if not order:
@@ -533,7 +532,8 @@ def upload_payment_proof():
         directory = os.path.join(current_app.config['UPLOAD_FOLDER'], 'payment_proofs')
         os.makedirs(directory, exist_ok=True)
         filepath = os.path.join(directory, filename)
-        proof.save(filepath)
+        with open(filepath, 'wb') as target:
+            target.write(image_data)
         if not order.get('stock_deducted'):
             for item in order['items']:
                 product_id = ObjectId(item['id'])
@@ -543,7 +543,10 @@ def upload_payment_proof():
                     raise ValueError(f"Insufficient stock for {item.get('name', 'product')}. Contact the store before retrying payment.")
                 deducted.append((product_id, qty))
         proof_path = f'/static/uploads/payment_proofs/{filename}'
-        db.orders.update_one(query, {'$set': {'paymentProof': proof_path, 'paymentProofUploadedAt': datetime.now(), 'updatedAt': datetime.now(), 'stock_deducted': True, 'status': 'pending'}, '$unset': {'paymentProcessing': ''}})
+        stock_notices = [stock_event(product) for product_id, _ in deducted
+                         if isinstance((product := db.products.find_one({'_id': product_id})), dict)]
+        db.orders.update_one(query, enqueue({'$set': {'paymentProof': proof_path, 'paymentProofUploadedAt': datetime.utcnow(), 'updatedAt': datetime.utcnow(), 'stock_deducted': True, 'status': 'pending'}, '$unset': {'paymentProcessing': ''}},
+                            'orders', ObjectId(order_id), order_event({**order, '_id': ObjectId(order_id), 'userId': user_id}, 'payment'), *stock_notices))
         committed = True
         db.checkouts.delete_one({'userId': user_id, 'orderId': ObjectId(order_id)})
         # Use stored cart quantities, which are not clamped to the newly reduced stock.
@@ -570,7 +573,9 @@ def upload_payment_proof():
             os.remove(filepath)
         db.orders.update_one(query, {'$unset': {'paymentProcessing': ''}})
         current_app.logger.exception('Payment proof upload failed')
-        return jsonify(success=False, error=str(error)), 409
+        if isinstance(error, ValueError):
+            return jsonify(success=False, error=str(error)), 409
+        return jsonify(success=False, error='The upload could not be completed. Please try again shortly.'), 503
 
 
 def get_shipping_region(province):

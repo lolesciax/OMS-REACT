@@ -1,13 +1,26 @@
+from ..admin_validation import account as validate_account, discount as validate_discount, FieldValidationError
 from .. import validation
 from pymongo.errors import DuplicateKeyError
 from ..identity import find_user, next_display_id
+from ..access import access_fields, role_for, selected_role
 from ..order_workflow import transition_order
+from ..notifications import enqueue, prepare_document, order_event, account_event
 from ..security import hash_password
 from flask import Blueprint, jsonify, current_app, request, g
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from bson import ObjectId
 
 bp = Blueprint('admin', __name__, url_prefix='/api/admin')
+
+
+def order_owner(db, value):
+    cache = getattr(g, 'order_owners', None)
+    if cache is None:
+        g.order_owners = cache = {}
+    key = str(value)
+    if key not in cache:
+        cache[key] = find_user(db, value, {'username': 1, 'email': 1, 'firstName': 1, 'lastName': 1, 'phone': 1})
+    return cache[key]
 
 @bp.route('/stats', methods=['GET'])
 def get_admin_stats():
@@ -22,7 +35,8 @@ def get_admin_stats():
         order_count = db.orders.count_documents({})
 
         # Count customers (non-admin users)
-        customer_count = db.users.count_documents({"isAdmin": False})
+        customer_roles = [role['_id'] for role in db.roles.find({'permissions': {'$ne': 'admin.access'}})]
+        customer_count = db.users.count_documents({'roleId': {'$in': customer_roles}})
 
         # ✅ FIXED: Compute total revenue for completed orders with correct field name
         revenue_pipeline = [
@@ -64,6 +78,7 @@ def get_customers():
         customers = []
 
         for user in users:
+            access = access_fields(user)
             formatted_user = {
                 "_id": str(user["_id"]),
                 "username": user.get("username", "N/A"),
@@ -72,13 +87,12 @@ def get_customers():
                 "firstName": user.get("firstName", ""),
                 "lastName": user.get("lastName", ""),
                 "phone": user.get("phone", ""),
-                "role": "admin" if user.get("isAdmin") else "customer",
-                "isAdmin": user.get("isAdmin", False),
+                **access,
                 "isActive": user.get("isActive", True),
-                "created_at": user.get("created_at", datetime.utcnow().isoformat())
+                "created_at": user.get("created_at", datetime.now(timezone.utc).isoformat())
             }
 
-            if user.get("isAdmin"):
+            if access['isAdmin']:
                 admins.append(formatted_user)
             else:
                 customers.append(formatted_user)
@@ -115,7 +129,7 @@ def get_orders():
         formatted_orders = []
         for order in orders:
             # Get user information for this order
-            user = find_user(db, order.get('userId'))
+            user = order_owner(db, order.get('userId'))
             customer_name = "Customer"
             username = "Customer"
 
@@ -148,7 +162,7 @@ def get_orders():
                 "orderNumber": order_number,
                 "customerName": customer_name,
                 "username": username,
-                "orderDate": order_date.isoformat(),
+                "orderDate": (order_date.replace(tzinfo=timezone.utc) if order_date.tzinfo is None else order_date).isoformat(),
                 "total": order.get("total", 0),
                 "status": order.get("status", "pending"),
                 "userId": order.get("userId", ""),
@@ -190,7 +204,7 @@ def get_order_details(order_id):
             order['_id'] = str(order['_id'])
 
             # Find user information
-            user = find_user(db, order.get('userId'))
+            user = order_owner(db, order.get('userId'))
             user_info = {}
             if user:
                 first_name = user.get('firstName', '')
@@ -238,12 +252,15 @@ def get_order_details(order_id):
                 return jsonify(success=False, error='Order not found'), 404
             try:
                 update_data = transition_order(existing, data)
+            except FieldValidationError as error:
+                return error.response()
             except ValueError as error:
                 return jsonify(success=False, error=str(error)), 400
 
             result = db.orders.update_one(
                 {'_id': ObjectId(order_id), 'status': existing.get('status', 'pending')},
-                {'$set': update_data}
+                enqueue({'$set': update_data}, 'orders', existing['_id'],
+                        order_event({**existing, **update_data}, update_data['status']) if update_data.get('status') in ('confirmed', 'processing', 'shipped', 'completed') else None)
             )
 
             if result.modified_count:
@@ -413,7 +430,7 @@ def get_recent_orders():
         formatted_orders = []
         for order in recent_orders:
             # Get user information
-            user = find_user(db, order.get('userId'))
+            user = order_owner(db, order.get('userId'))
             customer_name = "Customer"
             if user:
                 first_name = user.get('firstName', '')
@@ -428,7 +445,7 @@ def get_recent_orders():
                 "customerName": customer_name,
                 "total": order.get("total", 0),
                 "status": order.get("status", "pending"),
-                "orderDate": order.get("orderDate", datetime.utcnow().isoformat())
+                "orderDate": order.get("orderDate", datetime.now(timezone.utc).isoformat())
             })
 
         return jsonify({
@@ -468,45 +485,34 @@ def create_user():
         db = current_app.db
         data = request.get_json()
 
-        data['username'] = validation.username(data.get('username'))
-        data['email'] = validation.email(data.get('email'))
-        validation.password(data.get('password'))
-        validated_profile = validation.profile(data)
-        for key in ('isAdmin', 'isActive'):
-            if key in data and type(data[key]) is not bool:
-                raise ValueError(f'{key} must be true or false.')
+        data = validate_account(data)
+        data['roleId'] = selected_role(data)['_id']
 
         # Check if username already exists
         existing_user = db.users.find_one({'username': data['username']})
         if existing_user:
-            return jsonify({'success': False, 'error': 'Username already exists'}), 400
+            return jsonify(success=False, error='Username already exists', fields={'username': 'This username is already taken.'}), 409
 
         # Check if email already exists
         existing_email = db.users.find_one({'email': data['email']})
         if existing_email:
-            return jsonify({'success': False, 'error': 'Email already exists'}), 400
+            return jsonify(success=False, error='Email already exists', fields={'email': 'This email is already registered.'}), 409
 
-        if not isinstance(data.get('password'), str) or not 8 <= len(data['password']) <= 128:
-            return jsonify(success=False, error='Password must be 8-128 characters'), 400
-
-        # Hash password if provided
-        hashed_password = None
-        if data.get('password'):
-            hashed_password = hash_password(data['password'])
+        hashed_password = hash_password(data['password'])
 
         user_data = {
             'username': data['username'],
             'email': data['email'],
+            'emailUnique': True,
             'firstName': data.get('firstName', ''),
             'lastName': data.get('lastName', ''),
             'phone': data.get('phone', ''),
-            'isAdmin': data.get('isAdmin', False),
+            'roleId': data['roleId'],
             'isActive': data.get('isActive', True),
             'created_at': datetime.utcnow(),
             'updated_at': datetime.utcnow()
         }
 
-        user_data.update(validated_profile)
 
         # Add password if provided
         if hashed_password:
@@ -514,6 +520,8 @@ def create_user():
 
         # Generate user_id
         user_data['user_id'] = next_display_id(db, 'users', 'user_id', 'USR')
+        user_data['_id'] = ObjectId()
+        prepare_document(user_data, 'users', account_event(user_data['_id'], 'Welcome to Old Goods', 'Your account is ready. Review your details and add a delivery address.', key=f"welcome:{user_data['_id']}"))
 
         result = db.users.insert_one(user_data)
 
@@ -523,6 +531,8 @@ def create_user():
             'user_id': str(result.inserted_id)
         }), 201
 
+    except FieldValidationError as error:
+        return error.response()
     except ValueError as error:
         return jsonify(success=False, error=str(error)), 400
     except DuplicateKeyError:
@@ -543,18 +553,18 @@ def update_user(user_id):
         if not user:
             return jsonify({'success': False, 'error': 'User not found'}), 404
 
-        for key in ('isAdmin', 'isActive'):
-            if key in data and type(data[key]) is not bool:
-                raise ValueError(f'{key} must be true or false.')
-        if getattr(g, 'user', {}).get('_id') == user['_id'] and (data.get('isAdmin') is False or data.get('isActive') is False):
-            raise ValueError('You cannot remove your own administrator access. Ask another administrator to update your account.')
-        if 'email' in data:
-            data['email'] = validation.email(data['email'])
-        if 'username' in data and data['username'] != user.get('username'):
-            data['username'] = validation.username(data['username'])
-        if data.get('password'):
-            validation.password(data['password'])
-        update_data = {**validation.profile(data), 'updated_at': datetime.utcnow()}
+        data = validate_account(data, user)
+        assigned_role = selected_role(data, user)
+        if assigned_role is None and 'roleId' not in user:
+            assigned_role = role_for(user)
+        data.pop('isAdmin', None)
+        if assigned_role:
+            data['roleId'] = assigned_role['_id']
+        role = role_for({'roleId': data.get('roleId', user.get('roleId'))}) if 'roleId' in data or 'roleId' in user else role_for(user)
+        if getattr(g, 'user', {}).get('_id') == user['_id'] and (not role or 'admin.access' not in role.get('permissions', []) or data.get('isActive') is False):
+            raise FieldValidationError({'roleId': 'You cannot remove your own administrator access.', 'isActive': 'Your own account must stay active.'})
+        update_data = {key: data[key] for key in ('firstName', 'lastName', 'phone') if key in data}
+        update_data['updated_at'] = datetime.utcnow()
 
         # Update fields if provided
         if 'username' in data and data['username'] != user.get('username'):
@@ -564,7 +574,7 @@ def update_user(user_id):
                 '_id': {'$ne': ObjectId(user_id)}
             })
             if existing_user:
-                return jsonify({'success': False, 'error': 'Username already exists'}), 400
+                return jsonify(success=False, error='Username already exists', fields={'username': 'This username is already taken.'}), 409
             update_data['username'] = data['username']
 
         if 'email' in data and data['email'] != user.get('email'):
@@ -574,24 +584,24 @@ def update_user(user_id):
                 '_id': {'$ne': ObjectId(user_id)}
             })
             if existing_email:
-                return jsonify({'success': False, 'error': 'Email already exists'}), 400
+                return jsonify(success=False, error='Email already exists', fields={'email': 'This email is already registered.'}), 409
             update_data['email'] = data['email']
+            update_data['emailUnique'] = True
 
-        if 'isAdmin' in data:
-            update_data['isAdmin'] = data['isAdmin']
+        if 'roleId' in data:
+            update_data['roleId'] = data['roleId']
         if 'isActive' in data:
             update_data['isActive'] = data['isActive']
-
-        if data.get('password') and not 8 <= len(data['password']) <= 128:
-            return jsonify(success=False, error='Password must be 8-128 characters'), 400
 
         # Update password if provided
         if data.get('password'):
             update_data['password'] = hash_password(data['password'])
 
+        security_changed = any(key in update_data and update_data[key] != user.get(key) for key in ('password', 'email', 'phone', 'roleId', 'isActive'))
         result = db.users.update_one(
             {'_id': ObjectId(user_id)},
-            {'$set': update_data}
+            enqueue({'$set': update_data, '$unset': {'isAdmin': ''}}, 'users', user['_id'],
+                    account_event(user['_id'], 'Account settings changed', 'A store administrator updated your contact details, password, or account access. Contact the store if you did not expect this.') if security_changed else None)
         )
 
         if result.modified_count:
@@ -602,6 +612,8 @@ def update_user(user_id):
         else:
             return jsonify({'success': False, 'error': 'No changes made'}), 400
 
+    except FieldValidationError as error:
+        return error.response()
     except ValueError as error:
         return jsonify(success=False, error=str(error)), 400
     except DuplicateKeyError:
@@ -622,7 +634,7 @@ def delete_user(user_id):
             return jsonify({'success': False, 'error': 'User not found'}), 404
 
         # Prevent deletion of admin users
-        if user.get('isAdmin'):
+        if access_fields(user)['isAdmin']:
             return jsonify({'success': False, 'error': 'Cannot delete admin users'}), 400
 
         # Check if user has orders
@@ -658,7 +670,7 @@ def get_dashboard_data():
         recent_orders = list(db.orders.find().sort('createdAt', -1).limit(5))
         formatted_recent_orders = []
         for order in recent_orders:
-            user = find_user(db, order.get('userId'))
+            user = order_owner(db, order.get('userId'))
             customer_name = "Customer"
             if user:
                 first_name = user.get('firstName', '')
@@ -673,7 +685,7 @@ def get_dashboard_data():
                 "customerName": customer_name,
                 "total": order.get("total", 0),
                 "status": order.get("status", "pending"),
-                "orderDate": order.get("orderDate", datetime.utcnow().isoformat()),
+                "orderDate": order.get("orderDate", datetime.now(timezone.utc).isoformat()),
                 "items": order.get('items', [])
             })
 
@@ -708,7 +720,7 @@ def get_dashboard_data():
 
         formatted_top_customers = []
         for customer_data in top_customers_result:
-            user = find_user(db, customer_data['_id'])
+            user = order_owner(db, customer_data['_id'])
             if user:
                 first_name = user.get('firstName', '')
                 last_name = user.get('lastName', '')
@@ -734,8 +746,9 @@ def get_dashboard_data():
         status_distribution = list(db.orders.aggregate(status_pipeline))
 
         # 5. Recent Customer Registrations
+        customer_roles = [role['_id'] for role in db.roles.find({'permissions': {'$ne': 'admin.access'}})]
         recent_customers = list(db.users.find({
-            'isAdmin': False
+            'roleId': {'$in': customer_roles}
         }).sort('created_at', -1).limit(5))
 
         formatted_recent_customers = []
@@ -746,7 +759,7 @@ def get_dashboard_data():
                 "email": user.get("email", ""),
                 "firstName": user.get("firstName", ""),
                 "lastName": user.get("lastName", ""),
-                "created_at": user.get("created_at", datetime.utcnow().isoformat())
+                "created_at": user.get("created_at", datetime.now(timezone.utc).isoformat())
             })
 
         # 6. Top Selling Products
@@ -817,36 +830,17 @@ def get_monthly_revenue():
 
 @bp.route('/discounts', methods=['POST'])
 def create_discount():
-    import math
-    data = request.get_json(silent=True) or {}
-    code = str(data.get('code', '')).strip().upper()
-    kind = data.get('discountType')
-    scope = data.get('applyTo', 'all')
     try:
-        value = float(data.get('value', 0))
-        minimum = float(data.get('minPurchase') or 0)
-    except (TypeError, ValueError):
-        return jsonify(success=False, error='Enter valid discount amounts'), 400
-    if not code or len(code) > 40 or kind not in ('fixed', 'percentage') or scope not in ('all', 'category'):
-        return jsonify(success=False, error='Invalid discount code, type or scope'), 400
-    if not math.isfinite(value) or not math.isfinite(minimum) or value <= 0 or minimum < 0 or (kind == 'percentage' and value > 100):
-        return jsonify(success=False, error='Enter valid positive discount amounts'), 400
-    if scope == 'category' and not data.get('category'):
-        return jsonify(success=False, error='Select a category'), 400
-    expiry = data.get('validUntil', '')
-    try:
-        if expiry and datetime.fromisoformat(expiry).date() < datetime.utcnow().date():
-            raise ValueError()
-    except (ValueError, TypeError):
-        return jsonify(success=False, error='Choose a valid future expiration date'), 400
+        values = validate_discount(request.get_json(silent=True) or {})
+    except FieldValidationError as error:
+        return error.response()
     db = current_app.db
-    if db.discounts.find_one({'code': code}):
-        return jsonify(success=False, error='This discount code already exists'), 409
-    result = db.discounts.insert_one({
-        'code': code, 'discountType': kind, 'value': value, 'minPurchase': minimum,
-        'validUntil': expiry, 'applyTo': scope, 'category': data.get('category', ''),
-        'isActive': True, 'createdAt': datetime.utcnow(),
-    })
+    if db.discounts.find_one({'code': values['code']}):
+        return jsonify(success=False, error='This discount code already exists', fields={'code': 'This discount code already exists.'}), 409
+    try:
+        result = db.discounts.insert_one({**values, 'isActive': True, 'createdAt': datetime.utcnow()})
+    except DuplicateKeyError:
+        return jsonify(success=False, error='This discount code already exists', fields={'code': 'This discount code already exists.'}), 409
     return jsonify(success=True, discountId=str(result.inserted_id), message='Discount created'), 201
 
 

@@ -1,3 +1,4 @@
+import { toast } from "../services/feedback";
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -7,6 +8,7 @@ import AuthLayout from "../components/AuthLayout";
 import PasswordField from "../components/PasswordField";
 import Icon from "../components/Icon";
 import useDialog from "../hooks/useDialog";
+import CaptchaField from "../components/CaptchaField";
 import { postLoginPath } from "../utils/navigation";
 
 export default function Login() {
@@ -19,6 +21,8 @@ export default function Login() {
   });
   const [errors, setErrors] = useState({});
   const [busy, setBusy] = useState(false);
+  const [captcha, setCaptcha] = useState("");
+  const [captchaKey, setCaptchaKey] = useState(0);
   const [resetOpen, setResetOpen] = useState(false);
   const [reset, setReset] = useState({
     username: "",
@@ -38,8 +42,15 @@ export default function Login() {
     event.preventDefault();
     if (busy) return;
     const validation = {
-      username: !form.username.trim() ? "Enter your username." : "",
-      password: !form.password ? "Enter your password." : "",
+      username:
+        !form.username.trim() || form.username.length > 80
+          ? "Enter your username (up to 80 characters)."
+          : "",
+      password:
+        !form.password.trim() || form.password.length > 128
+          ? "Enter your password (up to 128 characters)."
+          : "",
+      captcha: !captcha ? "Complete the security verification." : "",
     };
     setErrors(validation);
     const first = Object.keys(validation).find((field) => validation[field]);
@@ -52,13 +63,18 @@ export default function Login() {
       const data = await authAPI.login({
         username: form.username.trim(),
         password: form.password,
+        captcha,
       });
       login(data.user);
+      toast.success("Signed in successfully. Welcome back.");
       navigate(postLoginPath(data.user, state?.from), {
         replace: true,
       });
     } catch (error) {
+      setCaptcha("");
+      setCaptchaKey((value) => value + 1);
       setErrors({
+        ...error.fields,
         submit: error.message || "We couldn’t sign you in. Please try again.",
       });
     } finally {
@@ -95,6 +111,7 @@ export default function Login() {
           email: reset.email.trim(),
         });
         setResetMessage(data.message);
+        toast.info(data.message);
         setStep("verify");
       } else {
         await authAPI.forgotPassword({
@@ -103,6 +120,7 @@ export default function Login() {
           token: reset.token.trim(),
           new_password: reset.password,
         });
+        toast.success("Your password has been reset. You can now sign in.");
         setStep("done");
       }
     } catch (error) {
@@ -119,24 +137,23 @@ export default function Login() {
       <p className="auth-intro">
         Your next favorite find is just around the corner.
       </p>
-      {state?.created && (
-        <div className="ui-message success" role="status">
-          Your account is ready. Sign in to start exploring.
-        </div>
-      )}
       {errors.submit && (
         <div className="ui-message error" role="alert">
           {errors.submit}
         </div>
       )}
       <form onSubmit={submit} noValidate aria-busy={busy}>
-        <fieldset disabled={busy} className="ui-fieldset">
-          <div className="ui-field">
+        <fieldset
+          disabled={busy}
+          className="ui-fieldset min-w-0 border-0 p-0 m-0"
+        >
+          <div className="ui-field mb-5">
             <label htmlFor="login-username">Username</label>
             <input
               id="login-username"
               name="username"
               autoComplete="username"
+              maxLength={80}
               value={form.username}
               placeholder="Your username"
               onChange={(event) => {
@@ -161,6 +178,7 @@ export default function Login() {
             id="login-password"
             name="password"
             autoComplete="current-password"
+            maxLength={128}
             value={form.password}
             onChange={(event) => {
               setForm((previous) => ({
@@ -184,6 +202,16 @@ export default function Login() {
           >
             Forgot your password?
           </button>
+          <CaptchaField
+            key={captchaKey}
+            purpose="login"
+            id="login-captcha"
+            onChange={(value) => {
+              setCaptcha(value);
+              setErrors((previous) => ({ ...previous, captcha: "" }));
+            }}
+            error={errors.captcha}
+          />
           <button
             type="submit"
             className="ui-button ui-button-dark auth-submit"
@@ -268,8 +296,11 @@ export default function Login() {
                   </div>
                 )}
                 <form onSubmit={resetSubmit} noValidate>
-                  <fieldset className="ui-fieldset" disabled={resetBusy}>
-                    <div className="ui-field">
+                  <fieldset
+                    className="ui-fieldset min-w-0 border-0 p-0 m-0"
+                    disabled={resetBusy}
+                  >
+                    <div className="ui-field mb-5">
                       <label htmlFor="reset-username">Username</label>
                       <input
                         id="reset-username"
@@ -284,7 +315,7 @@ export default function Login() {
                         }
                       />
                     </div>
-                    <div className="ui-field">
+                    <div className="ui-field mb-5">
                       <label htmlFor="reset-email">Email address</label>
                       <input
                         id="reset-email"
@@ -302,7 +333,7 @@ export default function Login() {
                     </div>
                     {step === "verify" && (
                       <>
-                        <div className="ui-field">
+                        <div className="ui-field mb-5">
                           <label htmlFor="reset-code">
                             Email verification code
                           </label>

@@ -2,10 +2,17 @@ from .. import validation
 from pymongo.errors import DuplicateKeyError
 from flask import Blueprint, request, jsonify, current_app, g
 from ..identity import public_user, next_display_id
+from ..access import selected_role
+from ..notifications import prepare_document, account_event, enqueue
+from bson import ObjectId
+from ..captcha import challenge_response, require_captcha
+from ..policies import acceptance
+from ..admin_validation import collect, FieldValidationError
 from datetime import datetime
 import random
 import string
 import os
+import re
 import secrets
 import hashlib
 import smtplib
@@ -14,6 +21,17 @@ from datetime import timedelta
 from ..security import hash_password, verify_password, issue_session, set_session_cookie, COOKIE_NAME
 
 bp = Blueprint('auth', __name__, url_prefix='/api/auth')
+
+
+def email_owner(value):
+    # New addresses are normalized; also protect older mixed-case accounts.
+    return current_app.db.users.find_one({'email': value}, {'_id': 1}) or current_app.db.users.find_one(
+        {'email': {'$regex': '^' + re.escape(value) + '$', '$options': 'i'}}, {'_id': 1})
+
+
+@bp.get('/captcha')
+def captcha():
+    return challenge_response(request.args.get('purpose'))
 
 
 # -----------------------------------------------------
@@ -34,7 +52,7 @@ def create_admin_account():
                 "username": "admin",
                 "email": "admin@oldgoodsthrift.com",
                 "password": hash_password(os.environ["ADMIN_PASSWORD"]),
-                "isAdmin": True,
+                "roleId": current_app.db.roles.find_one({'code': 'admin', 'active': True})['_id'],
                 "user_id": "ADMIN-000001",
                 "created_at": datetime.utcnow()
             }
@@ -68,7 +86,7 @@ def check_email():
             return jsonify({"error": "Invalid email format"}), 400
 
         # Check if email exists in database
-        existing_user = current_app.db.users.find_one({'email': email})
+        existing_user = email_owner(email)
 
         return jsonify({
             "exists": existing_user is not None,
@@ -120,10 +138,10 @@ def login():
         create_admin_account()
 
         data = request.get_json()
-        username = validation.text(data.get('username'), 'username', True, 80)
-        password = data.get('password')
-        if not isinstance(password, str) or not password or len(password) > 128:
-            return jsonify(error='Enter your password.'), 400
+        values = collect({'username': lambda: validation.text(data.get('username'), 'username', True, 80),
+                          'password': lambda: validation.text(data.get('password'), 'password', True, 128)})
+        username, password = values['username'], data['password']
+        require_captcha(data.get('captcha'), 'login')
 
 
         user = current_app.db.users.find_one({"username": username})
@@ -141,6 +159,8 @@ def login():
 
         return jsonify({"error": "Invalid username or password"}), 401
 
+    except FieldValidationError as error:
+        return error.response()
     except ValueError as error:
         return jsonify(error=str(error)), 400
     except DuplicateKeyError:
@@ -158,16 +178,23 @@ def register():
 
     try:
         data = request.get_json()
-        email = validation.email(data.get('email'))
-        password = validation.password(data.get('password'))
-        username = validation.username(data.get('username'))
+        def confirm():
+            if not isinstance(data.get('confirmPassword'), str) or data['confirmPassword'] != data.get('password'):
+                raise ValueError('Confirm your password exactly as entered above.')
+            return data['confirmPassword']
+        values = collect({'email': lambda: validation.email(data.get('email')),
+                          'username': lambda: validation.username(data.get('username')),
+                          'password': lambda: validation.password(data.get('password')), 'confirm': confirm})
+        email, username, password = values['email'], values['username'], values['password']
+        consent = acceptance(data, 'account')
 
 
-        if current_app.db.users.find_one({"email": email}):
-            return jsonify({"error": "Email already registered. Please use a different email or login."}), 400
+        if email_owner(email):
+            raise FieldValidationError({'email': 'This email is already registered. Sign in or use another email.'})
 
         if current_app.db.users.find_one({"username": username}):
-            return jsonify({"error": "Username already taken. Please choose another username."}), 400
+            raise FieldValidationError({'username': 'This username is already taken. Choose another username.'})
+        require_captcha(data.get('captcha'), 'signup')
 
         # ✅ Generate new user ID
         user_id = generate_user_id(current_app.db)
@@ -175,24 +202,33 @@ def register():
         user_data = {
             "user_id": user_id,
             "email": email,
+            "emailUnique": True,
             "password": hash_password(password),
             "username": username,
-            "isAdmin": False,
+            "roleId": selected_role({})['_id'],
             "created_at": datetime.utcnow()
         }
+        user_data['termsAcceptance'] = consent
 
+        user_data['_id'] = ObjectId()
+        prepare_document(user_data, 'users', account_event(user_data['_id'], 'Welcome to Old Goods', 'Your account is ready. Add your delivery details and find your next favorite.', key=f"welcome:{user_data['_id']}"))
         result = current_app.db.users.insert_one(user_data)
 
         return jsonify({
             "message": "User registered successfully!",
             "user_id": str(result.inserted_id),
             "user_display_id": user_id
-        })
+        }), 201
 
+    except FieldValidationError as error:
+        return error.response()
     except ValueError as error:
         return jsonify(error=str(error)), 400
-    except DuplicateKeyError:
-        return jsonify(error="This account already exists. Choose another username or sign in."), 409
+    except DuplicateKeyError as error:
+        keys = (error.details or {}).get('keyPattern', {})
+        field = 'email' if 'email' in keys else 'username' if 'username' in keys else None
+        message = 'This email is already registered.' if field == 'email' else 'This username is already taken.' if field else 'This account already exists. Choose another username or email, or sign in.'
+        return jsonify(error=message, fields={field: message} if field else {}), 409
     except Exception as e:
         return jsonify({"error": "Server error"}), 500
 
@@ -247,12 +283,16 @@ def forgot_password():
         token = validation.text(data.get('token'), 'verification code', True, 250)
     except ValueError as error:
         return jsonify(error=str(error)), 400
+    reset_user = current_app.db.users.find_one({'username': account, 'email': recipient}, {'_id': 1})
+    reset_update = {'$set': {'password': hash_password(password), 'updated_at': datetime.utcnow()}, '$unset': {'password_reset_digest': '', 'password_reset_expires': ''}}
+    if isinstance(reset_user, dict) and reset_user.get('_id'):
+        enqueue(reset_update, 'users', reset_user['_id'], account_event(reset_user['_id'], 'Password changed', 'Your password was reset successfully. Contact the store immediately if you did not request this change.'))
     result = current_app.db.users.update_one({
         'username': account,
         'email': recipient,
         'password_reset_digest': hashlib.sha256(token.encode()).hexdigest(),
         'password_reset_expires': {'$gt': datetime.utcnow()},
-    }, {'$set': {'password': hash_password(password), 'updated_at': datetime.utcnow()}, '$unset': {'password_reset_digest': '', 'password_reset_expires': ''}})
+    }, reset_update)
     if not result.modified_count:
         return jsonify(error='The verification code is invalid or expired. Request a new code.'), 400
     return jsonify(message='Password reset successfully. You can now log in.')
@@ -260,7 +300,10 @@ def forgot_password():
 
 @bp.route('/session', methods=['GET'])
 def current_session():
-    return jsonify(user=public_user(g.user), csrfToken=g.session['csrfToken'])
+    user = current_app.db.users.find_one({'_id': g.user['_id']})
+    if not user:
+        return jsonify(error='Your account is unavailable. Please sign in again.'), 401
+    return jsonify(user=public_user(user), csrfToken=g.session['csrfToken'])
 
 
 @bp.route('/logout', methods=['POST'])

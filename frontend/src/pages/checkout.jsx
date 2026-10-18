@@ -1,3 +1,7 @@
+import { toast } from "../services/feedback";
+import { CheckoutProgress } from "../components/OrderProgress";
+import PageSkeleton from "../components/PageSkeleton";
+import Skeleton from "../components/Skeleton";
 import Image from "../components/Image";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
@@ -11,7 +15,8 @@ import AddressFields from "../components/AddressFields";
 import UploadField from "../components/UploadField";
 import Icon from "../components/Icon";
 import useCheckoutDraft from "../hooks/useCheckoutDraft";
-import "../styles/auth-pages.css";
+import TermsAgreement from "../components/TermsAgreement";
+import { shortOrderReference } from "../utils/orderProgress";
 
 export default function CheckoutPage() {
   const { user } = useAuth();
@@ -30,11 +35,15 @@ export default function CheckoutPage() {
   const userId = user?._id || user?.id;
   const [items, setItems] = useState([]);
   const [address, setAddress] = useState({});
+  const [savedAddressId, setSavedAddressId] = useState("");
   const [shipping, setShipping] = useState(null);
   const [shippingError, setShippingError] = useState("");
   const [shippingRetry, setShippingRetry] = useState(0);
   const [method, setMethod] = useState("");
-  const [agreed, setAgreed] = useState(false);
+  const [terms, setTerms] = useState({ accepted: false, version: "" });
+  const agreed = terms.accepted;
+  const [termsError, setTermsError] = useState("");
+  const [termsKey, setTermsKey] = useState(0);
   const [order, setOrder] = useState(null);
   const [step, setStep] = useState("review");
   const [loading, setLoading] = useState(true);
@@ -137,8 +146,17 @@ export default function CheckoutPage() {
           province: delivery.province || "",
         });
         setOrder(draft.pendingOrder || null);
+        const enabledMethods = Object.keys(paymentData.methods).filter(
+          (key) => paymentData.methods[key].enabled,
+        );
+        const selectedMethod = draft.paymentMethod || "";
         setMethod(
-          draft.pendingOrder?.paymentMethod || draft.paymentMethod || "",
+          draft.pendingOrder?.paymentMethod ||
+            (paymentData.methods[selectedMethod]?.enabled
+              ? selectedMethod
+              : enabledMethods.length === 1
+                ? enabledMethods[0]
+                : ""),
         );
         setStep(draft.pendingOrder ? "payment" : "review");
       } catch (error) {
@@ -160,6 +178,7 @@ export default function CheckoutPage() {
       return;
     const controller = new AbortController();
     setShipping(null);
+    setQuote(null);
     setShippingError("");
     (async () => {
       try {
@@ -175,7 +194,9 @@ export default function CheckoutPage() {
         });
         const data = await response.json();
         if (!response.ok || !data.success)
-          throw new Error(data.error || "Shipping couldn’t be calculated. Please try again.");
+          throw new Error(
+            data.error || "Shipping couldn’t be calculated. Please try again.",
+          );
         if (!controller.signal.aborted) {
           setShipping(Number(data.quote.shippingFee));
           setQuote(data.quote);
@@ -196,6 +217,7 @@ export default function CheckoutPage() {
     loadError,
   ]);
   const changeAddress = (key, value) => {
+    setSavedAddressId("");
     setAddress((previous) => ({ ...previous, [key]: value }));
     setFields((previous) => ({ ...previous, [key]: "" }));
     setError("");
@@ -215,6 +237,11 @@ export default function CheckoutPage() {
       document.getElementById(`delivery-${first}`)?.focus();
       return;
     }
+    if (!terms.accepted || !terms.version) {
+      setTermsError("Read and accept the order terms and conditions.");
+      document.getElementById("checkout-terms")?.focus();
+      return;
+    }
     if (!method || !qr || shipping === null || !agreed) {
       setError(
         "Choose an available payment method, review shipping, and confirm your order details to continue.",
@@ -226,6 +253,8 @@ export default function CheckoutPage() {
     try {
       const payload = {
         userId,
+        termsAccepted: terms.accepted,
+        termsVersion: terms.version,
         checkoutId,
         discountCode: appliedCode,
         items: items.map((item) => ({
@@ -246,10 +275,15 @@ export default function CheckoutPage() {
         body: JSON.stringify(payload),
       });
       const data = await response.json();
-      if (!response.ok || !data.success)
+      if (!response.ok || !data.success) {
+        if (data.fields?.termsAccepted || data.fields?.termsVersion) {
+          setTermsError(data.fields.termsAccepted || data.fields.termsVersion);
+          if (data.fields.termsVersion) setTermsKey((value) => value + 1);
+        }
         throw new Error(
           data.error || "Your order couldn’t be created. Please try again.",
         );
+      }
       const saved = {
         ...payload,
         ...data.order,
@@ -262,6 +296,7 @@ export default function CheckoutPage() {
       };
       setItems(saved.items);
       setOrder(saved);
+      toast.success("Order placed. Submit your payment proof to continue.");
       setStep("payment");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (failure) {
@@ -284,7 +319,7 @@ export default function CheckoutPage() {
       data.append("paymentProof", proof);
       const response = await apiFetch(
         `${BACKEND_URL}/api/orders/upload-payment-proof`,
-        { method: "POST", body: data },
+        { method: "POST", body: data, timeout: 60000 },
       );
       const result = await response.json();
       if (!response.ok || !result.success)
@@ -292,6 +327,7 @@ export default function CheckoutPage() {
           result.error || "The image couldn’t be submitted. Please try again.",
         );
       window.dispatchEvent(new Event("cart:changed"));
+      toast.success("Payment proof submitted for review.");
       setStep("done");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (failure) {
@@ -304,9 +340,7 @@ export default function CheckoutPage() {
   if (loading)
     return (
       <CustomerLayout>
-        <div className="ui-empty" role="status">
-          Preparing your checkout…
-        </div>
+        <PageSkeleton variant="checkout" label="Preparing your checkout" />
       </CustomerLayout>
     );
   if (loadError)
@@ -329,19 +363,22 @@ export default function CheckoutPage() {
   if (step === "done")
     return (
       <CustomerLayout>
+        <CheckoutProgress step="done" />
         <section className="checkout-success">
           <span className="checkout-success-icon">
             <Icon name="check" size={32} />
           </span>
           <span className="ui-eyebrow">A new chapter begins</span>
-          <h1>Your order is on its way to being yours.</h1>
+          <h1>Payment proof received.</h1>
           <p>
             Your payment proof has been received. Our team will review it and
             update your order once payment is confirmed.
           </p>
           <div className="checkout-reference">
             <span>Order reference</span>
-            <strong>{order.orderNumber}</strong>
+            <strong title={order.orderNumber}>
+              {shortOrderReference({ ...order, _id: order.orderId })}
+            </strong>
           </div>
           <div className="checkout-success-actions">
             <Link to="/order-history" className="ui-button ui-button-dark">
@@ -356,7 +393,7 @@ export default function CheckoutPage() {
     );
   return (
     <CustomerLayout>
-      <div className="customer-heading">
+      <div className="customer-heading flex justify-between items-center gap-6 mb-7 max-[760px]:items-start max-[760px]:flex-col max-[760px]:gap-3">
         <div>
           <span className="ui-eyebrow">Almost yours</span>
           <h1>Let’s bring it home.</h1>
@@ -374,28 +411,7 @@ export default function CheckoutPage() {
           {step === "review" ? "Back to your bag" : "View your orders"}
         </Link>
       </div>
-      <ol className="checkout-progress" aria-label="Checkout progress">
-        {["Review & delivery", "Payment & proof", "Store verification"].map(
-          (label, i) => (
-            <li
-              key={label}
-              className={
-                i === (step === "review" ? 0 : 1)
-                  ? "current"
-                  : i < (step === "review" ? 0 : 1)
-                    ? "complete"
-                    : ""
-              }
-              aria-current={
-                i === (step === "review" ? 0 : 1) ? "step" : undefined
-              }
-            >
-              <span>{i + 1}</span>
-              {label}
-            </li>
-          ),
-        )}
-      </ol>
+      <CheckoutProgress step={step} />
       {draftError && (
         <div className="ui-message error" role="alert">
           Your latest delivery changes were not saved. {draftError}
@@ -412,7 +428,7 @@ export default function CheckoutPage() {
           {error}
         </div>
       )}
-      <div className="customer-columns">
+      <div className="customer-columns grid grid-cols-[minmax(0,_1fr)_340px] gap-8 items-start max-[1000px]:grid-cols-[minmax(0,_1fr)_300px] max-[1000px]:gap-6 max-[760px]:block">
         <div>
           {step === "review" ? (
             <form id="checkout-review" onSubmit={submitOrder} noValidate>
@@ -421,12 +437,64 @@ export default function CheckoutPage() {
                   <h2>Delivery address</h2>
                   <Link to="/profile">Your saved address</Link>
                 </div>
+                {!!user?.addresses?.length && (
+                  <div className="ui-field mb-5">
+                    <label htmlFor="checkout-saved-address">
+                      Use a saved address
+                    </label>
+                    <select
+                      id="checkout-saved-address"
+                      value={savedAddressId}
+                      disabled={busy}
+                      onChange={(event) => {
+                        const saved = user.addresses.find(
+                          (item) => item.id === event.target.value,
+                        );
+                        setSavedAddressId(event.target.value);
+                        if (saved) {
+                          setAddress(
+                            Object.fromEntries(
+                              [
+                                "recipient",
+                                "contact",
+                                "street",
+                                "barangay",
+                                "city",
+                                "province",
+                              ].map((key) => [key, saved[key] || ""]),
+                            ),
+                          );
+                          setFields({});
+                          setError("");
+                        }
+                      }}
+                    >
+                      <option value="">
+                        Choose an address or enter details below
+                      </option>
+                      {user.addresses.map((item) => (
+                        <option key={item.id} value={item.id}>
+                          {item.title || item.recipient} · {item.city},{" "}
+                          {item.province}
+                          {item.isDefault ? " (default)" : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <AddressFields
                   value={address}
                   onChange={changeAddress}
                   errors={fields}
                   disabled={busy}
                 />
+                <p className="ui-field-hint" role="status">
+                  {draftSave.status === "saved"
+                    ? "Delivery details saved. You can return to this checkout later."
+                    : draftSave.status === "error"
+                      ? "Changes are not saved yet. Use Save again above to retry."
+                      : "Saving your delivery details…"}
+                </p>
               </section>
               <section className="customer-panel">
                 <h2>Choose how to pay</h2>
@@ -462,30 +530,30 @@ export default function CheckoutPage() {
                 {!paymentQR("gcash") && !paymentQR("paymaya") && (
                   <div className="ui-message">
                     Online payment is temporarily unavailable. Please{" "}
-                    <a href="mailto:oldgoodsthrift@gmail.com">
-                      contact the store
-                    </a>{" "}
-                    for help with your order.
+                    <Link to="/contact">contact the store</Link> for help with
+                    your order.
                   </div>
                 )}
               </section>
               <section className="customer-panel">
                 <h2>One last look</h2>
+                <TermsAgreement
+                  key={termsKey}
+                  kind="order"
+                  id="checkout-terms"
+                  value={terms}
+                  onChange={(value) => {
+                    setTerms(value);
+                    setTermsError("");
+                  }}
+                  error={termsError}
+                  disabled={busy}
+                />
                 <p>
                   Payment proof is reviewed by our team. Your order remains
                   pending until payment is verified. Stock is checked again when
                   you submit your proof.
                 </p>
-                <label className="checkout-agreement">
-                  <input
-                    type="checkbox"
-                    checked={agreed}
-                    disabled={busy}
-                    onChange={(event) => setAgreed(event.target.checked)}
-                  />
-                  I’ve checked my order and delivery details, and understand
-                  that payment is verified by the store.
-                </label>
               </section>
             </form>
           ) : (
@@ -511,6 +579,11 @@ export default function CheckoutPage() {
                     )}
                   </div>
                   <div>
+                    <p className="ui-message mb-4">
+                      Stock is checked when you submit proof. If you have
+                      already paid and cannot submit it, contact the store with
+                      your order number before transferring again.
+                    </p>
                     <p>
                       Open {method === "gcash" ? "GCash" : "Maya"} and scan the
                       merchant QR. Check the recipient in your app before you
@@ -556,6 +629,12 @@ export default function CheckoutPage() {
                     {busy ? "Submitting your proof…" : "Submit payment proof"}
                     <Icon name="arrow" />
                   </button>
+                  {busy && (
+                    <p className="ui-field-hint" role="status">
+                      Uploading your image. Keep this page open; this may take a
+                      moment.
+                    </p>
+                  )}
                 </section>
               </form>
               <p className="checkout-draft-note">
@@ -566,7 +645,7 @@ export default function CheckoutPage() {
             </>
           )}
         </div>
-        <aside className="customer-summary">
+        <aside className="customer-summary sticky top-6 p-7 bg-white border border-line rounded-[12px] max-[760px]:static max-[760px]:mt-6 max-[760px]:p-6">
           <span className="ui-eyebrow">Your good finds</span>
           <h2>Order summary</h2>
           <div className="checkout-summary-items">
@@ -615,6 +694,7 @@ export default function CheckoutPage() {
                   setItems(data.quote.items);
                   setAppliedCode(data.quote.discountCode);
                   setCode(data.quote.discountCode);
+                  toast.success(data.quote.discountCode ? "Discount code applied." : "Discount code removed.");
                 } catch (error) {
                   setDiscountError(error.message);
                 } finally {
@@ -653,6 +733,7 @@ export default function CheckoutPage() {
                       setAppliedCode("");
                       setCode("");
                       setDiscountError("");
+                      toast.success("Discount code removed.");
                     }}
                   >
                     Remove
@@ -673,13 +754,22 @@ export default function CheckoutPage() {
           <div className="summary-row">
             <span>Shipping</span>
             <span>
-              {order
-                ? formatPrice(order.shippingFee)
-                : !address.province
-                  ? "Choose a province"
-                  : shipping === null
-                    ? "Calculating…"
-                    : formatPrice(shipping)}
+              {order ? (
+                formatPrice(order.shippingFee)
+              ) : !address.province ? (
+                "Choose a province"
+              ) : shipping === null ? (
+                shippingError ? (
+                  "Unavailable"
+                ) : (
+                  <span role="status">
+                    <span className="sr-only">Calculating shipping</span>
+                    <Skeleton className="h-4 w-20" />
+                  </span>
+                )
+              ) : (
+                formatPrice(shipping)
+              )}
             </span>
           </div>
           {shippingError && (
@@ -704,7 +794,15 @@ export default function CheckoutPage() {
           <div className="summary-total">
             <span>Total</span>
             <strong>
-              {shipping === null && !order ? "—" : formatPrice(total)}
+              {shipping === null && !order ? (
+                address.province && !shippingError ? (
+                  <Skeleton className="h-7 w-28" />
+                ) : (
+                  "—"
+                )
+              ) : (
+                formatPrice(total)
+              )}
             </strong>
           </div>
           {step === "review" && (

@@ -1,4 +1,10 @@
-import { useEffect, useState } from "react";
+import { toast } from "../services/feedback";
+import useFormValidation from "../hooks/useFormValidation";
+import FieldError from "./FieldError";
+import { validateAccount, rules } from "../utils/adminValidation";
+import Skeleton, { TableSkeleton } from "./Skeleton";
+import TableScroll from "./TableScroll";
+import { useEffect, useState, useMemo } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import AdminLayout from "./AdminLayout";
 import EditorDialog from "./EditorDialog";
@@ -8,11 +14,6 @@ import Pagination from "./Pagination";
 import Icon from "./Icon";
 import { apiFetch } from "../services/http";
 import { BACKEND_URL } from "../services/config";
-import {
-  validateEmail,
-  validateUsername,
-  validatePassword,
-} from "../utils/validation";
 
 const empty = {
   username: "",
@@ -21,15 +22,16 @@ const empty = {
   lastName: "",
   phone: "",
   password: "",
-  isAdmin: false,
+  roleId: "",
   isActive: true,
 };
 export default function AdminCustomers() {
   const { user } = useAuth();
   const [people, setPeople] = useState([]);
+  const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+
   const [retry, setRetry] = useState(0);
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("all");
@@ -37,6 +39,7 @@ export default function AdminCustomers() {
   const [editor, setEditor] = useState(null);
   const [form, setForm] = useState(empty);
   const [formError, setFormError] = useState("");
+  const validation = useFormValidation("person");
   const [busy, setBusy] = useState(false);
   const [remove, setRemove] = useState(null);
   useEffect(() => {
@@ -45,15 +48,20 @@ export default function AdminCustomers() {
     setError("");
     (async () => {
       try {
-        const response = await apiFetch(`${BACKEND_URL}/api/admin/customers`, {
-          signal: controller.signal,
-        });
-        const data = await response.json();
-        if (!response.ok || !data.success)
-          throw new Error(
-            data.error || "Accounts couldn’t be loaded. Please try again.",
-          );
+        const [data, catalog] = await Promise.all(
+          ["customers", "roles"].map(async (path) => {
+            const response = await apiFetch(
+              `${BACKEND_URL}/api/admin/${path}`,
+              { signal: controller.signal },
+            );
+            const body = await response.json();
+            if (!response.ok || !body.success)
+              throw new Error(body.error || "Accounts could not be loaded.");
+            return body;
+          }),
+        );
         setPeople(data.customers || []);
+        setRoles(catalog.roles || []);
       } catch (failure) {
         if (!controller.signal.aborted) setError(failure.message);
       } finally {
@@ -67,23 +75,31 @@ export default function AdminCustomers() {
     typeof person === "object" &&
     ((!!person._id && person._id === user?._id) ||
       (!!person.username && person.username === user?.username));
-  const visible = people.filter(
-    (person) =>
-      (role === "all" ||
-        (role === "admin" ? person.isAdmin : !person.isAdmin)) &&
-      [
-        person.username,
-        person.email,
-        person.firstName,
-        person.lastName,
-        person.user_id,
-      ].some((value) =>
-        String(value || "")
-          .toLowerCase()
-          .includes(search.trim().toLowerCase()),
+  const visible = useMemo(
+    () =>
+      people.filter(
+        (person) =>
+          (role === "all" || person.roleId === role) &&
+          [
+            person.username,
+            person.email,
+            person.firstName,
+            person.lastName,
+            person.user_id,
+          ].some((value) =>
+            String(value || "")
+              .toLowerCase()
+              .includes(search.trim().toLowerCase()),
+          ),
       ),
+    [people, role, search],
+  );
+  const currentPage = Math.min(
+    page,
+    Math.max(1, Math.ceil(visible.length / 10)),
   );
   const open = (person) => {
+    validation.reset();
     setEditor(person || "new");
     setForm(
       person
@@ -93,7 +109,12 @@ export default function AdminCustomers() {
             password: "",
             isActive: person.isActive !== false,
           }
-        : empty,
+        : {
+            ...empty,
+            roleId:
+              roles.find((item) => item.code === "customer" && item.active)
+                ?._id || "",
+          },
     );
     setFormError("");
   };
@@ -101,29 +122,20 @@ export default function AdminCustomers() {
     event.preventDefault();
     if (busy) return;
     setFormError("");
-    const validation =
-      (!form.username.trim()
-        ? "Enter a username."
-        : editor === "new"
-          ? validateUsername(form.username.trim())
-          : "") ||
-      validateEmail(form.email) ||
-      (editor === "new" || form.password
-        ? validatePassword(form.password)
-        : "");
-    if (validation) {
-      setFormError(validation);
+    if (!validation.check(validateAccount(form, editor === "new"))) {
+      setFormError("Review the highlighted fields before saving.");
       return;
     }
     setBusy(true);
     try {
-      const payload = {
-        ...form,
-        username: form.username.trim(),
-        email: form.email.trim(),
-        firstName: form.firstName.trim(),
-        lastName: form.lastName.trim(),
-      };
+      const payload = Object.fromEntries(
+        Object.keys(empty).map((key) => [
+          key,
+          typeof form[key] === "string" && key !== "password"
+            ? form[key].trim()
+            : form[key],
+        ]),
+      );
       if (!payload.password) delete payload.password;
       const response = await apiFetch(
         `${BACKEND_URL}/api/admin/users${editor === "new" ? "" : `/${editor._id}`}`,
@@ -134,10 +146,12 @@ export default function AdminCustomers() {
         },
       );
       const data = await response.json();
-      if (!response.ok || data.success === false)
+      if (!response.ok || data.success === false) {
+        validation.reject(data);
         throw new Error(data.error || "The account couldn’t be saved.");
+      }
       setEditor(null);
-      setMessage(
+      toast.success(
         editor === "new" ? "Account created." : "Account details updated.",
       );
       setRetry((value) => value + 1);
@@ -164,7 +178,7 @@ export default function AdminCustomers() {
       );
       setPage(1);
       setRemove(null);
-      setMessage("The account has been removed.");
+      toast.success("The account has been removed.");
     } catch (failure) {
       setRemove(null);
       setError(failure.message);
@@ -195,7 +209,13 @@ export default function AdminCustomers() {
         ].map(([label, value]) => (
           <div className="admin-stat" key={label}>
             <span>{label}</span>
-            <strong>{loading ? "—" : value}</strong>
+            <strong>
+              {loading ? (
+                <Skeleton className="my-1 h-8 w-20 max-w-full" />
+              ) : (
+                value
+              )}
+            </strong>
           </div>
         ))}
       </div>
@@ -210,13 +230,8 @@ export default function AdminCustomers() {
           </button>
         </div>
       )}
-      {message && (
-        <div className="ui-message success" role="status">
-          {message}
-        </div>
-      )}
       <section className="admin-panel">
-        <div className="admin-toolbar">
+        <div className="admin-toolbar flex items-center justify-between gap-5 py-5 px-[22px] border-b border-line max-[650px]:flex-wrap max-[650px]:p-4 max-[650px]:gap-[14px]">
           <div className="admin-search">
             <Icon name="search" size={18} />
             <input
@@ -240,17 +255,16 @@ export default function AdminCustomers() {
               }}
             >
               <option value="all">All accounts</option>
-              <option value="customer">Customers</option>
-              <option value="admin">Administrators</option>
+              {roles.map((item) => (
+                <option key={item._id} value={item._id}>
+                  {item.label}
+                </option>
+              ))}
             </select>
           </label>
         </div>
-        <div
-          className="admin-table-scroll"
-          tabIndex={0}
-          aria-label="Account table, scroll horizontally on smaller screens"
-        >
-          <table className="admin-table">
+        <TableScroll label="Customer and administrator accounts">
+          <table className="admin-table" aria-busy={loading}>
             <thead>
               <tr>
                 <th scope="col">Person</th>
@@ -262,11 +276,11 @@ export default function AdminCustomers() {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={5} className="admin-table-empty" role="status">
-                    Loading accounts…
-                  </td>
-                </tr>
+                <TableSkeleton
+                  columns={5}
+                  label="Loading accounts"
+                  thumbnail={false}
+                />
               ) : !visible.length ? (
                 <tr>
                   <td colSpan={5} className="admin-table-empty">
@@ -276,61 +290,66 @@ export default function AdminCustomers() {
                   </td>
                 </tr>
               ) : (
-                visible.slice((page - 1) * 10, page * 10).map((person) => (
-                  <tr key={person._id}>
-                    <td>
-                      <div className="admin-person-cell">
-                        <strong>
-                          {[person.firstName, person.lastName]
-                            .filter(Boolean)
-                            .join(" ") || person.username}
-                          {isSelf(person) ? " (you)" : ""}
-                        </strong>
-                        <span>@{person.username}</span>
-                      </div>
-                    </td>
-                    <td>{person.email}</td>
-                    <td>
-                      <span className="admin-badge">
-                        {person.isAdmin ? "Administrator" : "Customer"}
-                      </span>
-                    </td>
-                    <td>
-                      <span
-                        className={`admin-badge ${person.isActive === false ? "inactive" : "active"}`}
-                      >
-                        {person.isActive === false ? "Inactive" : "Active"}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="admin-row-actions">
-                        <button
-                          aria-label={`Edit account ${person.username}`}
-                          onClick={() => open(person)}
+                visible
+                  .slice((currentPage - 1) * 10, currentPage * 10)
+                  .map((person) => (
+                    <tr key={person._id}>
+                      <td>
+                        <div className="admin-person-cell">
+                          <strong>
+                            {[person.firstName, person.lastName]
+                              .filter(Boolean)
+                              .join(" ") || person.username}
+                            {isSelf(person) ? " (you)" : ""}
+                          </strong>
+                          <span>@{person.username}</span>
+                        </div>
+                      </td>
+                      <td>{person.email}</td>
+                      <td>
+                        <span className="admin-badge">{person.roleLabel}</span>
+                      </td>
+                      <td>
+                        <span
+                          className={`admin-badge ${person.isActive === false ? "inactive" : "active"}`}
                         >
-                          Edit
-                        </button>
-                        <button
-                          aria-label={`Delete account ${person.username}`}
-                          disabled={isSelf(person)}
-                          title={
-                            isSelf(person)
-                              ? "You cannot delete your own account"
-                              : undefined
-                          }
-                          onClick={() => setRemove(person)}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                          {person.isActive === false ? "Inactive" : "Active"}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="admin-row-actions">
+                          <button
+                            aria-label={`Edit account ${person.username}`}
+                            onClick={() => open(person)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            aria-label={`Delete account ${person.username}`}
+                            disabled={isSelf(person) || person.isAdmin}
+                            title={
+                              isSelf(person)
+                                ? "You cannot delete your own account"
+                                : undefined
+                            }
+                            onClick={() => setRemove(person)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
               )}
             </tbody>
           </table>
-        </div>
-        <Pagination count={visible.length} page={page} onChange={setPage} />
+        </TableScroll>
+        <Pagination
+          loading={loading}
+          count={visible.length}
+          page={currentPage}
+          onChange={setPage}
+        />
       </section>
       {editor && (
         <EditorDialog
@@ -349,9 +368,20 @@ export default function AdminCustomers() {
               {formError}
             </div>
           )}
-          <form onSubmit={save}>
-            <fieldset className="ui-fieldset" disabled={busy}>
-              <div className="editor-fields">
+          <form
+            ref={validation.formRef}
+            noValidate
+            onSubmit={save}
+            onChange={(event) => {
+              validation.clear(event.target.name);
+              setFormError("");
+            }}
+          >
+            <fieldset
+              className="ui-fieldset min-w-0 border-0 p-0 m-0"
+              disabled={busy}
+            >
+              <div className="editor-fields grid grid-cols-[1fr_1fr] gap-[0_18px] max-[650px]:block">
                 {[
                   ["username", "Username", "text"],
                   ["email", "Email address", "email"],
@@ -359,14 +389,23 @@ export default function AdminCustomers() {
                   ["lastName", "Last name", "text"],
                   ["phone", "Mobile number", "tel"],
                 ].map(([key, label, type]) => (
-                  <div className="ui-field" key={key}>
+                  <div className="ui-field mb-5" key={key}>
                     <label htmlFor={`person-${key}`}>{label}</label>
                     <input
                       id={`person-${key}`}
+                      {...validation.bind(key)}
                       type={type}
                       value={form[key]}
                       maxLength={
-                        key === "username" ? 16 : key === "phone" ? 16 : 254
+                        key === "username"
+                          ? editor === "new"
+                            ? 16
+                            : 80
+                          : key === "phone"
+                            ? rules.phoneMaxLength
+                            : key === "email"
+                              ? rules.emailMaxLength
+                              : rules.profileNameMaxLength
                       }
                       required={["username", "email"].includes(key)}
                       readOnly={key === "username" && editor !== "new"}
@@ -377,6 +416,10 @@ export default function AdminCustomers() {
                         }))
                       }
                     />
+                    <FieldError
+                      id={validation.errorId(key)}
+                      error={validation.errors[key]}
+                    />
                     {key === "username" && editor !== "new" && (
                       <p className="ui-field-hint">
                         The username stays the same for this account.
@@ -384,22 +427,38 @@ export default function AdminCustomers() {
                     )}
                   </div>
                 ))}
-                <div className="ui-field">
+                <div className="ui-field mb-5">
                   <label htmlFor="person-role">Account role</label>
                   <select
                     id="person-role"
+                    {...validation.bind("roleId")}
                     disabled={isSelf(editor)}
-                    value={form.isAdmin ? "admin" : "customer"}
+                    value={form.roleId}
                     onChange={(event) =>
                       setForm((previous) => ({
                         ...previous,
-                        isAdmin: event.target.value === "admin",
+                        roleId: event.target.value,
                       }))
                     }
                   >
-                    <option value="customer">Customer</option>
-                    <option value="admin">Administrator</option>
+                    <option value="">Choose a role</option>
+                    {roles
+                      .filter((item) => item.active || item._id === form.roleId)
+                      .map((item) => (
+                        <option
+                          key={item._id}
+                          value={item._id}
+                          disabled={!item.active}
+                        >
+                          {item.label}
+                          {!item.active ? " (inactive)" : ""}
+                        </option>
+                      ))}
                   </select>
+                  <FieldError
+                    id={validation.errorId("roleId")}
+                    error={validation.errors.roleId}
+                  />
                   {isSelf(editor) && (
                     <p className="ui-field-hint">
                       Your own access level is protected.
@@ -409,6 +468,8 @@ export default function AdminCustomers() {
               </div>
               <PasswordField
                 id="person-password"
+                name="password"
+                error={validation.errors.password}
                 label={
                   editor === "new"
                     ? "Temporary password"
@@ -432,6 +493,7 @@ export default function AdminCustomers() {
               <label className="admin-checkbox">
                 <input
                   type="checkbox"
+                  {...validation.bind("isActive")}
                   checked={form.isActive}
                   disabled={isSelf(editor)}
                   onChange={(event) =>
@@ -443,7 +505,11 @@ export default function AdminCustomers() {
                 />
                 Account is active
               </label>
-              <div className="editor-footer">
+              <FieldError
+                id={validation.errorId("isActive")}
+                error={validation.errors.isActive}
+              />
+              <div className="editor-footer flex justify-end gap-3 pt-5 mt-2 border-t border-line">
                 <button
                   type="button"
                   className="ui-button ui-button-light"

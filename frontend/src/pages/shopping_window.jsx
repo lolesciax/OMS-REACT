@@ -1,20 +1,38 @@
+import { toast } from "../services/feedback";
+import Skeleton from "../components/Skeleton";
+import { ProductSkeletons } from "../components/PageSkeleton";
 import Image from "../components/Image";
-import { useState, useEffect, useCallback } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import ProductPhoto from "../components/ProductPhoto";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useDeferredValue,
+} from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { apiFetch } from "../services/http";
 import { BACKEND_URL } from "../services/config";
 import { useAuth } from "../contexts/AuthContext";
-import { filterProducts, formatPrice } from "../utils/catalog";
+import {
+  filterProducts,
+  formatPrice,
+  isProductAvailable,
+} from "../utils/catalog";
 import useDialog from "../hooks/useDialog";
 import StoreHeader from "../components/StoreHeader";
 import Footer from "../components/Footer";
 import Icon from "../components/Icon";
+import LandingHero from "../components/LandingHero";
+import useScrollReveal from "../hooks/useScrollReveal";
 import "../styles/shopping.css";
 
 const productId = (product) => product._id || product.id;
 
 export default function ShoppingWindow() {
   const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
+  const requestedProduct = params.get("product");
   const { isLoggedIn, user } = useAuth();
   const [products, setProducts] = useState([]);
   const [cartCount, setCartCount] = useState(0);
@@ -24,10 +42,10 @@ export default function ShoppingWindow() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [sort, setSort] = useState("featured");
-  const [inStockOnly, setInStockOnly] = useState(false);
   const [selected, setSelected] = useState(null);
   const [adding, setAdding] = useState(false);
   const [feedback, setFeedback] = useState(null);
+  const [notice, setNotice] = useState("");
   const dialog = useDialog(!!selected, () => {
     if (!adding) setSelected(null);
   });
@@ -81,21 +99,57 @@ export default function ShoppingWindow() {
     return () => controller.abort();
   }, [retry]);
 
-  const categories = [
-    "All",
-    ...new Set(products.map((item) => item.category).filter(Boolean)),
-  ];
-  const visible = filterProducts(products, {
-    search,
-    category,
-    sort,
-    inStockOnly,
-  });
-  const filtered = !!search.trim() || category !== "All" || inStockOnly;
+  const deferredSearch = useDeferredValue(search);
+  const availableProducts = useMemo(
+    () => products.filter(isProductAvailable),
+    [products],
+  );
+  const categories = useMemo(
+    () => [
+      "All",
+      ...new Set(
+        availableProducts.map((item) => item.category).filter(Boolean),
+      ),
+    ],
+    [availableProducts],
+  );
+  const visible = useMemo(
+    () =>
+      filterProducts(availableProducts, {
+        search: deferredSearch,
+        category,
+        sort,
+      }),
+    [availableProducts, deferredSearch, category, sort],
+  );
+  const filtered = !!search.trim() || category !== "All";
+  const collection = useScrollReveal(visible);
+  useEffect(() => {
+    if (loading || error || !requestedProduct) return;
+    const product = availableProducts.find(
+      (item) => String(productId(item)) === requestedProduct,
+    );
+    if (product) {
+      setSelected(product);
+      setFeedback(null);
+    } else {
+      setNotice(
+        "This piece is no longer available. Explore the current collection for more finds.",
+      );
+      document.getElementById("collection")?.scrollIntoView();
+    }
+    setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        next.delete("product");
+        return next;
+      },
+      { replace: true },
+    );
+  }, [loading, error, requestedProduct, availableProducts, setParams]);
   const resetFilters = () => {
     setSearch("");
     setCategory("All");
-    setInStockOnly(false);
     setSort("featured");
   };
   const openProduct = (product) => {
@@ -118,10 +172,7 @@ export default function ShoppingWindow() {
           data.error || "We couldn’t add this item. Please try again.",
         );
       await loadCart();
-      setFeedback({
-        type: "success",
-        text: "Added to your bag. Keep browsing or head to checkout.",
-      });
+      toast.success("Added to your bag.");
     } catch (failure) {
       setFeedback({ type: "error", text: failure.message });
     } finally {
@@ -141,6 +192,7 @@ export default function ShoppingWindow() {
       const data = await response.json();
       if (!response.ok)
         throw new Error(data.error || "Checkout could not be started.");
+      toast.success("This piece is ready for checkout.");
       navigate("/checkout");
     } catch (error) {
       setFeedback({ type: "error", text: error.message });
@@ -148,59 +200,19 @@ export default function ShoppingWindow() {
       setAdding(false);
     }
   };
-  const heroImage =
-    products.find((item) => Number(item.stock) > 0 && item.image)?.image ||
-    "/p3.jpg";
-
   return (
-    <div className="shopping-window">
+    <div className="shopping-window min-h-screen flex flex-col bg-paper">
       <a className="skip-link" href="#collection">
         Skip to collection
       </a>
-      <div className="shop-announcement">
-        <Icon name="leaf" size={15} /> Good clothes. Another chapter.
+      <div className="landing-intro">
+        <StoreHeader cartCount={cartCount} />
+        <LandingHero
+          products={availableProducts}
+          loading={loading}
+          onSelect={openProduct}
+        />
       </div>
-      <StoreHeader cartCount={cartCount} />
-      <section className="shop-hero" aria-labelledby="shop-title">
-        <div className="shop-hero-copy">
-          <span className="ui-eyebrow">Less ordinary. More you.</span>
-          <h1 id="shop-title">
-            Good finds.
-            <br />
-            Great <em>second acts.</em>
-          </h1>
-          <p>
-            Discover pre-loved pieces with a little history and a lot of life
-            left. Your next wardrobe favorite is waiting.
-          </p>
-          <a href="#collection" className="ui-button ui-button-dark">
-            Explore the collection <Icon name="arrow" />
-          </a>
-          <div className="shop-hero-note">
-            <span className="shop-note-line" /> A fresh perspective on getting
-            dressed.
-          </div>
-        </div>
-        <div className="shop-hero-visual">
-          <div className="shop-hero-photo">
-            <Image
-              src={heroImage}
-              alt="A pre-loved piece from the Old Goods Thrift collection"
-            />
-            <span className="shop-photo-label">Made for another story.</span>
-          </div>
-          <span className="shop-round-note">
-            GOOD FINDS
-            <br />
-            <Icon name="leaf" size={24} />
-            <br />
-            SECOND LIVES
-          </span>
-          <span className="shop-image-caption">
-            THE OLD GOODS EDIT / PRE-LOVED & RE-LOVED
-          </span>
-        </div>
-      </section>
       <div className="shop-benefits">
         <span>
           <Icon name="leaf" /> Thoughtfully pre-loved
@@ -212,15 +224,29 @@ export default function ShoppingWindow() {
           <Icon name="shield" /> Payment reviewed by our team
         </span>
       </div>
-      <main id="collection" className="shop-collection" tabIndex={-1}>
-        <div className="shop-collection-heading">
+      <main
+        ref={collection}
+        id="collection"
+        className="shop-collection max-w-320 w-full my-0 mx-auto py-16 px-7 scroll-mt-6 max-[700px]:py-10 max-[700px]:px-5"
+        tabIndex={-1}
+        aria-busy={search !== deferredSearch}
+      >
+        {notice && (
+          <div className="ui-message mb-6" role="status">
+            {notice}
+            <button className="ml-3 underline" onClick={() => setNotice("")}>
+              Dismiss
+            </button>
+          </div>
+        )}
+        <div className="shop-collection-heading" data-reveal>
           <div>
             <span className="ui-eyebrow">The collection</span>
             <h2>Find your next favorite.</h2>
           </div>
           <p>Different pieces. Same good feeling.</p>
         </div>
-        <div className="shop-toolbar">
+        <div className="shop-toolbar flex items-center justify-between gap-6 max-[700px]:flex-wrap max-[700px]:gap-4">
           <div className="shop-search">
             <Icon name="search" />
             <input
@@ -228,6 +254,7 @@ export default function ShoppingWindow() {
               aria-label="Search the collection"
               placeholder="Try a style, size, or something you love…"
               value={search}
+              autoComplete="off"
               onChange={(event) => setSearch(event.target.value)}
             />
             {search && (
@@ -236,7 +263,7 @@ export default function ShoppingWindow() {
               </button>
             )}
           </div>
-          <label className="shop-sort">
+          <label className="shop-sort flex items-center gap-[10px] whitespace-nowrap text-small text-muted max-[700px]:ml-auto">
             Sort by
             <select
               value={sort}
@@ -249,9 +276,9 @@ export default function ShoppingWindow() {
             </select>
           </label>
         </div>
-        <div className="shop-filter-row">
+        <div className="shop-filter-row flex items-center justify-between gap-6 [margin:24px_0_20px] max-[700px]:items-start max-[700px]:flex-col max-[700px]:gap-4">
           <div
-            className="shop-categories"
+            className="shop-categories flex flex-wrap gap-2"
             role="group"
             aria-label="Filter by category"
           >
@@ -265,22 +292,19 @@ export default function ShoppingWindow() {
               </button>
             ))}
           </div>
-          <label className="shop-available">
-            <input
-              type="checkbox"
-              checked={inStockOnly}
-              onChange={(event) => setInStockOnly(event.target.checked)}
-            />{" "}
-            Available only
-          </label>
+          <span className="inline-flex shrink-0 items-center gap-2 text-small text-forest">
+            <Icon name="check" size={16} /> Available finds only
+          </span>
         </div>
         <div className="shop-result-line" role="status" aria-live="polite">
           <span>
-            {loading
-              ? "Getting the collection ready…"
-              : error
-                ? "Collection unavailable"
-                : `${visible.length} ${visible.length === 1 ? "find" : "finds"}${search.trim() ? ` for “${search.trim()}”` : ""}`}
+            {loading ? (
+              <Skeleton className="h-4 w-40" />
+            ) : error ? (
+              "Collection unavailable"
+            ) : (
+              `${visible.length} ${visible.length === 1 ? "find" : "finds"}${search.trim() ? ` for “${search.trim()}”` : ""}`
+            )}
           </span>
           {filtered && (
             <button onClick={resetFilters}>
@@ -301,19 +325,7 @@ export default function ShoppingWindow() {
             </button>
           </div>
         ) : loading ? (
-          <div
-            className="shop-grid"
-            aria-label="Loading products"
-            aria-busy="true"
-          >
-            {Array.from({ length: 4 }, (_, i) => (
-              <div className="shop-skeleton" key={i}>
-                <div />
-                <span />
-                <span />
-              </div>
-            ))}
-          </div>
+          <ProductSkeletons />
         ) : !visible.length ? (
           <div className="ui-empty">
             <Icon name="search" size={32} />
@@ -337,10 +349,12 @@ export default function ShoppingWindow() {
             )}
           </div>
         ) : (
-          <div className="shop-grid">
-            {visible.map((product) => (
+          <div className="shop-grid grid grid-cols-4 gap-[30px_22px] max-[1000px]:grid-cols-3 max-[700px]:grid-cols-2 max-[700px]:gap-[24px_14px] max-[359px]:grid-cols-[1fr]">
+            {visible.map((product, index) => (
               <button
-                className={`shop-product ${Number(product.stock) <= 0 ? "is-unavailable" : ""}`}
+                data-reveal
+                data-reveal-delay={(index % 4) * 60}
+                className="shop-product"
                 key={productId(product)}
                 onClick={() => openProduct(product)}
                 aria-label={`View ${product.name}, ${formatPrice(product.price)}${Number(product.stock) <= 0 ? ", sold out" : ""}`}
@@ -351,16 +365,16 @@ export default function ShoppingWindow() {
                     alt=""
                     loading="lazy"
                   />
-                  <span className="shop-product-badge">
-                    {Number(product.stock) <= 0
-                      ? "Sold out"
-                      : product.condition || "Pre-loved"}
-                  </span>
-                  <span className="shop-product-view">
-                    Take a closer look <Icon name="arrow" size={17} />
-                  </span>
                 </div>
                 <div className="shop-product-meta">
+                  <div className="shop-product-status">
+                    <span className="shop-product-badge">
+                      {Number(product.stock) <= 0
+                        ? "Sold out"
+                        : product.condition || "Pre-loved"}
+                    </span>
+                    <Icon name="arrow" size={18} />
+                  </div>
                   <span>
                     {product.category || "Pre-loved clothing"}
                     {product.size ? ` · Size ${product.size}` : ""}
@@ -409,12 +423,11 @@ export default function ShoppingWindow() {
             >
               <Icon name="close" />
             </button>
-            <div className="shop-dialog-image">
-              <Image
-                src={selected.image || "/product-placeholder.svg"}
-                alt={selected.name}
-              />
-            </div>
+            <ProductPhoto
+              className="shop-dialog-image"
+              src={selected.image}
+              name={selected.name}
+            />
             <div className="shop-dialog-details">
               <span className="ui-eyebrow">
                 {selected.category || "A good find"}
@@ -471,11 +484,25 @@ export default function ShoppingWindow() {
                 </div>
               ) : !isLoggedIn ? (
                 <>
-                  <Link className="ui-button ui-button-dark" to="/login">
+                  <Link
+                    className="ui-button ui-button-dark"
+                    to="/login"
+                    state={{
+                      from: `/?product=${encodeURIComponent(productId(selected))}`,
+                    }}
+                  >
                     Sign in to make it yours <Icon name="arrow" />
                   </Link>
                   <p className="shop-dialog-footnote">
-                    New here? <Link to="/signup">Create an account</Link>
+                    New here?{" "}
+                    <Link
+                      to="/signup"
+                      state={{
+                        from: `/?product=${encodeURIComponent(productId(selected))}`,
+                      }}
+                    >
+                      Create an account
+                    </Link>
                   </p>
                 </>
               ) : (

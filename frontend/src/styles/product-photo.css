@@ -1,0 +1,63 @@
+@reference "../index.css";
+
+@layer components {
+  .product-photo {
+    @apply min-w-0;
+  }
+  .product-photo-trigger {
+    @apply relative block w-full h-full p-0 border-0 bg-[#f0eee8] text-ink cursor-zoom-in overflow-hidden rounded-[inherit];
+  }
+  .product-photo-trigger:disabled {
+    @apply opacity-[1] cursor-default;
+  }
+  .product-photo-trigger > img {
+    @apply block w-full h-full object-contain p-5;
+  }
+  .product-photo-hint {
+    @apply absolute bottom-4 left-[50%] [transform:translateX(-50%)] flex items-center justify-center gap-2 whitespace-nowrap py-[9px] px-[13px] border border-line rounded-[24px] bg-[#fffef7f5] text-small;
+  }
+  .product-photo-viewer {
+    @apply w-[min(1080px,_calc(100vw_-_32px))] max-w-[none] h-[min(900px,_calc(100dvh_-_32px))] max-h-[none] m-auto p-0 border border-line rounded-[14px] bg-paper text-ink overflow-hidden;
+  }
+  .product-photo-viewer[open] {
+    @apply flex flex-col;
+  }
+  .product-photo-viewer::backdrop {
+    @apply bg-[#142219d9] [backdrop-filter:blur(5px)];
+  }
+  .product-photo-toolbar {
+    @apply flex items-center gap-3 p-4 border-b border-line;
+  }
+  .product-photo-toolbar strong {
+    @apply flex-1 min-w-0 [overflow-wrap:anywhere] text-body;
+  }
+  .product-photo-toolbar .ui-button {
+    @apply shrink-0 min-h-11 py-[10px] px-[14px];
+  }
+  .product-photo-close {
+    @apply grid place-items-center w-11 h-11 shrink-0 border border-line rounded-full bg-[white] text-ink;
+  }
+  .product-photo-stage {
+    @apply flex-1 min-h-0 overflow-auto bg-[#f0eee8] [overscroll-behavior:contain];
+  }
+  .product-photo-stage img {
+    @apply block w-full h-full max-w-[none] object-contain p-5;
+  }
+  .product-photo-stage.is-zoomed img {
+    @apply w-[200%] h-[200%];
+  }
+  .product-photo-viewer > p {
+    @apply py-3 px-4 m-0 text-small leading-[1.5] text-muted border-t border-line;
+  }
+  @media (max-width: 480px) {
+    .product-photo-toolbar {
+      @apply gap-2 p-3 flex-wrap;
+    }
+    .product-photo-toolbar strong {
+      @apply basis-[calc(100%_-_60px)];
+    }
+    .product-photo-toolbar .ui-button {
+      @apply [order:3] w-full;
+    }
+  }
+}

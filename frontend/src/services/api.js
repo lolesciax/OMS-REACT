@@ -7,9 +7,11 @@ async function request(path, options = {}) {
   });
   const data = await response.json().catch(() => null);
   if (!response.ok || data?.success === false) {
-    throw new Error(
+    const failure = new Error(
       data?.error || data?.message || "Request failed. Please try again.",
     );
+    failure.fields = data?.fields || {};
+    throw failure;
   }
   if (!data)
     throw new Error(

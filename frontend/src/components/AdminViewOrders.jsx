@@ -1,3 +1,9 @@
+import { toast } from "../services/feedback";
+import OrderProgress from "./OrderProgress";
+import { shortOrderReference } from "../utils/orderProgress";
+import PageSkeleton from "./PageSkeleton";
+import FieldError from "./FieldError";
+import { validateTracking } from "../utils/adminValidation";
 import Image from "./Image";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -8,9 +14,8 @@ import Icon from "./Icon";
 import { apiFetch } from "../services/http";
 import { BACKEND_URL } from "../services/config";
 import { formatPrice } from "../utils/catalog";
-import { canTransition } from "../utils/orders";
+import { canTransition, orderStatusLabel } from "../utils/orders";
 
-const steps = ["pending", "confirmed", "processing", "shipped", "completed"];
 const labels = {
   pending: "Payment review",
   pending_payment: "Awaiting payment",
@@ -20,12 +25,14 @@ const labels = {
   completed: "Completed",
 };
 const next = {
+  pending_payment: "pending",
   pending: "confirmed",
   confirmed: "processing",
   processing: "shipped",
   shipped: "completed",
 };
 const actionLabels = {
+  pending: "Move to payment review",
   confirmed: "Verify payment & confirm",
   processing: "Start preparing",
   shipped: "Mark as shipped",
@@ -39,8 +46,9 @@ export default function AdminViewOrders() {
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState("");
+
   const [tracking, setTracking] = useState("");
+  const [trackingError, setTrackingError] = useState("");
   const [confirm, setConfirm] = useState(null);
   const [preview, setPreview] = useState(false);
   useEffect(() => {
@@ -70,9 +78,15 @@ export default function AdminViewOrders() {
   }, [orderId, retry]);
   const update = async (status) => {
     if (busy) return;
+    const failure = status === "shipped" ? validateTracking(tracking) : "";
+    setTrackingError(failure);
+    if (failure) {
+      document.getElementById("tracking-number")?.focus();
+      return;
+    }
     setBusy(true);
     setError("");
-    setMessage("");
+
     try {
       const response = await apiFetch(
         `${BACKEND_URL}/api/admin/orders/${orderId}`,
@@ -88,8 +102,10 @@ export default function AdminViewOrders() {
         },
       );
       const data = await response.json();
-      if (!response.ok || !data.success)
+      if (!response.ok || !data.success) {
+        setTrackingError(data.fields?.trackingNumber || "");
         throw new Error(data.error || "The order couldn’t be updated.");
+      }
       setOrder((previous) => ({
         ...previous,
         ...data.order,
@@ -97,7 +113,7 @@ export default function AdminViewOrders() {
         ...(status === "shipped" ? { trackingNumber: tracking.trim() } : {}),
       }));
       setConfirm(null);
-      setMessage(`Order updated: ${labels[status].toLowerCase()}.`);
+      toast.success(`Order updated: ${labels[status].toLowerCase()}.`);
     } catch (failure) {
       setConfirm(null);
       setError(failure.message);
@@ -115,16 +131,25 @@ export default function AdminViewOrders() {
     }
   })();
   const target = next[order?.status];
-  const current = Math.max(0, steps.indexOf(order?.status));
   return (
     <AdminLayout
       title="Order details"
       description="Review the payment, check the details, and guide this order to its next step."
       actions={
-        <Link className="ui-button ui-button-light" to="/admin/orders">
-          <Icon name="back" size={17} />
-          All orders
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <button
+            className="ui-button ui-button-light"
+            disabled={loading || busy}
+            onClick={() => setRetry((value) => value + 1)}
+          >
+            <Icon name="refresh" size={17} />
+            Refresh status
+          </button>
+          <Link className="ui-button ui-button-light" to="/admin/orders">
+            <Icon name="back" size={17} />
+            All orders
+          </Link>
+        </div>
       }
     >
       {error && (
@@ -140,22 +165,17 @@ export default function AdminViewOrders() {
           )}
         </div>
       )}
-      {message && (
-        <div className="ui-message success" role="status">
-          {message}
-        </div>
-      )}
       {loading ? (
-        <div className="admin-state" role="status">
-          Loading order details…
-        </div>
+        <PageSkeleton variant="order" label="Loading order details" />
       ) : (
         order && (
           <>
             <div className="admin-order-banner">
               <div>
                 <span className="ui-eyebrow">Order reference</span>
-                <strong>{order.orderNumber || order._id}</strong>
+                <strong title={order.orderNumber}>
+                  {shortOrderReference(order)}
+                </strong>
                 <small>
                   Placed{" "}
                   {new Date(order.orderDate || order.createdAt).toLocaleString(
@@ -171,31 +191,11 @@ export default function AdminViewOrders() {
                 </small>
               </div>
               <span className={`admin-badge ${order.status}`}>
-                {labels[order.status] || order.status}
+                {orderStatusLabel(order)}
               </span>
             </div>
-            <ol
-              className="admin-order-progress"
-              aria-label="Fulfillment progress"
-            >
-              {steps.map((status, index) => (
-                <li
-                  key={status}
-                  className={index <= current ? "reached" : ""}
-                  aria-current={index === current ? "step" : undefined}
-                >
-                  <span>
-                    {index < current ? (
-                      <Icon name="check" size={14} />
-                    ) : (
-                      index + 1
-                    )}
-                  </span>
-                  {labels[status]}
-                </li>
-              ))}
-            </ol>
-            <div className="admin-detail-columns">
+            <OrderProgress order={order} />
+            <div className="admin-detail-columns grid grid-cols-[minmax(0,_1fr)_320px] gap-6 max-[1150px]:grid-cols-[minmax(0,_1fr)_280px] max-[1150px]:gap-[18px] max-[900px]:grid-cols-[minmax(0,_1fr)_300px] max-[650px]:block">
               <div>
                 <section className="admin-panel padded">
                   <div className="admin-panel-title">
@@ -236,6 +236,12 @@ export default function AdminViewOrders() {
                       <span>Shipping</span>
                       <span>{formatPrice(order.shippingFee)}</span>
                     </div>
+                    {order.discountAmount > 0 && (
+                      <div>
+                        <span>Discount ({order.discountCode})</span>
+                        <span>-{formatPrice(order.discountAmount)}</span>
+                      </div>
+                    )}
                     <div>
                       <strong>Total</strong>
                       <strong>{formatPrice(order.total)}</strong>
@@ -290,19 +296,23 @@ export default function AdminViewOrders() {
               <aside>
                 <section className="admin-panel padded">
                   <h2>Next step</h2>
-                  {target && canTransition(order, target) ? (
+                  {target &&
+                  canTransition(order, target) &&
+                  (target !== "pending" || order.paymentProof) ? (
                     <>
                       <p className="admin-help">
-                        {target === "confirmed"
-                          ? "Confirm only after checking the payment in your merchant wallet."
-                          : target === "processing"
-                            ? "Payment is confirmed. Let the customer know their pieces are being prepared."
-                            : target === "shipped"
-                              ? "Add the shipment tracking number before marking the order as shipped."
-                              : "Confirm that the order has been delivered before completing it."}
+                        {target === "pending"
+                          ? "Move this submitted proof into the payment review queue."
+                          : target === "confirmed"
+                            ? "Confirm only after checking the payment in your merchant wallet."
+                            : target === "processing"
+                              ? "Payment is confirmed. Let the customer know their pieces are being prepared."
+                              : target === "shipped"
+                                ? "Add the shipment tracking number before marking the order as shipped."
+                                : "Confirm that the order has been delivered before completing it."}
                       </p>
                       {target === "shipped" && (
-                        <div className="ui-field">
+                        <div className="ui-field mb-5">
                           <label htmlFor="tracking-number">
                             Tracking number
                           </label>
@@ -310,24 +320,36 @@ export default function AdminViewOrders() {
                             id="tracking-number"
                             inputMode="numeric"
                             autoComplete="off"
-                            maxLength={12}
-                            value={tracking}
-                            onChange={(event) =>
-                              setTracking(event.target.value.replace(/\D/g, ""))
+                            name="trackingNumber"
+                            maxLength={80}
+                            aria-invalid={!!trackingError}
+                            aria-describedby={
+                              trackingError
+                                ? "tracking-number-error"
+                                : "tracking-number-hint"
                             }
+                            value={tracking}
+                            onChange={(event) => {
+                              setTracking(event.target.value);
+                              setTrackingError("");
+                            }}
                             disabled={busy}
                           />
-                          <p className="ui-field-hint">
+                          <FieldError
+                            id="tracking-number-error"
+                            error={trackingError}
+                          />
+                          <p
+                            id="tracking-number-hint"
+                            className="ui-field-hint"
+                          >
                             Enter the 12-digit tracking number.
                           </p>
                         </div>
                       )}
                       <button
                         className="ui-button ui-button-dark admin-full-button"
-                        disabled={
-                          busy ||
-                          (target === "shipped" && !/^\d{12}$/.test(tracking))
-                        }
+                        disabled={busy}
                         onClick={() =>
                           ["confirmed", "completed"].includes(target)
                             ? setConfirm(target)

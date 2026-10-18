@@ -2,6 +2,21 @@
 
 
 def ensure_indexes(db):
+    from .access import ensure_access_data
+    ensure_access_data(db)
+    from .policies import ensure_policies
+    ensure_policies(db)
+    from .content import ensure_content
+    ensure_content(db)
+    db.captcha_challenges.create_index('expiresAt', expireAfterSeconds=0)
+    db.policy_versions.create_index([('kind', 1), ('publishedAt', -1)])
+    db.users.create_index('roleId')
+    db.notifications.create_index([('userId', 1), ('eventKey', 1), ('audience', 1)], unique=True)
+    db.notifications.create_index([('userId', 1), ('audience', 1), ('readAt', 1), ('_id', -1)])
+    db.notifications.create_index([('userId', 1), ('_id', -1)])
+    for collection in ('orders', 'users', 'products', 'roles', 'settings'):
+        db[collection].create_index('_notificationOutbox.key', sparse=True)
+    db.rate_limits.create_index('expiresAt', expireAfterSeconds=0)
     db.sessions.create_index('expiresAt', expireAfterSeconds=0)
     db.sessions.create_index('userId')
     db.checkouts.create_index('userId', unique=True)
@@ -13,12 +28,37 @@ def ensure_indexes(db):
     db.users.create_index('username', unique=True, partialFilterExpression={'username': {'$type': 'string'}})
     # Existing accounts can share an email. Preserve them and index lookups.
     db.users.create_index('email')
+    db.users.create_index('email', unique=True, name='unique_current_email', partialFilterExpression={'emailUnique': True})
+    db.discounts.create_index('code', unique=True, partialFilterExpression={'code': {'$type': 'string'}})
 
 
 def ensure_validators(db):
+    from .policies import POLICY_SCHEMA
     object_id = {'bsonType': 'objectId'}
     quantity = {'bsonType': ['int', 'long'], 'minimum': 1}
     schemas = {
+        'captcha_challenges': {'required': ['secret', 'binding', 'purpose', 'challenge', 'expiresAt'], 'properties': {
+            'secret': {'bsonType': 'string'}, 'binding': {'bsonType': 'string'}, 'purpose': {'enum': ['login', 'signup']},
+            'challenge': {'bsonType': 'object'}, 'expiresAt': {'bsonType': 'date'}}},
+        'policy_versions': POLICY_SCHEMA,
+        'notifications': {'required': ['userId', 'eventKey', 'audience', 'category', 'title', 'message', 'href', 'createdAt', 'eventAt', 'readAt'], 'properties': {
+            'userId': object_id, 'eventKey': {'bsonType': 'string'},
+            'audience': {'enum': ['personal', 'admin']}, 'category': {'enum': ['orders', 'account', 'inventory', 'store']},
+            'title': {'bsonType': 'string', 'maxLength': 150}, 'message': {'bsonType': 'string', 'maxLength': 1000},
+            'href': {'bsonType': 'string', 'pattern': '^/(order-history|profile|admin/)'},
+            'createdAt': {'bsonType': 'date'}, 'eventAt': {'bsonType': 'date'}, 'readAt': {'bsonType': ['date', 'null']}}},
+        'users': {'properties': {'roleId': object_id}},
+        'account_options': {'required': ['genders'], 'properties': {
+            'genders': {'bsonType': 'array', 'minItems': 1, 'maxItems': 20, 'uniqueItems': True,
+                        'items': {'bsonType': 'string', 'minLength': 1, 'maxLength': 30}}}},
+        'roles': {'required': ['code', 'label', 'permissions', 'active', 'system'], 'properties': {
+            'code': {'bsonType': 'string', 'pattern': '^[a-z][a-z0-9_-]{1,39}$'},
+            'label': {'bsonType': 'string', 'minLength': 1, 'maxLength': 80},
+            'permissions': {'bsonType': 'array', 'uniqueItems': True, 'items': {'enum': ['admin.access']}},
+            'active': {'bsonType': 'bool'}, 'system': {'bsonType': 'bool'}}},
+        'rate_limits': {'required': ['attempts', 'allowed', 'checkedAt', 'expiresAt'], 'properties': {
+            'attempts': {'bsonType': 'array', 'maxItems': 600, 'items': {'bsonType': 'date'}},
+            'allowed': {'bsonType': 'bool'}, 'checkedAt': {'bsonType': 'date'}, 'expiresAt': {'bsonType': 'date'}}},
         'sessions': {'required': ['userId', 'expiresAt', 'csrfToken', 'passwordVersion'], 'properties': {
             'userId': object_id, 'expiresAt': {'bsonType': 'date'}, 'csrfToken': {'bsonType': 'string'}, 'passwordVersion': {'bsonType': 'string'}}},
         'checkouts': {'required': ['userId', 'orderId', 'items', 'expiresAt'], 'properties': {

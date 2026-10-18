@@ -1,6 +1,10 @@
+import { toast } from "../services/feedback";
+import OrderProgress from "../components/OrderProgress";
+import { shortOrderReference } from "../utils/orderProgress";
+import PageSkeleton from "../components/PageSkeleton";
 import Image from "../components/Image";
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { apiFetch } from "../services/http";
 import { BACKEND_URL } from "../services/config";
@@ -9,15 +13,9 @@ import CustomerLayout from "../components/CustomerLayout";
 import UploadField from "../components/UploadField";
 import Icon from "../components/Icon";
 import useDialog from "../hooks/useDialog";
+import { isAwaitingPayment, orderStatusLabel } from "../utils/orders";
+import useOrderResource from "../hooks/useOrderResource";
 
-const statusLabels = {
-  pending: "Payment review",
-  pending_payment: "Awaiting payment",
-  confirmed: "Confirmed",
-  processing: "Getting ready",
-  shipped: "On its way",
-  completed: "Delivered",
-};
 const dateLabel = (value) => {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
@@ -28,49 +26,34 @@ const dateLabel = (value) => {
         year: "numeric",
       });
 };
-const steps = ["pending", "confirmed", "processing", "shipped", "completed"];
 
 export default function OrderHistory() {
+  const [searchParams] = useSearchParams();
+  const targetOrder = searchParams.get("order");
   const { user } = useAuth();
   const navigate = useNavigate();
   const userId = user?._id || user?.id;
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [retry, setRetry] = useState(0);
   const [tab, setTab] = useState("all");
   const [receipt, setReceipt] = useState(null);
   const [file, setFile] = useState(null);
   const [uploadError, setUploadError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState("");
+
+  const resource = useOrderResource(
+    `${BACKEND_URL}/api/orders/user/${userId}`,
+    busy || !!receipt,
+  );
+  const { loading, refreshing, error } = resource;
+  const orders = resource.data?.orders || [];
+  useEffect(() => {
+    if (!loading && targetOrder && /^[a-f0-9]{24}$/i.test(targetOrder))
+      document
+        .getElementById(`order-${targetOrder}`)
+        ?.scrollIntoView({ block: "center", behavior: "instant" });
+  }, [loading, targetOrder]);
   const dialog = useDialog(!!receipt, () => {
     if (!busy) setReceipt(null);
   });
-  useEffect(() => {
-    const controller = new AbortController();
-    setLoading(true);
-    setError("");
-    (async () => {
-      try {
-        const response = await apiFetch(
-          `${BACKEND_URL}/api/orders/user/${userId}`,
-          { signal: controller.signal },
-        );
-        const data = await response.json();
-        if (!response.ok || !data.success || !Array.isArray(data.orders))
-          throw new Error(
-            data.error || "Your orders couldn’t be loaded. Please try again.",
-          );
-        setOrders(data.orders);
-      } catch (failure) {
-        if (!controller.signal.aborted) setError(failure.message);
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
-      }
-    })();
-    return () => controller.abort();
-  }, [userId, retry]);
   const resume = (order) =>
     navigate(`/checkout?order=${encodeURIComponent(order._id)}`);
   const confirm = async (event) => {
@@ -92,6 +75,7 @@ export default function OrderHistory() {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId, proofImage }),
+          timeout: 60000,
         },
       );
       const data = await response.json();
@@ -99,16 +83,13 @@ export default function OrderHistory() {
         throw new Error(
           data.error || "Delivery couldn’t be confirmed. Please try again.",
         );
-      setOrders((previous) =>
-        previous.map((order) =>
-          order._id === receipt._id ? { ...order, status: "completed" } : order,
-        ),
-      );
       setReceipt(null);
       setFile(null);
-      setMessage(
+      toast.success(
         "Delivery confirmed. Thank you for giving these pieces a new home.",
       );
+      // Reload the server timestamps and receipt details for the shared tracker.
+      resource.refresh();
     } catch (failure) {
       setUploadError(failure.message);
     } finally {
@@ -117,35 +98,64 @@ export default function OrderHistory() {
   };
   const matches = (order, filter) =>
     filter === "all" ||
-    (filter === "review"
-      ? ["pending", "pending_payment"].includes(order.status)
-      : filter === "progress"
-        ? ["confirmed", "processing", "shipped"].includes(order.status)
-        : order.status === "completed");
+    (filter === "unpaid"
+      ? isAwaitingPayment(order)
+      : filter === "review"
+        ? ["pending", "pending_payment"].includes(order.status) &&
+          !isAwaitingPayment(order)
+        : filter === "progress"
+          ? ["confirmed", "processing", "shipped"].includes(order.status)
+          : order.status === "completed");
   const visible = orders.filter((order) => matches(order, tab));
   return (
     <CustomerLayout>
-      <div className="customer-heading">
+      <div className="customer-heading flex justify-between items-center gap-6 mb-7 max-[760px]:items-start max-[760px]:flex-col max-[760px]:gap-3">
         <div>
           <span className="ui-eyebrow">The journey of your finds</span>
           <h1>Your orders</h1>
           <p>From a good find to a new favorite. Follow every step here.</p>
         </div>
-        <Link to="/" className="customer-back">
-          <Icon name="back" size={16} /> Back to the collection
-        </Link>
+        <div className="flex flex-wrap items-center gap-4">
+          <button
+            className="ui-button ui-button-light"
+            disabled={refreshing || busy || !!receipt}
+            onClick={() => resource.refresh({ feedback: true })}
+          >
+            <Icon name="refresh" size={16} />
+            {refreshing && !loading ? "Checking status…" : "Refresh status"}
+          </button>
+          <Link to="/" className="customer-back">
+            <Icon name="back" size={16} /> Back to the collection
+          </Link>
+        </div>
       </div>
-      {message && (
-        <div className="ui-message success" role="status">
-          {message}
+      <p className="mb-5 text-small text-muted" role="status">
+        {resource.updatedAt
+          ? `Last checked ${resource.updatedAt.toLocaleTimeString("en-PH", { hour: "numeric", minute: "2-digit" })}. Updates automatically while this page is visible.`
+          : "Checking your latest order status."}
+      </p>
+      {error && resource.data && (
+        <div className="ui-message error mb-5" role="alert">
+          <p>{error} Your last loaded orders are still shown.</p>
+          <button
+            className="ui-button ui-button-light mt-3"
+            onClick={() => resource.refresh({ feedback: true })}
+          >
+            Try refreshing again
+          </button>
         </div>
       )}
-      <div className="order-tabs" role="group" aria-label="Filter orders">
+      <div
+        className="order-tabs flex flex-wrap gap-2 my-7 mx-0 max-[760px]:gap-[6px]"
+        role="group"
+        aria-label="Filter orders"
+      >
         {[
           ["all", "All orders"],
-          ["review", "Payment & review"],
+          ["unpaid", "Awaiting payment"],
+          ["review", "Payment review"],
           ["progress", "In progress"],
-          ["completed", "Delivered"],
+          ["completed", "Completed"],
         ].map(([key, label]) => (
           <button
             key={key}
@@ -157,21 +167,19 @@ export default function OrderHistory() {
           </button>
         ))}
       </div>
-      {error ? (
+      {error && !resource.data ? (
         <div className="ui-empty" role="alert">
           <h2>Let’s try that again.</h2>
           <p>{error}</p>
           <button
             className="ui-button ui-button-dark"
-            onClick={() => setRetry((value) => value + 1)}
+            onClick={() => resource.refresh({ feedback: true })}
           >
             Reload orders
           </button>
         </div>
       ) : loading ? (
-        <div className="ui-empty" role="status" aria-busy="true">
-          Finding your orders…
-        </div>
+        <PageSkeleton variant="list" label="Finding your orders" />
       ) : !visible.length ? (
         <div className="ui-empty">
           <Icon name="orders" size={38} />
@@ -192,53 +200,35 @@ export default function OrderHistory() {
       ) : (
         <div className="order-list">
           {visible.map((order) => {
-            const current = Math.max(0, steps.indexOf(order.status));
-            const awaitingPayment =
-              ["pending", "pending_payment"].includes(order.status) &&
-              !order.paymentProof;
+            const awaitingPayment = isAwaitingPayment(order);
             return (
-              <article className="order-card" key={order._id}>
+              <article
+                className={`order-card ${targetOrder === order._id ? "ring-2 ring-forest ring-offset-4" : ""}`}
+                id={`order-${order._id}`}
+                key={order._id}
+              >
                 <header className="order-card-header">
                   <div>
                     <span>
                       ORDER{" "}
-                      {order.orderNumber || order._id.slice(-6).toUpperCase()}
+                      <span title={order.orderNumber}>
+                        {shortOrderReference(order)}
+                      </span>
                     </span>
                     <p>
                       Placed {dateLabel(order.orderDate || order.createdAt)}
                     </p>
                   </div>
                   <span className={`order-state ${order.status}`}>
-                    {awaitingPayment
-                      ? "Awaiting payment"
-                      : statusLabels[order.status] || order.status}
+                    {orderStatusLabel(order)}
                   </span>
                 </header>
                 <div className="order-card-body">
-                  <ol className="order-journey" aria-label="Order progress">
-                    {steps.map((status, index) => (
-                      <li
-                        key={status}
-                        className={index <= current ? "reached" : ""}
-                        aria-current={index === current ? "step" : undefined}
-                      >
-                        <span>
-                          {index < current ? (
-                            <Icon name="check" size={12} />
-                          ) : (
-                            index + 1
-                          )}
-                        </span>
-                        <small>
-                          {status === "pending"
-                            ? awaitingPayment
-                              ? "Payment"
-                              : "Review"
-                            : statusLabels[status]}
-                        </small>
-                      </li>
-                    ))}
-                  </ol>
+                  <OrderProgress
+                    order={order}
+                    compact
+                    open={targetOrder === order._id}
+                  />
                   <div className="order-piece-list">
                     {(order.items || []).map((item, i) => (
                       <div key={item.id || i}>
@@ -267,15 +257,16 @@ export default function OrderHistory() {
                         <span>{order.trackingNumber}</span>
                       </div>
                       <button
+                        className="ui-button ui-button-light"
                         onClick={async () => {
                           try {
                             await navigator.clipboard.writeText(
                               order.trackingNumber,
                             );
-                            setMessage("Tracking number copied.");
+                            toast.success("Tracking number copied.");
                           } catch {
-                            setMessage(
-                              "Your tracking number is " + order.trackingNumber,
+                            toast.info(
+                              "Copy unavailable. Your tracking number is " + order.trackingNumber,
                             );
                           }
                         }}
@@ -296,6 +287,14 @@ export default function OrderHistory() {
                     </div>
                   </div>
                   <div className="order-card-actions">
+                    {["confirmed", "processing"].includes(order.status) && (
+                      <p>
+                        <Icon name="orders" size={17} />
+                        {order.status === "confirmed"
+                          ? "Your payment is verified. The store will prepare your pieces next."
+                          : "Your pieces are being prepared. Your tracking number will appear here when they ship."}
+                      </p>
+                    )}
                     {awaitingPayment && (
                       <>
                         <p>
@@ -349,7 +348,7 @@ export default function OrderHistory() {
         </div>
       )}
       {receipt && (
-        <div className="ui-dialog-overlay">
+        <div className="ui-dialog-overlay fixed inset-0 z-[2000] flex items-center justify-center p-5 bg-[#17251cc2] [backdrop-filter:blur(4px)]">
           <section
             ref={dialog}
             className="ui-dialog"

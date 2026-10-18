@@ -1,14 +1,22 @@
+const priceFormatter = new Intl.NumberFormat("en-PH", {
+  style: "currency",
+  currency: "PHP",
+  maximumFractionDigits: 2,
+});
+
 export const formatPrice = (value) =>
   value === null ||
   value === undefined ||
   value === "" ||
   !Number.isFinite(Number(value))
     ? "—"
-    : new Intl.NumberFormat("en-PH", {
-        style: "currency",
-        currency: "PHP",
-        maximumFractionDigits: 2,
-      }).format(Number(value));
+    : priceFormatter.format(Number(value));
+
+export const isProductAvailable = (product) =>
+  product.is_active !== false &&
+  product.isActive !== false &&
+  Number.isFinite(Number(product.stock)) &&
+  Number(product.stock) > 0;
 
 export function filterProducts(
   products,
@@ -33,7 +41,7 @@ export function filterProducts(
     return (
       (!query || text.includes(query)) &&
       (category === "All" || product.category === category) &&
-      (!inStockOnly || Number(product.stock) > 0)
+      (!inStockOnly || isProductAvailable(product))
     );
   });
   return result.sort((a, b) => {

@@ -1,3 +1,4 @@
+import { toast } from "../services/feedback";
 import {
   createContext,
   useContext,
@@ -37,14 +38,18 @@ export const AuthProvider = ({ children }) => {
           signal,
         });
         if (version !== epoch.current) return;
-        restored.current = true;
         if (response.status === 401) {
+          restored.current = true;
           clearSession();
           return;
         }
         const data = await response.json();
         if (!response.ok || !data.user)
           throw new Error(data.error || "Your session could not be loaded.");
+        restored.current = true;
+        setAuthError((previous) =>
+          previous.startsWith("Session refresh failed.") ? "" : previous,
+        );
         setUser((previous) =>
           JSON.stringify(previous) === JSON.stringify(data.user)
             ? previous
@@ -52,7 +57,8 @@ export const AuthProvider = ({ children }) => {
         );
       } catch (error) {
         if (!signal?.aborted && version === epoch.current) {
-          if (restored.current) setAuthError(`Session refresh failed. ${error.message}`);
+          if (restored.current)
+            setAuthError(`Session refresh failed. ${error.message}`);
           else setSessionError(error.message);
         }
       } finally {
@@ -85,6 +91,7 @@ export const AuthProvider = ({ children }) => {
       if (!response.ok && response.status !== 401)
         throw new Error((await response.json()).error || "Sign-out failed.");
       clearSession();
+      toast.success("You have been signed out.");
       return true;
     } catch (error) {
       setAuthError(`Could not sign out. ${error.message}`);
@@ -97,6 +104,7 @@ export const AuthProvider = ({ children }) => {
   );
   const login = (data) => {
     epoch.current++;
+    restored.current = true;
     setUser(data);
     setAuthError("");
     setSessionError("");

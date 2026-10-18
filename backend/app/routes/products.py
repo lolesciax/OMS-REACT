@@ -1,5 +1,7 @@
+from ..admin_validation import product as validate_product, stock as validate_stock, FieldValidationError
 from ..uploads import MAX_IMAGE_BYTES, save_image
 from ..identity import next_display_id
+from ..notifications import stock_update
 from ..models.product import ProductModel
 from .. import get_db
 from flask import Blueprint, request, jsonify, send_from_directory, current_app
@@ -53,8 +55,8 @@ def serialize_doc(doc):
 @bp.route('/static/uploads/<path:filename>')
 def uploaded_file(filename):
     """Serve uploaded files."""
-    upload_folder = current_app.config['UPLOAD_FOLDER']
-    return send_from_directory(upload_folder, filename)
+    from ..uploads import serve_image
+    return serve_image(filename)
 
 @bp.route('/', methods=['GET'])
 def get_products():
@@ -100,56 +102,17 @@ def create_product():
             return jsonify(success=False, error='The database is temporarily unavailable'), 503
         model = ProductModel(db)
 
-        # Check if form data is present
-        if not request.form:
-            return jsonify({'error': 'No form data provided'}), 400
-
-        name = request.form.get('name', '').strip()
-        category = request.form.get('category', '').strip()
-        price = request.form.get('price')
-        stock = request.form.get('stock')
-        condition = request.form.get('condition', 'Good')
-        description = request.form.get('description', '')
-        size = request.form.get('size', '')
-        material = request.form.get('material', '')
+        data = validate_product(request.form)
         image = request.files.get('image')
-
-        # Validate required fields
-        if not all([name, category, price, stock]):
-            return jsonify({'error': 'Missing required fields: name, category, price, stock'}), 400
-
-        try:
-            price = float(price)
-            stock = int(stock)
-            if not math.isfinite(price) or price < 0 or stock < 0:
-                raise ValueError()
-        except (TypeError, ValueError):
-            return jsonify(error='Price and stock must be valid non-negative numbers'), 400
-
         image_url = ''
         if image and image.filename:
             try:
                 image_url = save_image(image.read(MAX_IMAGE_BYTES + 1), 'products', image.filename)
             except ValueError as error:
-                return jsonify(error=str(error)), 400
+                raise FieldValidationError({'image': str(error)})
         product_id = generate_product_id(db)
-
-        # Create product data
-        data = {
-            'product_id': product_id,
-            'name': name.strip(),
-            'category': category.strip(),
-            'price': float(price),
-            'stock': int(stock),
-            'condition': condition,
-            'description': description.strip(),
-            'size': size.strip(),
-            'material': material.strip(),
-            'image': image_url,  # Store relative path
-            'is_active': True,
-            'created_at': datetime.utcnow(),
-            'updated_at': datetime.utcnow()
-        }
+        data.update(product_id=product_id, image=image_url, is_active=True,
+                    created_at=datetime.utcnow(), updated_at=datetime.utcnow())
 
         # Insert into database
         inserted_id = model.create(data)
@@ -165,6 +128,8 @@ def create_product():
             'product': serialize_doc(created_product)
         }), 201
 
+    except FieldValidationError as error:
+        return error.response()
     except Exception as e:
         return jsonify({'error': f'Failed to create product: {str(e)}'}), 500
 
@@ -182,34 +147,15 @@ def update_product(pid):
         if not existing_product:
             return jsonify({'error': 'Product not found'}), 404
 
-        data = {key: value for key, value in request.form.items() if key in {
-            'name', 'category', 'price', 'stock', 'condition', 'description', 'size', 'material'
-        }}
-        for key in ('name', 'category'):
-            if key in data:
-                data[key] = data[key].strip()
-                if not data[key]:
-                    return jsonify(error=f'{key.title()} is required'), 400
-        try:
-            if 'price' in data:
-                data['price'] = float(data['price'])
-                if not math.isfinite(data['price']) or data['price'] < 0:
-                    raise ValueError()
-            if 'stock' in data:
-                data['stock'] = int(data['stock'])
-                if data['stock'] < 0:
-                    raise ValueError()
-        except (ValueError, TypeError):
-            return jsonify(error='Price must be non-negative and stock must be a non-negative whole number'), 400
+        data = validate_product(request.form, existing_product)
         image = request.files.get('image')
-        if image and image.filename and not allowed_file(image.filename):
-            return jsonify(error='Upload a PNG, JPG, GIF or WebP image'), 400
-
         if image and image.filename:
             try:
                 data['image'] = save_image(image.read(MAX_IMAGE_BYTES + 1), 'products', image.filename)
             except ValueError as error:
-                return jsonify(error=str(error)), 400
+                raise FieldValidationError({'image': str(error)})
+        if not data:
+            raise FieldValidationError({'form': 'Choose at least one product field to update.'})
 
         data['updated_at'] = datetime.utcnow()
         success = model.update(pid, data)
@@ -224,6 +170,8 @@ def update_product(pid):
         else:
             return jsonify({'message': 'No changes made'})
 
+    except FieldValidationError as error:
+        return error.response()
     except Exception as e:
         return jsonify({'error': f'Failed to update product: {str(e)}'}), 500
 
@@ -312,12 +260,12 @@ def update_product_stock(product_id):
         data = request.get_json()
         new_stock = data.get('stock')
 
-        if type(new_stock) is not int or new_stock < 0:
-            response = jsonify({
-                'success': False,
-                'message': 'Stock must be a non-negative whole number'
-            })
-            return response, 400
+        try:
+            if type(new_stock) is not int:
+                raise ValueError('Stock must be a whole number of zero or more.')
+            new_stock = validate_stock(new_stock)
+        except ValueError as error:
+            return FieldValidationError({'stock': str(error)}).response()
 
         # Get current product
         product = model.get_by_id(product_id)
@@ -331,7 +279,7 @@ def update_product_stock(product_id):
         # Update the stock
         result = db.products.update_one(
             {'_id': ObjectId(product_id)},
-            {'$set': {'stock': int(new_stock)}}
+            stock_update(product, {'stock': int(new_stock)})
         )
 
         if result.matched_count:

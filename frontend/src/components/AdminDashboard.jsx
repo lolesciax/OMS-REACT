@@ -1,3 +1,5 @@
+import TableScroll from "./TableScroll";
+import PageSkeleton from "./PageSkeleton";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -17,6 +19,7 @@ import Icon from "./Icon";
 import { apiFetch } from "../services/http";
 import { BACKEND_URL } from "../services/config";
 import { formatPrice } from "../utils/catalog";
+import { orderStatusLabel } from "../utils/orders";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -29,7 +32,7 @@ ChartJS.register(
 );
 const statusLabel = (value) =>
   ({
-    pending: "Payment review",
+    pending: "Payment & review",
     pending_payment: "Awaiting payment",
     confirmed: "Confirmed",
     processing: "Preparing",
@@ -78,6 +81,21 @@ export default function AdminDashboard() {
     })();
     return () => controller.abort();
   }, [retry]);
+  if (loading)
+    return (
+      <AdminLayout
+        title="Store overview"
+        description="A clear look at your collection, orders, and the people giving them a new home."
+        actions={
+          <button className="ui-button ui-button-light" disabled>
+            <Icon name="refresh" size={17} />
+            Refresh overview
+          </button>
+        }
+      >
+        <PageSkeleton variant="dashboard" label="Loading store overview" />
+      </AdminLayout>
+    );
   const revenue = {
     labels: monthly.map((item) => {
       const [year, month] = String(item._id).split("-");
@@ -151,16 +169,14 @@ export default function AdminDashboard() {
           onClick={() => setRetry((value) => value + 1)}
         >
           <Icon name="refresh" size={17} />
-          {loading ? "Refreshing…" : "Refresh overview"}
+          Refresh overview
         </button>
       }
     >
       <p className="admin-updated" role="status">
-        {loading
-          ? "Getting the latest figures…"
-          : updated
-            ? `Updated ${updated.toLocaleTimeString("en-PH", { hour: "numeric", minute: "2-digit" })}`
-            : "Refresh to load your store figures."}
+        {updated
+          ? `Updated ${updated.toLocaleTimeString("en-PH", { hour: "numeric", minute: "2-digit" })}`
+          : "Refresh to load your store figures."}
       </p>
       {error && (
         <div className="ui-message error" role="alert">
@@ -207,7 +223,7 @@ export default function AdminDashboard() {
           ) : (
             <div className="admin-state">
               <Icon name="leaf" size={30} />
-              <h3>{loading ? "Loading revenue…" : "Room for a good start."}</h3>
+              <h3>Room for a good start.</h3>
               <p>
                 Monthly revenue appears here when completed orders are recorded.
               </p>
@@ -231,9 +247,7 @@ export default function AdminDashboard() {
                 </div>
               ))
             ) : (
-              <div className="admin-state">
-                {loading ? "Loading order activity…" : "No order activity yet."}
-              </div>
+              <div className="admin-state">No order activity yet.</div>
             )}
           </div>
           <Link className="admin-activity-link" to="/admin/orders">
@@ -246,11 +260,7 @@ export default function AdminDashboard() {
           <h2>The latest orders</h2>
           <Link to="/admin/orders">See all orders ↗</Link>
         </div>
-        <div
-          className="admin-table-scroll"
-          tabIndex={0}
-          aria-label="Recent orders table"
-        >
+        <TableScroll label="Recent orders">
           <table className="admin-table">
             <thead>
               <tr>
@@ -267,9 +277,7 @@ export default function AdminDashboard() {
               {!(overview.recentOrders || []).length ? (
                 <tr>
                   <td colSpan={5} className="admin-table-empty">
-                    {loading
-                      ? "Loading recent orders…"
-                      : "New orders will appear here."}
+                    New orders will appear here.
                   </td>
                 </tr>
               ) : (
@@ -289,7 +297,7 @@ export default function AdminDashboard() {
                     <td className="admin-number">{formatPrice(order.total)}</td>
                     <td>
                       <span className={`admin-badge ${order.status}`}>
-                        {statusLabel(order.status)}
+                        {orderStatusLabel(order)}
                       </span>
                     </td>
                     <td>
@@ -305,7 +313,7 @@ export default function AdminDashboard() {
               )}
             </tbody>
           </table>
-        </div>
+        </TableScroll>
       </section>
       <div className="admin-dashboard-charts lower">
         <section className="admin-panel padded">
@@ -343,9 +351,7 @@ export default function AdminDashboard() {
             </div>
           ) : (
             <div className="admin-state">
-              {loading
-                ? "Loading product activity…"
-                : "Product activity appears here as orders come in."}
+              Product activity appears here as orders come in.
             </div>
           )}
         </section>
@@ -371,9 +377,7 @@ export default function AdminDashboard() {
                 </div>
               ))
             ) : (
-              <div className="admin-state">
-                {loading ? "Checking stock…" : "No low-stock pieces to show."}
-              </div>
+              <div className="admin-state">No low-stock pieces to show.</div>
             )}
           </div>
         </section>

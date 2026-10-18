@@ -7,10 +7,22 @@ import "../styles/auth-pages.css";
 
 export default function AuthLayout({ mode, children }) {
   return (
-    <div className="auth-page">
+    <div className="auth-page min-h-screen flex flex-col" data-auth-mode={mode}>
+      <a className="skip-link" href="#auth-heading">
+        Skip to form
+      </a>
       <StoreHeader compact />
-      <main className="auth-shell">
-        <aside className="auth-story" aria-hidden="true">
+      <main
+        className={
+          mode === "signup"
+            ? "auth-shell w-full max-w-6xl mx-auto px-5 py-7 grid grid-cols-[0.8fr_1.2fr] gap-12 items-center max-[900px]:block max-[900px]:max-w-2xl"
+            : "auth-shell w-full max-w-280 my-0 mx-auto [padding:64px_28px_80px] grid grid-cols-[1fr_1fr] gap-[110px] items-center max-[1000px]:gap-12 max-[700px]:block max-[700px]:[padding:32px_20px_48px] max-[700px]:max-w-125"
+        }
+      >
+        <aside
+          className={`auth-story ${mode === "signup" ? "max-[900px]:hidden" : "max-[700px]:hidden"}`}
+          aria-hidden="true"
+        >
           <span className="ui-eyebrow">A little history. A fresh start.</span>
           <h2>
             Good clothes.
@@ -29,12 +41,13 @@ export default function AuthLayout({ mode, children }) {
             <Icon name="leaf" size={17} /> A thoughtful way to get dressed.
           </div>
         </aside>
-        <section className="auth-card" aria-labelledby="auth-heading">
-          <span className="ui-eyebrow">
-            {mode === "signup"
-              ? "Your next chapter starts here"
-              : "Good to have you back"}
-          </span>
+        <section
+          className={`auth-card border border-line rounded-[12px] bg-white shadow-[0_8px_40px_#28362c05] min-w-0 ${mode === "signup" ? "p-6 sm:p-7" : "p-9 max-[1000px]:p-7 max-[700px]:py-7 max-[700px]:px-6"}`}
+          aria-labelledby="auth-heading"
+        >
+          {mode !== "signup" && (
+            <span className="ui-eyebrow">Good to have you back</span>
+          )}
           {children}
           <Link to="/" className="auth-back">
             <Icon name="back" size={16} /> Keep exploring the collection

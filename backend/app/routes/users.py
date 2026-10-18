@@ -2,6 +2,8 @@ from datetime import datetime
 from flask import Blueprint, current_app, jsonify, request
 from ..identity import find_user, public_user
 from ..validation import profile, addresses
+from ..admin_validation import FieldValidationError
+from ..notifications import enqueue, account_event
 
 bp = Blueprint('users', __name__, url_prefix='/api/users')
 
@@ -17,13 +19,17 @@ def user_profile(user_id):
     if not user:
         return jsonify(error='User not found'), 404
     if request.method == 'GET':
-        return jsonify(user=public_user(user))
+        options = current_app.db.account_options.find_one({'_id': 'profile'}) or {}
+        return jsonify(user=public_user(user), options={'genders': options.get('genders', [])})
     try:
-        changes = profile(request.get_json())
+        changes = profile(request.get_json(), user)
+    except FieldValidationError as error:
+        return error.response()
     except ValueError as error:
         return jsonify(error=str(error)), 400
     if changes:
-        current_app.db.users.update_one({'_id': user['_id']}, {'$set': {**changes, 'updated_at': datetime.utcnow()}})
+        current_app.db.users.update_one({'_id': user['_id']}, enqueue({'$set': {**changes, 'updated_at': datetime.utcnow()}}, 'users', user['_id'],
+            account_event(user['_id'], 'Contact number changed', 'Your account contact number was updated. Contact the store if you did not make this change.') if 'phone' in changes and changes['phone'] != user.get('phone', '') else None))
     updated = current_app.db.users.find_one({'_id': user['_id']})
     return jsonify(success=True, user=public_user(updated), message='Profile saved')
 
