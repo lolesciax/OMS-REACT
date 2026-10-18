@@ -47,4 +47,4 @@ Requirements: Node.js 22+, Python 3.11+, and MongoDB.
 
 The local frontend runs at `http://localhost:5173` and the API at `http://localhost:5000`.
 
-Deployment configuration for Render and Vercel is in `render.yaml` and `vercel.json`.
+Deployment configuration is in `render.yaml` and `frontend/vercel.json`.
