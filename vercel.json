@@ -1,0 +1,23 @@
+{
+  "buildCommand": "npm run build",
+  "installCommand": "npm ci",
+  "outputDirectory": "frontend/dist",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://old-goods-thrift-oms-api.onrender.com/api/:path*"
+    },
+    {
+      "source": "/static/uploads/:path*",
+      "destination": "https://old-goods-thrift-oms-api.onrender.com/static/uploads/:path*"
+    },
+    {
+      "source": "/uploads/:path*",
+      "destination": "https://old-goods-thrift-oms-api.onrender.com/uploads/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

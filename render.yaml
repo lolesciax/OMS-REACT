@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: old-goods-thrift-oms-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: python backend/run.py
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.4
+      - key: HOST
+        value: 0.0.0.0
+      - key: SESSION_COOKIE_SECURE
+        value: "1"
+      - key: TRUSTED_HOSTS
+        value: old-goods-thrift-oms-api.onrender.com
+      - key: SECRET_KEY
+        generateValue: true
+      - key: MONGODB_URI
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
