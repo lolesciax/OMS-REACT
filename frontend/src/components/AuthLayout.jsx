@@ -25,8 +25,8 @@ export default function AuthLayout({ mode, children }) {
             <em>Better stories.</em>
           </h2>
           <p>
-            Make room for pieces with character. Find something you love, give it
-            another life, and make it your own.
+            Make room for pieces with character. Find something you love, give
+            it another life, and make it your own.
           </p>
           <div className="auth-story-image">
             <Image src="/p2.jpg" alt="A pre-loved shirt from our collection" />
@@ -40,7 +40,9 @@ export default function AuthLayout({ mode, children }) {
           className={`auth-card border border-line rounded-[12px] bg-white shadow-[0_8px_40px_#28362c05] min-w-0 ${mode === "signup" ? "w-full max-w-[560px] justify-self-end p-5 sm:p-8 lg:p-10" : "p-9 max-[1000px]:p-7 max-[700px]:py-7 max-[700px]:px-6"}`}
           aria-labelledby="auth-heading"
         >
-          {mode === "login" && <span className="ui-eyebrow">Good to have you back</span>}
+          {mode === "login" && (
+            <span className="ui-eyebrow">Good to have you back</span>
+          )}
           {children}
           <Link to="/" className="auth-back">
             <Icon name="back" size={16} /> Keep exploring the collection

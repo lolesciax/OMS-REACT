@@ -282,7 +282,7 @@ class MongoIntegrationTests(unittest.TestCase):
         restored.set_cookie('oms_session', cookie)
         restored_response = restored.get('/api/auth/session')
         self.assertEqual(restored_response.json['user']['_id'], str(self.uid))
-        self.assertEqual(restored_response.headers['Clear-Site-Data'], '"storage"')
+        self.assertNotIn('Clear-Site-Data', restored_response.headers)
         self.assertEqual(restored_response.headers['Cache-Control'], 'no-store')
         self.assertEqual(self.client.post('/api/auth/logout').status_code, 403)
         self.assertEqual(self.mutate('post', '/api/auth/logout').status_code, 200)

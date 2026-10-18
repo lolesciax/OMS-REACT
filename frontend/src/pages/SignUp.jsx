@@ -142,7 +142,10 @@ export default function SignUp() {
         </div>
       )}
       <form onSubmit={submit} noValidate aria-busy={busy}>
-        <fieldset disabled={busy} className="ui-fieldset min-w-0 border-0 p-0 m-0">
+        <fieldset
+          disabled={busy}
+          className="ui-fieldset min-w-0 border-0 p-0 m-0"
+        >
           {["username", "email"].map((field) => {
             const invalid = !!errors[field] || availability[field] === "taken";
             const feedback =
@@ -182,9 +185,15 @@ export default function SignUp() {
                     check(field);
                   }}
                   maxLength={field === "username" ? 16 : 254}
-                  aria-invalid={!!errors[field] || availability[field] === "taken"}
+                  aria-invalid={
+                    !!errors[field] || availability[field] === "taken"
+                  }
                   aria-describedby={`signup-${field}-feedback`}
-                  placeholder={field === "username" ? "Choose a username" : "you@example.com"}
+                  placeholder={
+                    field === "username"
+                      ? "Choose a username"
+                      : "you@example.com"
+                  }
                 />
               </div>
             );
@@ -265,13 +274,19 @@ export default function SignUp() {
             />
           </div>
 
-          <button className="ui-button ui-button-dark auth-submit" type="submit">
+          <button
+            className="ui-button ui-button-dark auth-submit"
+            type="submit"
+          >
             {busy ? "Creating your account…" : "Create account"}
             <Icon name="arrow" size={18} />
           </button>
 
           <p className="auth-switch">
-            Already part of the thrift? <Link to="/login" state={state}>Sign in</Link>
+            Already part of the thrift?{" "}
+            <Link to="/login" state={state}>
+              Sign in
+            </Link>
           </p>
         </fieldset>
       </form>

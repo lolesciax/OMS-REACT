@@ -31,7 +31,7 @@ Accounts with orders cannot be deleted. Deleting an unused account also removes 
 
 Session IDs travel only in the `oms_session` HttpOnly, SameSite=Lax cookie. Mutations require the session's CSRF token, which is restored from `/api/auth/session` and kept in memory. Logout revokes the database session. Password changes and account deactivation invalidate sessions. TTL deletion is asynchronous, so the API also checks expiry on every session/draft read.
 
-The session response sends `Clear-Site-Data: "storage"` to remove legacy browser-stored data on supporting browsers, without deleting the HttpOnly cookie. API responses are not cached; private attachment responses also specify `private`.
+Session checks do not clear browser storage. Session identity, carts, checkouts and likes remain server-owned. API responses are not cached; private attachment responses also specify `private`.
 
 `PUT /api/checkout` starts a draft from selected cart entries or buy-now product IDs. `PATCH` saves delivery/payment/discount edits, and `GET` restores the draft or pending order. The exposed `checkoutId` is the reserved `orderId`, so replacing a draft invalidates requests from stale tabs. Autosave includes an editor ID and increasing version; `editorVersions` rejects out-of-order edits from that editor. The reserved order ID makes order submission idempotent across retries and reloads. Payment proof removes only the matching checkout. Older unpaid orders remain accessible through order history.
 

@@ -82,11 +82,6 @@ def create_app():
         response.headers['Content-Security-Policy'] = "default-src 'none'; frame-ancestors 'none'; sandbox"
         if request.is_secure:
             response.headers['Strict-Transport-Security'] = 'max-age=31536000'
-        if request.path == '/api/auth/session':
-            # Retire old browser-stored account/checkout data on upgrade. This
-            # directive clears web storage without deleting the session cookie.
-            response.headers['Clear-Site-Data'] = '"storage"'
-            response.headers['Cache-Control'] = 'no-store'
         if request.path.startswith('/api/') and response.status_code >= 500:
             # Route failures must not expose database URLs, credentials or traces.
             response.set_data(app.json.dumps({'success': False, 'error': 'The server is temporarily unavailable. Please try again shortly.'}))

@@ -108,7 +108,9 @@ try {
   );
   await b.click(".shop-dialog-close");
   await b.click(".shop-liked-filter");
-  await b.wait("location.search.includes('liked=true')");
+  await b.wait(
+    "location.search.includes('liked=true') && document.querySelectorAll('.shop-product').length===1",
+  );
   assert.equal(
     await b.e("document.querySelectorAll('.shop-product').length"),
     1,

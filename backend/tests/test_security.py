@@ -24,6 +24,23 @@ class SecurityTests(unittest.TestCase):
         # Rejected requests still consume the shared IP budget.
         self.assertTrue(self.app.db.rate_limits.find_one_and_update.called)
 
+    def test_production_origin_validation_and_session_checks_do_not_clear_storage(self):
+        with patch('app.MongoClient', return_value=MagicMock()), patch.dict('os.environ', {
+                'MONGODB_URI': 'mongodb://unused/test', 'CORS_ORIGINS': 'https://thriftlyshop.vercel.app'}):
+            app = create_app()
+        client = app.test_client()
+        response = client.post('/api/auth/check-email', json={'email': 'invalid'},
+                               headers={'Origin': 'https://thriftlyshop.vercel.app'})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.headers['Access-Control-Allow-Origin'], 'https://thriftlyshop.vercel.app')
+        for origin in ('https://thriftlyshop.vercel.app.attacker.invalid', 'https://attacker.invalid'):
+            self.assertEqual(client.post('/api/auth/login', json={}, headers={'Origin': origin}).status_code, 403)
+        app.db.sessions.find_one.return_value = None
+        response = client.get('/api/auth/session')
+        self.assertEqual(response.status_code, 401)
+        self.assertNotIn('Clear-Site-Data', response.headers)
+        self.assertEqual(response.headers['Cache-Control'], 'no-store')
+
     def test_security_headers_and_patch_preflight(self):
         response = self.client.get('/api/health')
         self.assertEqual(response.headers['X-Content-Type-Options'], 'nosniff')
