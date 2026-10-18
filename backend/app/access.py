@@ -2,6 +2,7 @@
 from bson import ObjectId
 from flask import current_app
 from .admin_validation import FieldValidationError, clean_text, boolean
+from .catalog import DEFAULT_CATALOG_OPTIONS
 
 PERMISSIONS = {'admin.access': 'Manage the store and its accounts'}
 
@@ -18,6 +19,11 @@ def ensure_access_data(db):
     db.account_options.update_one({'_id': 'profile'}, {'$setOnInsert': {
         'genders': ['Female', 'Male', 'Non-binary', 'Other'],
     }}, upsert=True)
+    db.catalog_options.update_one(
+        {'_id': 'product'},
+        {'$setOnInsert': DEFAULT_CATALOG_OPTIONS},
+        upsert=True,
+    )
     # One-time, idempotent migration. Explicit role assignments always win.
     for legacy_admin, code in ((True, 'admin'), (False, 'customer')):
         role = db.roles.find_one({'code': code})

@@ -3,18 +3,30 @@
 @layer components {
   .product-photo {
     @apply min-w-0;
+    container: photo-control / inline-size;
   }
   .product-photo-trigger {
     @apply relative block w-full h-full p-0 border-0 bg-[#f0eee8] text-ink cursor-zoom-in overflow-hidden rounded-[inherit];
   }
+  .product-photo-trigger:focus-visible {
+    @apply outline-2 outline-offset-[-4px] outline-forest;
+  }
   .product-photo-trigger:disabled {
     @apply opacity-[1] cursor-default;
   }
-  .product-photo-trigger > img {
-    @apply block w-full h-full object-contain p-5;
-  }
   .product-photo-hint {
-    @apply absolute bottom-4 left-[50%] [transform:translateX(-50%)] flex items-center justify-center gap-2 whitespace-nowrap py-[9px] px-[13px] border border-line rounded-[24px] bg-[#fffef7f5] text-small;
+    @apply absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center justify-center gap-2 whitespace-nowrap py-[9px] px-[13px] border border-line rounded-[24px] bg-[#fffef7f5] text-small pointer-events-none shadow-sm;
+  }
+  @container photo-control (max-width: 140px) {
+    .product-photo-hint {
+      @apply bottom-1 right-1 left-auto translate-x-0 size-7 rounded-full p-0;
+    }
+    .product-photo-hint > span {
+      @apply hidden;
+    }
+    .product-photo-hint svg {
+      @apply size-3.5;
+    }
   }
   .product-photo-viewer {
     @apply w-[min(1080px,_calc(100vw_-_32px))] max-w-[none] h-[min(900px,_calc(100dvh_-_32px))] max-h-[none] m-auto p-0 border border-line rounded-[14px] bg-paper text-ink overflow-hidden;
@@ -40,10 +52,10 @@
   .product-photo-stage {
     @apply flex-1 min-h-0 overflow-auto bg-[#f0eee8] [overscroll-behavior:contain];
   }
-  .product-photo-stage img {
-    @apply block w-full h-full max-w-[none] object-contain p-5;
+  .product-photo-stage .product-media {
+    @apply size-full p-3;
   }
-  .product-photo-stage.is-zoomed img {
+  .product-photo-stage.is-zoomed .product-media {
     @apply w-[200%] h-[200%];
   }
   .product-photo-viewer > p {

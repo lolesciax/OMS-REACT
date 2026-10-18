@@ -1,0 +1,125 @@
+@layer base {
+  html {
+    scroll-padding-block: 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+  }
+  body {
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+      env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  }
+  input,
+  select,
+  textarea {
+    min-width: 0;
+    max-width: 100%;
+    scroll-margin-block: 1rem;
+  }
+}
+
+/* These shared viewport constraints intentionally outrank per-page utilities. */
+:is(.ui-dialog-overlay, .shop-dialog-overlay, .auth-modal-overlay) {
+  top: var(--app-viewport-top, 0px);
+  bottom: auto;
+  height: var(--app-viewport-height, 100dvh);
+  padding-block: max(12px, env(safe-area-inset-top, 0px))
+    max(12px, env(safe-area-inset-bottom, 0px));
+  padding-inline: max(12px, env(safe-area-inset-left, 0px))
+    max(12px, env(safe-area-inset-right, 0px));
+  overscroll-behavior: contain;
+}
+:is(.ui-dialog, .shop-dialog, .auth-recovery) {
+  max-height: calc(
+    var(--app-viewport-height, 100dvh) -
+      max(12px, env(safe-area-inset-top, 0px)) -
+      max(12px, env(safe-area-inset-bottom, 0px))
+  );
+  overscroll-behavior: contain;
+  overflow-wrap: anywhere;
+}
+.ui-dialog-close,
+.shop-dialog-close,
+.auth-modal-close {
+  @apply min-h-11 min-w-11 rounded-full;
+}
+.product-photo-viewer {
+  width: min(
+    1080px,
+    calc(
+      100vw - 2 *
+        max(
+          12px,
+          env(safe-area-inset-left, 0px),
+          env(safe-area-inset-right, 0px)
+        )
+    )
+  );
+  height: min(
+    900px,
+    calc(
+      100dvh - 2 *
+        max(
+          12px,
+          env(safe-area-inset-top, 0px),
+          env(safe-area-inset-bottom, 0px)
+        )
+    )
+  );
+}
+.app-toast-region {
+  left: max(12px, env(safe-area-inset-left, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
+  bottom: max(
+    16px,
+    env(safe-area-inset-bottom, 0px),
+    calc(
+      100dvh - var(--app-viewport-height, 100dvh) -
+        var(--app-viewport-top, 0px) + 16px
+    )
+  );
+  max-height: calc(var(--app-viewport-height, 100dvh) * 0.4);
+}
+@media (min-width: 640px) {
+  .app-toast-region {
+    left: auto;
+    right: max(24px, env(safe-area-inset-right, 0px));
+  }
+}
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    font-size: max(1rem, 1em);
+  }
+  .quantity-stepper {
+    @apply w-[132px] min-h-11;
+  }
+  .quantity-stepper button {
+    @apply w-11 min-h-11 shrink-0;
+  }
+  .quantity-stepper input {
+    @apply w-11 min-w-0;
+  }
+  .admin-row-actions button,
+  .admin-table-action {
+    @apply min-h-11;
+  }
+}
+@layer components {
+  .ui-dialog h2,
+  .auth-recovery h2 {
+    @apply pr-8;
+  }
+  .admin-table-scroll {
+    overscroll-behavior-inline: contain;
+  }
+  .admin-workspace-footer {
+    @apply flex-wrap gap-2;
+  }
+  @media (max-width: 600px) {
+    .ui-dialog {
+      @apply px-5 pt-12 pb-5;
+    }
+    .ui-dialog-actions > .ui-button {
+      @apply min-w-0 flex-1;
+    }
+  }
+}

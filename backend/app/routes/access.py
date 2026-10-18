@@ -4,6 +4,7 @@ from flask import Blueprint, current_app, jsonify, request, g
 from pymongo.errors import DuplicateKeyError
 from ..access import PERMISSIONS, validate_role
 from ..admin_validation import FieldValidationError, clean_text
+from ..catalog import DEFAULT_CATALOG_OPTIONS, catalog_options as current_catalog_options
 from ..notifications import enqueue, event
 from uuid import uuid4
 
@@ -74,3 +75,42 @@ def account_options():
             return jsonify(error=str(error), fields={'genders': str(error)}), 400
     options = current_app.db.account_options.find_one({'_id': 'profile'}) or {}
     return jsonify(success=True, genders=options.get('genders', []))
+
+
+@bp.route('/catalog-options', methods=['GET', 'PUT'])
+def product_catalog_options():
+    if request.method == 'PUT':
+        try:
+            data = request.get_json()
+            if not isinstance(data, dict):
+                raise ValueError('Send catalog options as a JSON object.')
+            values = {}
+            errors = {}
+            for key in ('categories', 'sizes', 'materials'):
+                raw = data.get(key)
+                label = key[:-1] if key != 'categories' else 'category'
+                if not isinstance(raw, list) or not 1 <= len(raw) <= 50:
+                    errors[key] = f'Enter 1–50 {key}.'
+                    continue
+                try:
+                    cleaned = [clean_text(item, label, 80, True) for item in raw]
+                except ValueError as error:
+                    errors[key] = str(error)
+                    continue
+                if len({item.casefold() for item in cleaned}) != len(cleaned):
+                    errors[key] = f'{key.capitalize()} must be unique.'
+                    continue
+                values[key] = cleaned
+            if errors:
+                raise FieldValidationError(errors)
+            current_app.db.catalog_options.update_one(
+                {'_id': 'product'},
+                {'$set': values, '$setOnInsert': {'_id': 'product'}},
+                upsert=True,
+            )
+        except FieldValidationError as error:
+            return error.response()
+        except ValueError as error:
+            return jsonify(success=False, error=str(error)), 400
+
+    return jsonify(success=True, **current_catalog_options(current_app.db))

@@ -22,7 +22,6 @@ export default function useMaintenanceEditor(options) {
 
   const edit = useCallback((value) => {
     setForm(value);
-
   }, []);
   const [retry, setRetry] = useState(0);
   const [resetRevision, setResetRevision] = useState(0);
@@ -43,7 +42,7 @@ export default function useMaintenanceEditor(options) {
     apiFetch(`${API_BASE_URL}${loadPath}`, { signal: controller.signal })
       .then(async (response) => {
         const data = await response.json();
-        if (!response.ok)
+        if (!response.ok || data.success === false)
           throw new Error(data.error || "This module could not be loaded.");
         const value = config.current.select(data);
         if (!controller.signal.aborted) {
@@ -86,7 +85,7 @@ export default function useMaintenanceEditor(options) {
             }),
       });
       const data = await response.json();
-      if (!response.ok) {
+      if (!response.ok || data.success === false) {
         validation.reject(data);
         setConflict(response.status === 409);
         throw new Error(data.error || "Changes could not be saved.");

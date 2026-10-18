@@ -46,7 +46,7 @@ export function ProductSkeletons({ count = 4 }) {
             key={index}
             className="overflow-hidden rounded-xl border border-line bg-white"
           >
-            <Skeleton className="aspect-[4/5] w-full rounded-none" />
+            <Skeleton className="aspect-square w-full rounded-none" />
             <div className="space-y-4 p-4">
               <Skeleton className="h-6 w-24" />
               <Skeleton className="h-3 w-3/4" />

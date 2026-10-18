@@ -303,13 +303,7 @@
     @apply border-[#a5b19b] shadow-[0_5px_20px_#28362c0d];
   }
   .shop-product-image {
-    @apply w-full shrink-0 relative overflow-hidden rounded-none aspect-[4/5] bg-[#f0eee8];
-  }
-  .shop-product-image img {
-    @apply w-full h-full object-contain p-[clamp(12px,_2vw,_22px)] block;
-  }
-  .shop-product-image img[data-image-state="unavailable"] {
-    @apply p-5 opacity-[1] [filter:none];
+    @apply w-full shrink-0 relative overflow-hidden rounded-none aspect-square bg-[#f0eee8];
   }
   .shop-product-status {
     @apply flex items-center justify-between gap-2 mb-3 text-muted;
@@ -352,7 +346,7 @@
     @apply absolute top-4 right-4 z-[2] bg-white border border-line w-10 h-10 rounded-full flex items-center justify-center text-ink;
   }
   .shop-dialog-image {
-    @apply bg-[#f0eee8] h-[min(600px,_calc(100dvh_-_48px))] min-h-90 self-start sticky top-0;
+    @apply aspect-square bg-[#f0eee8] self-start sticky top-0;
   }
   .shop-dialog-details {
     @apply [padding:52px_32px_32px] min-w-0;
@@ -364,7 +358,7 @@
     @apply text-[length:23px] text-accent mb-4;
   }
   .shop-dialog-description {
-    @apply text-muted text-body leading-[1.8];
+    @apply whitespace-pre-wrap text-muted text-body leading-[1.8] [overflow-wrap:anywhere];
   }
   .shop-specs {
     @apply [margin:20px_0_24px];
@@ -439,7 +433,7 @@
       @apply grid-cols-[1fr] max-w-120;
     }
     .shop-dialog-image {
-      @apply min-h-0 h-[clamp(260px,_65vw,_380px)] relative;
+      @apply min-h-0 aspect-square max-h-[55svh] relative;
     }
     .shop-dialog-details {
       @apply py-7 px-6;
@@ -449,6 +443,140 @@
     }
     .shop-dialog-overlay {
       @apply p-4;
+    }
+  }
+}
+
+@layer components {
+  .shop-product {
+    @apply cursor-pointer rounded-2xl shadow-[0_2px_8px_#28362c04];
+  }
+  .shop-product:hover,
+  .shop-product:focus-visible {
+    @apply border-forest/50 shadow-[0_10px_28px_#28362c14];
+  }
+  .shop-product-image {
+    @apply border-b border-line;
+  }
+  .shop-product-image .product-media > img {
+    @apply transition-transform duration-300 motion-reduce:transition-none;
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .shop-product:hover .product-media > img {
+      @apply scale-[1.025];
+    }
+  }
+  .shop-product-meta h3 {
+    @apply line-clamp-2 min-h-[2.8em] leading-[1.4];
+  }
+  .shop-product-status > svg {
+    @apply hidden;
+  }
+  .shop-product-footer {
+    @apply mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3;
+  }
+  .shop-product-footer > button {
+    @apply inline-flex items-center gap-1 text-small font-medium text-forest;
+  }
+  .shop-description-title {
+    @apply mb-2 text-body font-semibold text-ink;
+  }
+  @media (max-width: 480px) {
+    .shop-product-footer {
+      @apply flex-col items-start;
+    }
+  }
+}
+
+@layer components {
+  .shop-product {
+    @apply cursor-default;
+  }
+  .shop-product:focus-within {
+    @apply border-forest/50 shadow-[0_10px_28px_#28362c14];
+  }
+  .shop-product-open {
+    @apply block size-full cursor-pointer border-0 bg-transparent p-0;
+  }
+  .shop-product-open:focus-visible {
+    @apply outline-2 -outline-offset-4 outline-forest;
+  }
+  .shop-product-meta h3 > button {
+    @apply cursor-pointer border-0 bg-transparent p-0 text-left font-semibold text-ink hover:underline underline-offset-4;
+    font: inherit;
+  }
+  .shop-product-footer > button {
+    @apply min-h-11 cursor-pointer rounded-lg border-0 bg-transparent px-1 py-2 text-small font-semibold text-forest hover:bg-[#eef2e9];
+  }
+  .product-like-button {
+    @apply inline-flex min-h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-small font-semibold text-forest shadow-sm transition-colors hover:border-[#aa675b] hover:bg-[#fff1ed] hover:text-[#a13f3b] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest disabled:cursor-wait disabled:opacity-60;
+  }
+  .product-like-button[aria-pressed="true"] {
+    @apply border-[#e3b9b4] bg-[#fff0ed] text-[#a13f3b];
+  }
+  .product-like-button.is-compact {
+    @apply absolute top-3 right-3 z-[1] size-11 p-0;
+  }
+  .shop-likes-toolbar {
+    @apply mb-4 flex flex-wrap items-center justify-between gap-3;
+  }
+  .shop-likes-toolbar > span {
+    @apply text-small text-muted;
+  }
+  .shop-liked-filter {
+    @apply inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-small font-semibold text-forest;
+  }
+  .shop-liked-filter[aria-pressed="true"] {
+    @apply border-forest bg-forest text-white;
+  }
+  .shop-liked-filter > span {
+    @apply rounded-full bg-forest/10 px-2 py-0.5 tabular-nums;
+  }
+  .shop-liked-filter[aria-pressed="true"] > span {
+    @apply bg-white/20;
+  }
+  .shop-dialog {
+    @apply max-w-[980px] grid-cols-[minmax(0,1fr)_minmax(0,1fr)];
+  }
+  .shop-dialog-media-panel {
+    @apply min-w-0 self-stretch border-r border-line bg-[#f0eee8] p-5;
+  }
+  .shop-dialog-media-content {
+    @apply sticky top-5;
+  }
+  .shop-dialog-media-content > p {
+    @apply mt-4 text-center text-small leading-relaxed text-muted;
+  }
+  .shop-dialog-media-panel .shop-dialog-image {
+    @apply relative top-auto aspect-square w-full overflow-hidden rounded-xl border border-line;
+  }
+  .shop-dialog-details {
+    @apply px-7 pb-7 pt-14;
+  }
+  .shop-dialog-price-row {
+    @apply mb-5 flex flex-wrap items-center justify-between gap-3;
+  }
+  .shop-dialog-price-row .shop-dialog-price {
+    @apply m-0;
+  }
+  @media (max-width: 700px) {
+    .shop-dialog {
+      @apply max-w-120 grid-cols-1;
+    }
+    .shop-dialog-media-panel {
+      @apply border-r-0 border-b p-3 pt-14;
+    }
+    .shop-dialog-media-content {
+      @apply static;
+    }
+    .shop-dialog-media-panel .shop-dialog-image {
+      @apply max-h-[50svh];
+    }
+    .shop-dialog-media-content > p {
+      @apply my-2;
+    }
+    .shop-dialog-details {
+      @apply p-5;
     }
   }
 }

@@ -11,6 +11,8 @@ def ensure_indexes(db):
     db.captcha_challenges.create_index('expiresAt', expireAfterSeconds=0)
     db.policy_versions.create_index([('kind', 1), ('publishedAt', -1)])
     db.users.create_index('roleId')
+    db.favorites.create_index([('userId', 1), ('productId', 1)], unique=True)
+    db.favorites.create_index([('userId', 1), ('createdAt', -1)])
     db.notifications.create_index([('userId', 1), ('eventKey', 1), ('audience', 1)], unique=True)
     db.notifications.create_index([('userId', 1), ('audience', 1), ('readAt', 1), ('_id', -1)])
     db.notifications.create_index([('userId', 1), ('_id', -1)])
@@ -37,6 +39,8 @@ def ensure_validators(db):
     object_id = {'bsonType': 'objectId'}
     quantity = {'bsonType': ['int', 'long'], 'minimum': 1}
     schemas = {
+        'favorites': {'required': ['userId', 'productId', 'createdAt'], 'properties': {
+            'userId': object_id, 'productId': object_id, 'createdAt': {'bsonType': 'date'}}},
         'captcha_challenges': {'required': ['secret', 'binding', 'purpose', 'challenge', 'expiresAt'], 'properties': {
             'secret': {'bsonType': 'string'}, 'binding': {'bsonType': 'string'}, 'purpose': {'enum': ['login', 'signup']},
             'challenge': {'bsonType': 'object'}, 'expiresAt': {'bsonType': 'date'}}},
@@ -51,6 +55,10 @@ def ensure_validators(db):
         'account_options': {'required': ['genders'], 'properties': {
             'genders': {'bsonType': 'array', 'minItems': 1, 'maxItems': 20, 'uniqueItems': True,
                         'items': {'bsonType': 'string', 'minLength': 1, 'maxLength': 30}}}},
+        'catalog_options': {'required': ['categories', 'sizes', 'materials'], 'properties': {
+            key: {'bsonType': 'array', 'minItems': 1, 'maxItems': 50, 'uniqueItems': True,
+                  'items': {'bsonType': 'string', 'minLength': 1, 'maxLength': 80}}
+            for key in ('categories', 'sizes', 'materials')}},
         'roles': {'required': ['code', 'label', 'permissions', 'active', 'system'], 'properties': {
             'code': {'bsonType': 'string', 'pattern': '^[a-z][a-z0-9_-]{1,39}$'},
             'label': {'bsonType': 'string', 'minLength': 1, 'maxLength': 80},
@@ -58,6 +66,9 @@ def ensure_validators(db):
             'active': {'bsonType': 'bool'}, 'system': {'bsonType': 'bool'}}},
         'rate_limits': {'required': ['attempts', 'allowed', 'checkedAt', 'expiresAt'], 'properties': {
             'attempts': {'bsonType': 'array', 'maxItems': 600, 'items': {'bsonType': 'date'}},
+            'reservations': {'bsonType': 'array', 'maxItems': 600, 'items': {
+                'bsonType': 'object', 'required': ['id', 'at'],
+                'properties': {'id': {'bsonType': 'string'}, 'at': {'bsonType': 'date'}}}},
             'allowed': {'bsonType': 'bool'}, 'checkedAt': {'bsonType': 'date'}, 'expiresAt': {'bsonType': 'date'}}},
         'sessions': {'required': ['userId', 'expiresAt', 'csrfToken', 'passwordVersion'], 'properties': {
             'userId': object_id, 'expiresAt': {'bsonType': 'date'}, 'csrfToken': {'bsonType': 'string'}, 'passwordVersion': {'bsonType': 'string'}}},

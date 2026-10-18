@@ -31,7 +31,9 @@ export default function FaqMaintenance() {
       return next;
     });
     validation.reset();
-    toast.info("Question reordered in your draft. Publish to update the store.");
+    toast.info(
+      "Question reordered in your draft. Publish to update the store.",
+    );
   };
   const submit = (event) => {
     const errors = {},
@@ -152,7 +154,9 @@ export default function FaqMaintenance() {
                             values.filter((value) => value !== item.id),
                           );
                           validation.reset();
-                          toast.info("Question removed from your draft. Publish to update the store.");
+                          toast.info(
+                            "Question removed from your draft. Publish to update the store.",
+                          );
                         }}
                       >
                         Remove

@@ -1,0 +1,31 @@
+@reference "../index.css";
+
+@layer components {
+  .product-media {
+    @apply relative block size-full min-w-0 bg-[#f0eee8];
+    container: product-image / inline-size;
+  }
+  .product-media > img {
+    @apply block size-full object-contain p-0;
+  }
+  .product-media-empty {
+    @apply flex size-full min-h-0 flex-col items-center justify-center gap-3 px-3 py-5 text-center text-small font-medium text-muted;
+  }
+  .product-media-empty-icon {
+    @apply grid size-14 place-items-center rounded-2xl border border-[#dadcd1] bg-[#e8e9e1] text-[#7b8574];
+  }
+  @container product-image (max-width: 110px) {
+    .product-media-empty {
+      @apply gap-0 p-2;
+    }
+    .product-media-empty-icon {
+      @apply size-8 rounded-lg border-0;
+    }
+    .product-media-empty-icon svg {
+      @apply size-5;
+    }
+    .product-media-empty-label {
+      @apply hidden;
+    }
+  }
+}

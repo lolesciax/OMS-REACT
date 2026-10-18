@@ -54,10 +54,11 @@ def create_app():
         if parsed.scheme not in ('http', 'https') or not parsed.hostname or '*' in origin or parsed.username or parsed.password or parsed.path or parsed.query or parsed.fragment:
             raise ValueError('CORS_ORIGINS must contain exact HTTP(S) origins, without wildcards or paths')
     from .security import authorize_request, protect_auth_requests
-    from .rate_limits import limit_requests
+    from .rate_limits import limit_requests, release_successful_action
     app.before_request(limit_requests)
     app.before_request(protect_auth_requests)
     app.before_request(authorize_request)
+    app.after_request(release_successful_action)
     from .notifications import deliver_after_response
     app.after_request(deliver_after_response)
 
@@ -151,6 +152,8 @@ def create_app():
 
     from .routes.cart import bp as cart_bp
     app.register_blueprint(cart_bp)
+    from .routes.favorites import bp as favorites_bp
+    app.register_blueprint(favorites_bp)
     from .routes.checkout import bp as checkout_bp
     app.register_blueprint(checkout_bp)
     from .routes.settings import bp as settings_bp

@@ -302,7 +302,12 @@ def get_products():
                 "category": product.get("category", "Uncategorized"),
                 "image": product.get("image", ""),
                 "description": product.get("description", ""),
-                "isActive": product.get("isActive", True)
+                "product_id": product.get("product_id", ""),
+                "condition": product.get("condition", "Good"),
+                "size": product.get("size", ""),
+                "material": product.get("material", ""),
+                "is_active": product.get("is_active", product.get("isActive", True)),
+                "isActive": product.get("is_active", product.get("isActive", True))
             })
 
         return jsonify({
@@ -648,6 +653,7 @@ def delete_user(user_id):
             # Remove account-owned state so deleting an unused account cannot
             # leave sessions, carts or checkout drafts pointing to a missing user.
             db.carts.delete_many({'user_id': user['_id']})
+            db.favorites.delete_many({'userId': user['_id']})
             db.checkouts.delete_many({'userId': user['_id']})
             db.sessions.delete_many({'userId': user['_id']})
             return jsonify({
@@ -811,8 +817,9 @@ def get_monthly_revenue():
                 "revenue": {"$sum": "$total"},
                 "orders": {"$sum": 1}
             }},
-            {"$sort": {"_id": 1}},
-            {"$limit": 6}
+            {"$sort": {"_id": -1}},
+            {"$limit": 6},
+            {"$sort": {"_id": 1}}
         ]
         monthly_result = list(db.orders.aggregate(monthly_pipeline))
 

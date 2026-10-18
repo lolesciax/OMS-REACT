@@ -99,7 +99,7 @@ export default function Profile() {
         },
       );
       const data = await response.json();
-      if (!response.ok) {
+      if (!response.ok || data.success === false) {
         validation.reject(data);
         throw new Error(data.error || "Your changes couldn’t be saved.");
       }
@@ -148,7 +148,7 @@ export default function Profile() {
       },
     );
     const data = await response.json();
-    if (!response.ok)
+    if (!response.ok || data.success === false)
       throw new Error(
         data.error || "The address couldn’t be saved. Please try again.",
       );
@@ -173,7 +173,6 @@ export default function Profile() {
     });
     setAddressErrors({});
     setError("");
-
   };
   const saveAddress = async (event) => {
     event.preventDefault();
@@ -322,12 +321,15 @@ export default function Profile() {
                 type="button"
                 className="ui-button ui-button-light mt-3"
                 disabled={busy}
-                onClick={() =>
+                onClick={() => {
                   setProfile((previous) => ({
                     ...previous,
                     profilePic: "/default-avatar.svg",
-                  }))
-                }
+                  }));
+                  toast.info(
+                    "Photo removed from your draft. Save your changes to keep it.",
+                  );
+                }}
               >
                 Remove photo
               </button>
@@ -370,7 +372,6 @@ export default function Profile() {
                 noValidate
                 onChange={(event) => {
                   validation.clear(event.target.name);
-
                 }}
               >
                 <fieldset
@@ -512,7 +513,7 @@ export default function Profile() {
                           setProfile({ ...saved });
                           validation.reset();
                           setError("");
-
+                          toast.success("Unsaved profile changes discarded.");
                         }}
                       >
                         Discard changes

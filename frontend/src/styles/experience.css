@@ -235,43 +235,43 @@
   .brand-second {
     @apply block text-body font-medium tracking-[0.3px];
   }
-  .store-nav > a:not(.ui-button),
-  .store-signout {
-    @apply inline-flex items-center gap-[7px] text-ink bg-transparent border-0 text-body no-underline py-2 px-0;
+  .store-nav-link {
+    @apply inline-flex min-h-11 items-center gap-2 rounded-xl px-3 py-2 text-body font-medium text-muted no-underline transition-colors hover:bg-[#edf1e8] hover:text-forest;
   }
-  .store-nav > a.active {
-    @apply text-accent;
+  .store-nav-link.is-active {
+    @apply bg-[#edf1e8] text-forest;
   }
-  .store-nav > a:hover:not(.ui-button),
-  .store-signout:hover {
-    @apply text-accent;
+  .store-bag-button,
+  .store-mobile-toggle {
+    @apply relative inline-flex size-11 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl border border-line bg-white text-forest no-underline transition-colors hover:bg-[#edf1e8];
   }
-  .store-cart-count {
-    @apply inline-flex min-w-5 h-5 items-center justify-center rounded-full bg-accent text-white text-small;
+  .store-bag-button.is-active {
+    @apply border-forest bg-[#edf1e8];
   }
-  .store-signout {
-    @apply text-muted;
+  .store-bag-count {
+    @apply absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-bold text-white ring-2 ring-paper;
   }
-  @media (max-width: 900px) {
-    .store-admin-link {
-      display: none !important;
-    }
+  .store-account-toggle {
+    @apply inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-line bg-white px-3 text-body font-medium text-ink transition-colors hover:bg-[#edf1e8];
   }
-  @media (max-width: 600px) {
-    .store-brand {
-      @apply text-lead;
-    }
-    .store-nav .ui-button {
-      @apply min-h-10 py-[10px] px-[14px] text-small;
-    }
-    .store-signout {
-      @apply text-small;
-    }
-    .store-nav:has(.store-cart) {
-      @apply w-full border-t border-line pt-2 justify-between;
-    }
-    .store-nav:has(.store-cart) > a {
-      @apply text-small gap-1;
+  .store-account-toggle.is-active {
+    @apply border-forest bg-[#edf1e8] text-forest;
+  }
+  .store-account-panel {
+    @apply absolute top-full right-0 z-50 mt-3 w-64 rounded-2xl border border-line bg-white p-3 text-body shadow-xl;
+  }
+  .store-account-panel .store-nav-link {
+    @apply flex w-full;
+  }
+  .store-header-signout {
+    @apply flex min-h-11 w-full cursor-pointer items-center gap-2 rounded-xl px-3 py-2 text-left text-body font-medium text-accent transition-colors hover:bg-[#fff1ec] disabled:cursor-wait disabled:opacity-50;
+  }
+  .store-header :is(a, button):focus-visible {
+    @apply outline-2 outline-offset-2 outline-forest;
+  }
+  @media (min-width: 1100px) {
+    .store-bag-button {
+      @apply w-auto min-w-11 px-3;
     }
   }
   @media (prefers-reduced-motion: reduce) {
@@ -333,33 +333,6 @@
     .ui-dialog {
       @apply [padding:36px_24px_24px];
     }
-  }
-  .upload-field {
-    @apply p-5 my-[22px] mx-0 [border:1px_dashed_#bfc8b5] bg-[#f8faf3] rounded-[8px];
-  }
-  .upload-field > label {
-    @apply block text-body font-semibold mb-3;
-  }
-  .upload-field > img {
-    @apply block max-w-full max-h-55 object-contain [margin:0_auto_16px] rounded-[6px];
-  }
-  .upload-field input {
-    @apply w-full text-small text-muted;
-  }
-  .upload-field input::file-selector-button {
-    @apply text-ink bg-white border border-line rounded-[5px] py-[10px] px-3 [font:inherit] cursor-pointer mr-3;
-  }
-  .upload-field > p {
-    @apply text-small text-muted mt-[10px];
-  }
-  .upload-file-name {
-    @apply flex items-center gap-2 mt-4 text-small text-forest;
-  }
-  .upload-file-name span {
-    @apply min-w-0 [overflow-wrap:anywhere];
-  }
-  .upload-file-name button {
-    @apply border-0 bg-transparent text-accent text-small ml-auto underline;
   }
   .field-optional {
     @apply font-normal text-muted;

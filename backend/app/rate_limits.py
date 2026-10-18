@@ -2,6 +2,7 @@
 import hashlib
 import ipaddress
 import math
+import secrets
 from flask import current_app, g, jsonify, request
 from pymongo import ReturnDocument
 from pymongo.errors import DuplicateKeyError, PyMongoError
@@ -12,6 +13,12 @@ AUTH_POLICIES = {
     'auth.check_email': (60, 60), 'auth.check_username': (60, 60),
 }
 IP_POLICIES = (('ip:burst', 120, 10), ('ip:all', 600, 60))
+SUCCESS_ATTEMPT_ENDPOINTS = {
+    'auth.login',
+    'auth.register',
+    'auth.request_password_reset',
+    'auth.forgot_password',
+}
 
 
 def client_identity(value):
@@ -29,15 +36,26 @@ def client_identity(value):
 
 def consume(scope, identity, limit, seconds):
     digest = hashlib.sha256(f'{scope}:{identity}'.encode()).hexdigest()
+    reservation_id = secrets.token_urlsafe(18)
     # $$NOW comes from MongoDB, so worker clock differences cannot reset limits.
     update = [
         {'$set': {'attempts': {'$filter': {
             'input': {'$ifNull': ['$attempts', []]}, 'as': 'attempt',
             'cond': {'$gt': ['$$attempt', {'$subtract': ['$$NOW', seconds * 1000]}]},
+        }}, 'reservations': {'$filter': {
+            'input': {'$ifNull': ['$reservations', []]}, 'as': 'reservation',
+            'cond': {'$gt': ['$$reservation.at', {'$subtract': ['$$NOW', seconds * 1000]}]},
         }}}},
-        {'$set': {'allowed': {'$lt': [{'$size': '$attempts'}, limit]}}},
+        {'$set': {'allowed': {'$lt': [
+            {'$add': [{'$size': '$attempts'}, {'$size': '$reservations'}]},
+            limit,
+        ]}}},
         {'$set': {
-            'attempts': {'$cond': ['$allowed', {'$concatArrays': ['$attempts', ['$$NOW']]}, '$attempts']},
+            'reservations': {'$cond': [
+                '$allowed',
+                {'$concatArrays': ['$reservations', [{'id': reservation_id, 'at': '$$NOW'}]]},
+                '$reservations',
+            ]},
             'checkedAt': '$$NOW', 'expiresAt': {'$add': ['$$NOW', seconds * 1000]},
         }},
     ]
@@ -48,7 +66,11 @@ def consume(scope, identity, limit, seconds):
         except DuplicateKeyError:
             record = collection.find_one_and_update({'_id': digest}, update, return_document=ReturnDocument.AFTER)
         if not record['allowed']:
-            retry = max(1, math.ceil(seconds - (record['checkedAt'] - record['attempts'][0]).total_seconds()))
+            timestamps = list(record.get('attempts', [])) + [
+                item['at'] for item in record.get('reservations', [])
+            ]
+            oldest = min(timestamps)
+            retry = max(1, math.ceil(seconds - (record['checkedAt'] - oldest).total_seconds()))
             response = jsonify(success=False, error='Too many requests. Please wait before trying again.')
             response.status_code = 429
             response.headers['Retry-After'] = str(retry)
@@ -56,9 +78,41 @@ def consume(scope, identity, limit, seconds):
             response.headers['RateLimit-Remaining'] = '0'
             response.headers['Cache-Control'] = 'no-store'
             return response
+        reservations = getattr(g, 'rate_limit_reservations', None)
+        if reservations is None:
+            g.rate_limit_reservations = reservations = []
+        reservations.append((scope, digest, reservation_id))
     except PyMongoError:
         return jsonify(success=False, error='Request verification is temporarily unavailable. Please try again shortly.'), 503
     return None
+
+
+def release_successful_action(response):
+    """Do not retain attempt-budget reservations for successful user actions."""
+    if not 200 <= response.status_code < 300:
+        return response
+
+    endpoint = request.endpoint or ''
+    releasable = []
+    for reservation in getattr(g, 'rate_limit_reservations', []):
+        scope, digest, reservation_id = reservation
+        is_write_attempt = scope in ('ip:write', 'user:write')
+        is_auth_attempt = (
+            endpoint in SUCCESS_ATTEMPT_ENDPOINTS
+            and scope.startswith(endpoint + ':')
+        )
+        if is_write_attempt or is_auth_attempt:
+            releasable.append((digest, reservation_id))
+
+    for digest, reservation_id in releasable:
+        try:
+            current_app.db.rate_limits.update_one(
+                {'_id': digest},
+                {'$pull': {'reservations': {'id': reservation_id}}},
+            )
+        except PyMongoError:
+            current_app.logger.exception('Failed to release successful action rate-limit reservation')
+    return response
 
 
 def limit_requests():

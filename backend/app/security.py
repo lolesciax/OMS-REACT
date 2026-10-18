@@ -32,10 +32,12 @@ JSON_REQUEST_METHODS = {
     'admin.get_order_details': {'PUT'}, 'orders.orders': {'POST'}, 'orders.order_detail': {'PUT'},
     'orders.calculate_shipping': {'POST'}, 'orders.confirm_order_receipt': {'PUT'},
     'users.user_profile': {'PUT'}, 'users.user_addresses': {'PUT'},
+    'users.workspace_preferences': {'PUT'},
     'checkout.checkout': {'PUT', 'PATCH'}, 'checkout.quote': {'POST'},
     'cart.add_to_cart': {'POST'}, 'cart.update_cart_item': {'PUT'}, 'cart.remove_from_cart': {'DELETE'},
     'products.check_product_stock': {'POST'}, 'products.update_product_stock': {'PUT'},
     'access.roles': {'POST'}, 'access.role_detail': {'PUT'}, 'access.account_options': {'PUT'},
+    'access.product_catalog_options': {'PUT'},
     'notifications.read': {'PATCH'}, 'notifications.read_all': {'POST'},
     'policies.publish': {'PUT'},
     'content.update': {'PUT'},
@@ -142,7 +144,7 @@ def authorize_request():
             return jsonify(success=False, error='Your session could not be verified. Refresh and try again.'), 403
     if path in ('/api/auth/session', '/api/auth/logout', '/api/checkout', '/api/checkout/quote'):
         return None
-    if request.endpoint and request.endpoint.startswith('notifications.'):
+    if request.endpoint and request.endpoint.startswith(('notifications.', 'favorites.')):
         return None
     aliases = {value for value in (str(user['_id']), user.get('username'), user.get('user_id')) if value}
     args = request.view_args or {}

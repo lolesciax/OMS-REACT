@@ -2,7 +2,7 @@ import { toast } from "../services/feedback";
 import { CheckoutProgress } from "../components/OrderProgress";
 import PageSkeleton from "../components/PageSkeleton";
 import Skeleton from "../components/Skeleton";
-import Image from "../components/Image";
+import ProductPhoto from "../components/ProductPhoto";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -105,7 +105,7 @@ export default function CheckoutPage() {
           navigate("/cart", { replace: true });
           return;
         }
-        if (!response.ok)
+        if (!response.ok || data.success === false)
           throw new Error(data.error || "Checkout could not be loaded.");
         const draft = resumeOrder
           ? {
@@ -566,10 +566,12 @@ export default function CheckoutPage() {
                 <div className="checkout-payment">
                   <div className="checkout-qr">
                     {qr && failedQR !== qr ? (
-                      <Image
+                      <ProductPhoto
+                        className="checkout-qr-photo"
                         src={qr}
-                        onError={() => setFailedQR(qr)}
-                        alt={`${method === "gcash" ? "GCash" : "Maya"} merchant payment QR code`}
+                        onUnavailable={() => setFailedQR(qr)}
+                        name={`${method === "gcash" ? "GCash" : "Maya"} merchant payment QR code`}
+                        caption="Check the merchant name and amount in your wallet app before confirming payment."
                       />
                     ) : (
                       <p>
@@ -620,6 +622,8 @@ export default function CheckoutPage() {
                     onError={setError}
                     disabled={busy}
                     label="Payment confirmation image"
+                    previewAlt="Selected payment confirmation"
+                    description="Include the amount, payment date, recipient, and transaction reference. Avoid unrelated personal information."
                   />
                   <button
                     className="ui-button ui-button-dark"
@@ -651,7 +655,11 @@ export default function CheckoutPage() {
           <div className="checkout-summary-items">
             {items.map((item) => (
               <div key={item.id || item._id}>
-                <Image src={item.image || "/product-placeholder.svg"} alt="" />
+                <ProductPhoto
+                  className="checkout-item-photo"
+                  src={item.image}
+                  name={item.name}
+                />
                 <div>
                   <h3>{item.name}</h3>
                   <p>
@@ -685,7 +693,7 @@ export default function CheckoutPage() {
                     },
                   );
                   const data = await response.json();
-                  if (!response.ok)
+                  if (!response.ok || data.success === false)
                     throw new Error(
                       data.error || "This code could not be applied.",
                     );
@@ -694,7 +702,11 @@ export default function CheckoutPage() {
                   setItems(data.quote.items);
                   setAppliedCode(data.quote.discountCode);
                   setCode(data.quote.discountCode);
-                  toast.success(data.quote.discountCode ? "Discount code applied." : "Discount code removed.");
+                  toast.success(
+                    data.quote.discountCode
+                      ? "Discount code applied."
+                      : "Discount code removed.",
+                  );
                 } catch (error) {
                   setDiscountError(error.message);
                 } finally {

@@ -4,11 +4,15 @@ from uuid import uuid4
 
 class ProductModel:
     def __init__(self, db):
+        self.db = db
         self.col = db.products
 
     def all(self):
-        """Return all active products."""
-        return list(self.col.find({'is_active': True}))
+        """Return active products that are currently in stock."""
+        return list(self.col.find({
+            'is_active': True,
+            'stock': {'$gt': 0}
+        }))
 
     def create(self, data):
         """Insert a new product document."""
@@ -25,7 +29,10 @@ class ProductModel:
 
     def delete(self, pid):
         """Permanently delete a product by ID."""
-        return self.col.delete_one({'_id': ObjectId(pid)}).deleted_count > 0
+        deleted = self.col.delete_one({'_id': ObjectId(pid)}).deleted_count > 0
+        if deleted:
+            self.db.favorites.delete_many({'productId': ObjectId(pid)})
+        return deleted
 
     def get_by_id(self, pid):
         """Get product by ID"""

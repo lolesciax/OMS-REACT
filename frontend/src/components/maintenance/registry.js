@@ -27,6 +27,14 @@ export const maintenanceModules = {
     icon: "user",
     component: lazy(() => import("./ProfileOptionsMaintenance")),
   },
+  catalog: {
+    title: "Product catalog choices",
+    description:
+      "Manage the categories, sizes and materials available when adding or updating products.",
+    group: "Store operations",
+    icon: "bag",
+    component: lazy(() => import("./CatalogOptionsMaintenance")),
+  },
   policies: {
     title: "Policies & terms",
     description:

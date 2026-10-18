@@ -1,7 +1,7 @@
 import { toast } from "../services/feedback";
 import PageSkeleton from "../components/PageSkeleton";
 import Skeleton from "../components/Skeleton";
-import Image from "../components/Image";
+import ProductPhoto from "../components/ProductPhoto";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -121,7 +121,12 @@ export default function Cart() {
     );
     if (results.some((id) => !id))
       setError("Some selections couldn’t be saved. Please try again.");
-    else toast.success(allSelected ? "Bag selection cleared." : "All available pieces selected.");
+    else
+      toast.success(
+        allSelected
+          ? "Bag selection cleared."
+          : "All available pieces selected.",
+      );
     setPending(false);
   };
   const removeItems = async () => {
@@ -163,7 +168,7 @@ export default function Cart() {
         }),
       });
       const data = await response.json();
-      if (!response.ok)
+      if (!response.ok || data.success === false)
         throw new Error(data.error || "Checkout could not be started.");
       toast.success("Your selected pieces are ready for checkout.");
       navigate("/checkout");
@@ -256,9 +261,10 @@ export default function Cart() {
                       update(item.id, { selected: event.target.checked })
                     }
                   />
-                  <Image
-                    src={item.image || "/product-placeholder.svg"}
-                    alt={item.name}
+                  <ProductPhoto
+                    className="bag-item-photo"
+                    src={item.image}
+                    name={item.name}
                   />
                   <div className="bag-item-info">
                     <h2>{item.name}</h2>

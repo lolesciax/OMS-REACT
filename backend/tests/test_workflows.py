@@ -9,10 +9,14 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 from bson import ObjectId
 from flask import Flask
+from flask import g, jsonify
 from app import MongoJSONProvider
 from app.routes import orders, cart, auth, admin, products
+from app.models.product import ProductModel
 from app.security import authorize_request, issue_session, hash_password, verify_password
+from app.rate_limits import release_successful_action
 from app.order_workflow import transition_order
+from app.admin_validation import FieldValidationError, product as validate_product
 
 
 class WorkflowTests(unittest.TestCase):
@@ -156,6 +160,164 @@ class WorkflowTests(unittest.TestCase):
         user['isAdmin'] = True
         with self.app.test_request_context('/api/admin/stats', headers={'Cookie': f'oms_session={token}', 'X-CSRF-Token': csrf}):
             self.assertIsNone(authorize_request())
+
+    def test_successful_login_releases_attempt_budgets_only(self):
+        with self.app.test_request_context('/api/auth/login', method='POST'):
+            g.rate_limit_reservations = [
+                ('ip:write', 'write-digest', 'write-id'),
+                ('ip:all', 'all-digest', 'all-id'),
+                ('auth.login:ip', 'login-digest', 'login-id'),
+                ('auth.login:account', 'account-digest', 'account-id'),
+            ]
+
+            response = release_successful_action(jsonify(success=True))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [call.args[0]['_id'] for call in self.db.rate_limits.update_one.call_args_list],
+            ['write-digest', 'login-digest', 'account-digest'],
+        )
+
+    def test_failed_action_keeps_its_rate_limit_reservations(self):
+        with self.app.test_request_context('/api/auth/login', method='POST'):
+            g.rate_limit_reservations = [
+                ('auth.login:ip', 'login-digest', 'login-id'),
+            ]
+
+            failure = jsonify(success=False)
+            failure.status_code = 401
+            response = release_successful_action(failure)
+
+        self.assertEqual(response.status_code, 401)
+        self.db.rate_limits.update_one.assert_not_called()
+
+    def test_successful_product_change_releases_write_budgets_only(self):
+        with self.app.test_request_context('/api/products/', method='POST'):
+            g.rate_limit_reservations = [
+                ('ip:write', 'ip-write-digest', 'ip-write-id'),
+                ('user:write', 'user-write-digest', 'user-write-id'),
+                ('ip:all', 'ip-all-digest', 'ip-all-id'),
+                ('user:all', 'user-all-digest', 'user-all-id'),
+            ]
+
+            response = release_successful_action(jsonify(success=True))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [call.args[0]['_id'] for call in self.db.rate_limits.update_one.call_args_list],
+            ['ip-write-digest', 'user-write-digest'],
+        )
+
+    def test_public_product_catalog_only_queries_active_in_stock_products(self):
+        ProductModel(self.db).all()
+
+        self.db.products.find.assert_called_once_with({
+            'is_active': True,
+            'stock': {'$gt': 0}
+        })
+
+    def test_product_fields_must_use_maintained_catalog_choices(self):
+        options = {
+            'categories': ['Tops'],
+            'sizes': ['M'],
+            'materials': ['Cotton'],
+        }
+        payload = {
+            'name': 'A tee',
+            'category': 'Accessories',
+            'size': 'M',
+            'material': 'Cotton',
+            'price': '100',
+            'stock': '1',
+            'condition': 'Good',
+        }
+        with self.assertRaises(FieldValidationError) as error:
+            validate_product(payload, options=options)
+        self.assertIn('category', error.exception.fields)
+
+    def test_existing_product_can_keep_a_choice_removed_from_maintenance(self):
+        options = {
+            'categories': ['Tops'],
+            'sizes': ['M'],
+            'materials': ['Cotton'],
+        }
+        existing = {
+            'name': 'An older tee',
+            'category': 'Vintage',
+            'size': 'One size',
+            'material': 'Rayon',
+            'price': 100,
+            'stock': 1,
+            'condition': 'Good',
+        }
+        values = validate_product(
+            {key: str(value) for key, value in existing.items()},
+            existing=existing,
+            options=options,
+        )
+        self.assertEqual(values['category'], 'Vintage')
+        self.assertEqual(values['size'], 'One size')
+        self.assertEqual(values['material'], 'Rayon')
+
+    def test_public_product_detail_hides_sold_out_products(self):
+        with patch('app.routes.products.ProductModel') as model:
+            model.return_value.get_by_id.return_value = {
+                '_id': ObjectId(self.pid),
+                'name': 'Sold-out piece',
+                'stock': 0,
+                'is_active': True
+            }
+
+            response = self.client.get(f'/api/products/{self.pid}')
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_admin_inventory_still_includes_sold_out_products(self):
+        self.db.products.find.return_value = [{
+            '_id': ObjectId(self.pid),
+            'name': 'Sold-out piece',
+            'stock': 0,
+            'is_active': True
+        }]
+
+        response = self.client.get('/api/admin/products')
+
+        self.assertEqual(response.status_code, 200)
+        product = response.get_json()['products'][0]
+        self.assertEqual(product['name'], 'Sold-out piece')
+        self.assertEqual(product['stock'], 0)
+
+    def test_out_of_stock_product_cannot_be_added_to_cart(self):
+        self.db.products.find_one.return_value = {
+            '_id': ObjectId(self.pid),
+            'name': 'Sold-out piece',
+            'stock': 0,
+            'is_active': True
+        }
+
+        response = self.client.post(
+            f'/api/cart/customer/add',
+            json={'product_id': self.pid, 'quantity': 1}
+        )
+
+        self.assertEqual(response.status_code, 409)
+        self.db.carts.update_one.assert_not_called()
+
+    def test_monthly_revenue_selects_the_six_latest_months_in_order(self):
+        with self.app.app_context():
+            response, status = admin.get_monthly_revenue()
+
+        self.assertEqual(status, 200)
+        self.assertTrue(response.get_json()['success'])
+        pipeline = self.db.orders.aggregate.call_args.args[0]
+        self.assertEqual(
+            pipeline[-3:],
+            [
+                {'$sort': {'_id': -1}},
+                {'$limit': 6},
+                {'$sort': {'_id': 1}},
+            ],
+        )
 
     def test_password_change_invalidates_session(self):
         user = {'_id': ObjectId(), 'password': 'old-password'}

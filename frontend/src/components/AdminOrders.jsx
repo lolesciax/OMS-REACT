@@ -1,3 +1,4 @@
+import { toast } from "../services/feedback";
 import { shortOrderReference } from "../utils/orderProgress";
 import Skeleton, { TableSkeleton } from "./Skeleton";
 import TableScroll from "./TableScroll";
@@ -42,6 +43,7 @@ export default function AdminOrders() {
             data.error || "Orders couldn’t be loaded. Please try again.",
           );
         setOrders(data.orders || []);
+        if (retry > 0) toast.success("Orders refreshed.");
       } catch (failure) {
         if (!controller.signal.aborted) setError(failure.message);
       } finally {

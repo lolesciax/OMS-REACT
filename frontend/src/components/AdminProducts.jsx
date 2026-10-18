@@ -1,4 +1,5 @@
 import { toast } from "../services/feedback";
+import { Link } from "react-router-dom";
 import useFormValidation from "../hooks/useFormValidation";
 import FieldError from "./FieldError";
 import { validateProduct, rules } from "../utils/adminValidation";
@@ -15,6 +16,7 @@ import Icon from "./Icon";
 import { apiFetch } from "../services/http";
 import { BACKEND_URL } from "../services/config";
 import { formatPrice } from "../utils/catalog";
+import { imageURL } from "../utils/images";
 
 const empty = {
   name: "",
@@ -26,8 +28,10 @@ const empty = {
   material: "",
   description: "",
 };
-export default function AdminProducts() {
+export default function AdminProducts({ outOfStockOnly = false }) {
   const [products, setProducts] = useState([]);
+  const [catalogOptions, setCatalogOptions] = useState(null);
+  const [failedPhotos, setFailedPhotos] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -48,15 +52,35 @@ export default function AdminProducts() {
     setError("");
     (async () => {
       try {
-        const response = await apiFetch(`${BACKEND_URL}/api/products`, {
-          signal: controller.signal,
-        });
-        const data = await response.json();
-        if (!response.ok || !Array.isArray(data.products))
+        const [productsResponse, optionsResponse] = await Promise.all([
+          apiFetch(`${BACKEND_URL}/api/admin/products`, {
+            signal: controller.signal,
+          }),
+          apiFetch(`${BACKEND_URL}/api/admin/catalog-options`, {
+            signal: controller.signal,
+          }),
+        ]);
+        const [data, options] = await Promise.all([
+          productsResponse.json(),
+          optionsResponse.json(),
+        ]);
+        if (
+          !productsResponse.ok ||
+          !Array.isArray(data.products) ||
+          !optionsResponse.ok ||
+          options.success === false
+        )
           throw new Error(
-            data.error || "Products couldn’t be loaded. Please try again.",
+            data.error ||
+              options.error ||
+              "Products and catalog choices couldn’t be loaded. Please try again.",
           );
         setProducts(data.products);
+        setCatalogOptions({
+          categories: options.categories,
+          sizes: options.sizes,
+          materials: options.materials,
+        });
       } catch (failure) {
         if (!controller.signal.aborted) setError(failure.message);
       } finally {
@@ -66,23 +90,18 @@ export default function AdminProducts() {
     return () => controller.abort();
   }, [retry]);
   const categories = [
-    ...new Set(products.map((product) => product.category).filter(Boolean)),
-  ].sort();
-  const suggestions = [
     ...new Set([
-      ...categories,
-      "Tops",
-      "Bottoms",
-      "Outerwear",
-      "Dresses",
-      "Footwear",
-      "Accessories",
+      ...(catalogOptions?.categories || []),
+      ...products.map((product) => product.category).filter(Boolean),
     ]),
-  ];
+  ].sort();
   const visible = useMemo(
     () =>
       products.filter(
         (product) =>
+          (outOfStockOnly
+            ? Number(product.stock) <= 0
+            : Number(product.stock) > 0) &&
           (category === "all" || product.category === category) &&
           [
             product.name,
@@ -95,7 +114,7 @@ export default function AdminProducts() {
               .includes(search.trim().toLowerCase()),
           ),
       ),
-    [products, category, search],
+    [products, category, search, outOfStockOnly],
   );
   const currentPage = Math.min(
     page,
@@ -186,16 +205,37 @@ export default function AdminProducts() {
   };
   return (
     <AdminLayout
-      title="Products & inventory"
-      description="Keep your pieces, prices, and available quantities up to date."
+      title={outOfStockOnly ? "Out-of-stock products" : "Products & inventory"}
+      description={
+        outOfStockOnly
+          ? "Review sold-out pieces and update their stock to put them back in the collection."
+          : "Keep your pieces, prices, and available quantities up to date."
+      }
       actions={
-        <button
-          className="ui-button ui-button-dark"
-          onClick={() => openEditor(null)}
-        >
-          <Icon name="bag" size={17} />
-          Add a product
-        </button>
+        outOfStockOnly ? (
+          <Link className="ui-button ui-button-light" to="/admin/products">
+            <Icon name="bag" size={17} />
+            All products
+          </Link>
+        ) : (
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              className="ui-button ui-button-light"
+              to="/admin/out-of-stock"
+            >
+              <Icon name="bag" size={17} />
+              Out of stock (
+              {products.filter((product) => Number(product.stock) <= 0).length})
+            </Link>
+            <button
+              className="ui-button ui-button-dark"
+              onClick={() => openEditor(null)}
+            >
+              <Icon name="bag" size={17} />
+              Add a product
+            </button>
+          </div>
+        )
       }
     >
       <div className="admin-stat-grid compact">
@@ -246,9 +286,17 @@ export default function AdminProducts() {
             <Icon name="search" size={18} />
             <input
               type="search"
-              aria-label="Search products"
+              aria-label={
+                outOfStockOnly
+                  ? "Search out-of-stock products"
+                  : "Search products"
+              }
               value={search}
-              placeholder="Search name, size, or category…"
+              placeholder={
+                outOfStockOnly
+                  ? "Search sold-out pieces…"
+                  : "Search name, size, or category…"
+              }
               onChange={(event) => {
                 setSearch(event.target.value);
                 setPage(1);
@@ -292,9 +340,13 @@ export default function AdminProducts() {
               ) : !visible.length ? (
                 <tr>
                   <td colSpan={5} className="admin-table-empty">
-                    {search || category !== "all"
-                      ? "No products match your filters."
-                      : "Your collection starts here. Add your first product."}
+                    {outOfStockOnly && !search && category === "all"
+                      ? "No sold-out products. Your active collection is in stock."
+                      : !outOfStockOnly && !search && category === "all"
+                        ? "No in-stock products are available. Check the Out of stock module."
+                        : search || category !== "all"
+                          ? "No products match your filters."
+                          : "Your collection starts here. Add your first product."}
                   </td>
                 </tr>
               ) : (
@@ -308,6 +360,17 @@ export default function AdminProducts() {
                             className="admin-product-thumbnail"
                             src={product.image}
                             name={product.name}
+                            onUnavailable={() =>
+                              setFailedPhotos((previous) =>
+                                previous[product._id] ===
+                                imageURL(product.image)
+                                  ? previous
+                                  : {
+                                      ...previous,
+                                      [product._id]: imageURL(product.image),
+                                    },
+                              )
+                            }
                           />
                           <div>
                             <strong>{product.name}</strong>
@@ -315,6 +378,14 @@ export default function AdminProducts() {
                               {product.condition || "Pre-loved"}
                               {product.size ? ` · Size ${product.size}` : ""}
                             </span>
+                            {(imageURL(product.image) ===
+                              "/product-placeholder.svg" ||
+                              failedPhotos[product._id] ===
+                                imageURL(product.image)) && (
+                              <p className="mt-2 text-small font-medium text-accent">
+                                Photo unavailable. Edit to add a replacement.
+                              </p>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -369,6 +440,7 @@ export default function AdminProducts() {
           busy={busy}
           onClose={() => setEditor(null)}
           wide
+          className="product-editor-dialog"
         >
           {formError && (
             <div className="ui-message error" role="alert">
@@ -388,184 +460,228 @@ export default function AdminProducts() {
               className="ui-fieldset min-w-0 border-0 p-0 m-0"
               disabled={busy}
             >
-              <div className="editor-fields grid grid-cols-[1fr_1fr] gap-[0_18px] max-[650px]:block">
-                <div className="ui-field mb-5 editor-field-full">
-                  <label htmlFor="product-name">Product name</label>
-                  <input
-                    id="product-name"
-                    {...validation.bind("name")}
-                    value={form.name}
-                    required
-                    maxLength={rules.productText.name}
-                    onChange={(event) =>
-                      setForm((previous) => ({
-                        ...previous,
-                        name: event.target.value,
-                      }))
-                    }
-                  />
-                  <FieldError
-                    id={validation.errorId("name")}
-                    error={validation.errors.name}
-                  />
-                </div>
-                <div className="ui-field mb-5">
-                  <label htmlFor="product-category">Category</label>
-                  <input
-                    id="product-category"
-                    {...validation.bind("category")}
-                    list="product-categories"
-                    value={form.category}
-                    required
-                    maxLength={rules.productText.category}
-                    onChange={(event) =>
-                      setForm((previous) => ({
-                        ...previous,
-                        category: event.target.value,
-                      }))
-                    }
-                  />
-                  <FieldError
-                    id={validation.errorId("category")}
-                    error={validation.errors.category}
-                  />
-                  <datalist id="product-categories">
-                    {suggestions.map((value) => (
-                      <option key={value}>{value}</option>
-                    ))}
-                  </datalist>
-                  <p className="ui-field-hint">
-                    Choose an existing category or type a new one.
+              <div className="product-editor-layout">
+                <aside className="product-editor-media">
+                  <h3>Product photo</h3>
+                  <p>
+                    Show the whole piece in good light, with a simple
+                    background.
                   </p>
-                </div>
-                <div className="ui-field mb-5">
-                  <label htmlFor="product-condition">Condition</label>
-                  <select
-                    id="product-condition"
-                    {...validation.bind("condition")}
-                    value={form.condition}
-                    onChange={(event) =>
-                      setForm((previous) => ({
-                        ...previous,
-                        condition: event.target.value,
-                      }))
+                  <UploadField
+                    label={
+                      editor === "new"
+                        ? "Add a photo (optional)"
+                        : "Product photo"
                     }
-                  >
-                    {[...new Set([form.condition, ...rules.conditions])].map(
-                      (value) => (
-                        <option key={value}>{value}</option>
-                      ),
-                    )}
-                  </select>
-                  <FieldError
-                    id={validation.errorId("condition")}
-                    error={validation.errors.condition}
+                    currentSrc={editor !== "new" ? editor.image : ""}
+                    description="Keep the fit, print, and any signs of wear visible."
+                    error={validation.errors.image}
+                    file={image}
+                    onChange={setImage}
+                    onError={(message) => {
+                      setFormError(message);
+                      if (!message) validation.clear("image");
+                    }}
+                    disabled={busy}
+                    previewAlt="Selected product photo"
                   />
-                </div>
-                {[
-                  ["price", "Price (PHP)", "0.01"],
-                  ["stock", "Available stock", "1"],
-                ].map(([key, label, step]) => (
-                  <div className="ui-field mb-5" key={key}>
-                    <label htmlFor={`product-${key}`}>{label}</label>
-                    <input
-                      id={`product-${key}`}
-                      {...validation.bind(key)}
-                      type="number"
-                      min={0}
-                      max={key === "price" ? rules.maxAmount : rules.maxStock}
-                      step={step}
-                      required
-                      value={form[key]}
-                      onChange={(event) =>
-                        setForm((previous) => ({
-                          ...previous,
-                          [key]: event.target.value,
-                        }))
-                      }
-                    />
-                    <FieldError
-                      id={validation.errorId(key)}
-                      error={validation.errors[key]}
-                    />
+                  <p className="product-editor-note">
+                    <Icon name="photo" size={18} /> Photos are shown without
+                    cropping. Preview your image before saving.
+                  </p>
+                </aside>
+                <div className="product-editor-details">
+                  <h3>Product details</h3>
+                  <p className="ui-field-hint mb-5">
+                    Add a clear name, accurate sizing, and an honest condition
+                    description.
+                  </p>
+                  <div className="editor-fields grid grid-cols-[1fr_1fr] gap-[0_18px] max-[650px]:block">
+                    <div className="ui-field mb-5 editor-field-full">
+                      <label htmlFor="product-name">Product name</label>
+                      <input
+                        id="product-name"
+                        {...validation.bind("name")}
+                        value={form.name}
+                        placeholder="e.g. Forest green cotton graphic tee"
+                        required
+                        maxLength={rules.productText.name}
+                        onChange={(event) =>
+                          setForm((previous) => ({
+                            ...previous,
+                            name: event.target.value,
+                          }))
+                        }
+                      />
+                      <FieldError
+                        id={validation.errorId("name")}
+                        error={validation.errors.name}
+                      />
+                    </div>
+                    <div className="ui-field mb-5">
+                      <label htmlFor="product-category">Category</label>
+                      <select
+                        id="product-category"
+                        {...validation.bind("category")}
+                        required
+                        value={form.category}
+                        onChange={(event) =>
+                          setForm((previous) => ({
+                            ...previous,
+                            category: event.target.value,
+                          }))
+                        }
+                      >
+                        <option value="">Choose a category</option>
+                        {[
+                          ...new Set([
+                            ...(catalogOptions?.categories || []),
+                            ...(editor !== "new" && editor.category
+                              ? [editor.category]
+                              : []),
+                          ]),
+                        ].map((value) => (
+                          <option value={value} key={value}>
+                            {value}
+                          </option>
+                        ))}
+                      </select>
+                      <FieldError
+                        id={validation.errorId("category")}
+                        error={validation.errors.category}
+                      />
+                      <p className="ui-field-hint">
+                        Manage category choices in Maintenance → Product catalog
+                        choices.
+                      </p>
+                    </div>
+                    <div className="ui-field mb-5">
+                      <label htmlFor="product-condition">Condition</label>
+                      <select
+                        id="product-condition"
+                        {...validation.bind("condition")}
+                        value={form.condition}
+                        onChange={(event) =>
+                          setForm((previous) => ({
+                            ...previous,
+                            condition: event.target.value,
+                          }))
+                        }
+                      >
+                        {[
+                          ...new Set([form.condition, ...rules.conditions]),
+                        ].map((value) => (
+                          <option key={value}>{value}</option>
+                        ))}
+                      </select>
+                      <FieldError
+                        id={validation.errorId("condition")}
+                        error={validation.errors.condition}
+                      />
+                    </div>
+                    {[
+                      ["price", "Price (PHP)", "0.01"],
+                      ["stock", "Available stock", "1"],
+                    ].map(([key, label, step]) => (
+                      <div className="ui-field mb-5" key={key}>
+                        <label htmlFor={`product-${key}`}>{label}</label>
+                        <input
+                          id={`product-${key}`}
+                          {...validation.bind(key)}
+                          type="number"
+                          min={0}
+                          max={
+                            key === "price" ? rules.maxAmount : rules.maxStock
+                          }
+                          step={step}
+                          required
+                          value={form[key]}
+                          onChange={(event) =>
+                            setForm((previous) => ({
+                              ...previous,
+                              [key]: event.target.value,
+                            }))
+                          }
+                        />
+                        <FieldError
+                          id={validation.errorId(key)}
+                          error={validation.errors[key]}
+                        />
+                      </div>
+                    ))}
+                    {[
+                      ["size", "Size", "sizes"],
+                      ["material", "Material", "materials"],
+                    ].map(([key, label, optionKey]) => (
+                      <div className="ui-field mb-5" key={key}>
+                        <label htmlFor={`product-${key}`}>
+                          {label}{" "}
+                          <span className="field-optional">(optional)</span>
+                        </label>
+                        <select
+                          id={`product-${key}`}
+                          {...validation.bind(key)}
+                          value={form[key]}
+                          onChange={(event) =>
+                            setForm((previous) => ({
+                              ...previous,
+                              [key]: event.target.value,
+                            }))
+                          }
+                        >
+                          <option value="">No {label.toLowerCase()}</option>
+                          {[
+                            ...new Set([
+                              ...(catalogOptions?.[optionKey] || []),
+                              ...(editor !== "new" && editor[key]
+                                ? [editor[key]]
+                                : []),
+                            ]),
+                          ].map((value) => (
+                            <option value={value} key={value}>
+                              {value}
+                            </option>
+                          ))}
+                        </select>
+                        <FieldError
+                          id={validation.errorId(key)}
+                          error={validation.errors[key]}
+                        />
+                      </div>
+                    ))}
+                    <div className="ui-field mb-5 editor-field-full">
+                      <label htmlFor="product-description">Description</label>
+                      <textarea
+                        id="product-description"
+                        {...validation.bind("description")}
+                        rows={5}
+                        maxLength={rules.productText.description}
+                        value={form.description}
+                        placeholder="Fit, fabric, and any wear customers should know about…"
+                        onChange={(event) =>
+                          setForm((previous) => ({
+                            ...previous,
+                            description: event.target.value,
+                          }))
+                        }
+                      />
+                      <div className="product-description-help">
+                        <span>
+                          Include the fit, fabric, measurements, and any flaws.
+                        </span>
+                        <span>
+                          {String(form.description || "").length}/
+                          {rules.productText.description}
+                        </span>
+                      </div>
+                      <FieldError
+                        id={validation.errorId("description")}
+                        error={validation.errors.description}
+                      />
+                    </div>
                   </div>
-                ))}
-                {[
-                  ["size", "Size"],
-                  ["material", "Material"],
-                ].map(([key, label]) => (
-                  <div className="ui-field mb-5" key={key}>
-                    <label htmlFor={`product-${key}`}>
-                      {label} <span className="field-optional">(optional)</span>
-                    </label>
-                    <input
-                      id={`product-${key}`}
-                      {...validation.bind(key)}
-                      maxLength={rules.productText[key]}
-                      value={form[key]}
-                      onChange={(event) =>
-                        setForm((previous) => ({
-                          ...previous,
-                          [key]: event.target.value,
-                        }))
-                      }
-                    />
-                    <FieldError
-                      id={validation.errorId(key)}
-                      error={validation.errors[key]}
-                    />
-                  </div>
-                ))}
-                <div className="ui-field mb-5 editor-field-full">
-                  <label htmlFor="product-description">Description</label>
-                  <textarea
-                    id="product-description"
-                    {...validation.bind("description")}
-                    rows={3}
-                    maxLength={rules.productText.description}
-                    value={form.description}
-                    placeholder="Fit, fabric, and any wear customers should know about…"
-                    onChange={(event) =>
-                      setForm((previous) => ({
-                        ...previous,
-                        description: event.target.value,
-                      }))
-                    }
-                  />
-                  <FieldError
-                    id={validation.errorId("description")}
-                    error={validation.errors.description}
-                  />
                 </div>
               </div>
-              {editor !== "new" && editor.image && !image && (
-                <div className="admin-current-image">
-                  <ProductPhoto
-                    className="admin-editor-photo"
-                    src={editor.image}
-                    name={editor.name}
-                  />
-                  <span>
-                    Current product photo. Choose a new image to replace it.
-                  </span>
-                </div>
-              )}
-              <UploadField
-                label={
-                  editor === "new"
-                    ? "Product photo (optional)"
-                    : "Replace product photo (optional)"
-                }
-                error={validation.errors.image}
-                file={image}
-                onChange={setImage}
-                onError={(message) => {
-                  setFormError(message);
-                  if (!message) validation.clear("image");
-                }}
-                disabled={busy}
-                previewAlt="Selected product photo"
-              />
               <div className="editor-footer flex justify-end gap-3 pt-5 mt-2 border-t border-line">
                 <button
                   className="ui-button ui-button-light"

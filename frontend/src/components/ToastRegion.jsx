@@ -17,14 +17,25 @@ function Toast({ item, hidden }) {
       onMouseLeave={() => setHovered(false)}
       onFocusCapture={() => setFocused(true)}
       onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false);
+        if (!event.currentTarget.contains(event.relatedTarget))
+          setFocused(false);
       }}
     >
-      <span aria-hidden="true" className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#edf3e9] font-bold text-forest">
+      <span
+        aria-hidden="true"
+        className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#edf3e9] font-bold text-forest"
+      >
         {item.tone === "success" ? "✓" : "i"}
       </span>
-      <div className="min-w-0 flex-1 break-words leading-relaxed" role="status" aria-live="polite" aria-atomic="true">
-        <span className="sr-only">{item.tone === "success" ? "Success. " : "Notice. "}</span>
+      <div
+        className="min-w-0 flex-1 break-words leading-relaxed"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <span className="sr-only">
+          {item.tone === "success" ? "Success. " : "Notice. "}
+        </span>
         {item.message}
       </div>
       <button
@@ -40,7 +51,10 @@ function Toast({ item, hidden }) {
 }
 
 export default function ToastRegion() {
-  const items = useSyncExternalStore(feedbackStore.subscribe, feedbackStore.getSnapshot);
+  const items = useSyncExternalStore(
+    feedbackStore.subscribe,
+    feedbackStore.getSnapshot,
+  );
   const [hidden, setHidden] = useState(document.visibilityState === "hidden");
   useEffect(() => {
     const update = () => setHidden(document.visibilityState === "hidden");
@@ -48,8 +62,13 @@ export default function ToastRegion() {
     return () => document.removeEventListener("visibilitychange", update);
   }, []);
   return (
-    <section aria-label="Action feedback" className="pointer-events-none fixed inset-x-3 bottom-[max(1rem,env(safe-area-inset-bottom))] z-[10000] flex max-h-[70dvh] flex-col gap-3 overflow-y-auto p-1 sm:left-auto sm:right-6 sm:w-[min(25rem,calc(100vw-3rem))]">
-      {items.map((item) => <Toast key={item.id} item={item} hidden={hidden} />)}
+    <section
+      aria-label="Action feedback"
+      className="app-toast-region pointer-events-none fixed inset-x-3 bottom-[max(1rem,env(safe-area-inset-bottom))] z-[10000] flex flex-col gap-3 overflow-y-auto p-1 sm:left-auto sm:right-6 sm:w-[min(25rem,calc(100vw-3rem))]"
+    >
+      {items.map((item) => (
+        <Toast key={item.id} item={item} hidden={hidden} />
+      ))}
     </section>
   );
 }

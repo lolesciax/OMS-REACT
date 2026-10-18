@@ -172,4 +172,41 @@ The typography pass checked customer and admin pages at 320, 390, 768 and 1440px
 
 Use `npm run format` to format the frontend and `npm run format:check` to verify formatting.
 
+### Image controls
+
+`ProductMedia` owns image loading and unavailable states. `ProductPhoto` adds a keyboard-accessible native dialog, fit/zoom controls and focus restoration. Use it for catalog details, inventory thumbnails, bag/checkout/order items, merchant QR codes and order evidence. Give each instance a sized wrapper, an informative `name`, and a contextual `caption` when needed. Keep merchant codes and receipts uncropped.
+
+`UploadField` owns file selection, drag-and-drop, decoded-image validation, preview URL cleanup, and selection feedback. Pass `currentSrc` for saved images: selecting a replacement only stages a file; removing that selection restores the saved preview. Persist with the parent form. `resetKey` resets errors after save/discard. Product photos, merchant QR codes, payment proofs and delivery photos share this control. File size/type and pixel limits come from shared validation; the API independently validates and sanitizes uploads. Missing original photos need replacement uploads, and previews preserve the original resolution.
+
+### Responsive web app checks
+
+Shared viewport behavior lives in `src/hooks/useViewportMetrics.js`, `src/services/browserViewport.js`, and `src/styles/responsive.css` under `frontend`. Dialogs follow the visual viewport when the on-screen keyboard opens, respect safe-area insets, and keep scrolling inside their own content. Pinch zoom remains enabled. Customer and admin pages use dynamic viewport heights; tables scroll inside labeled keyboard-focusable regions.
+
+`frontend/public/manifest.webmanifest` provides standalone installation metadata and an SVG app icon. The manifest allows either orientation. Supported browsers can offer installation on HTTPS or localhost; see [browser installation requirements](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable). Installation does not provide offline ordering: authentication, inventory, carts, payments and orders still require the API. No service worker or client-side database cache is introduced. Test the production HTTPS origin on actual target devices before release.
+
+`npm run test:responsive` checks 31 routes at 12 viewport sizes (320–2560px, including short landscape), plus recovery, receipt, product, account, discount and role dialogs. It reports page overflow, clipped order content, dialog bounds and small close controls in `.tmp/responsive-audit.json`. The runner uses a dedicated local test server and refuses non-test database metadata.
+
+Start the disposable fixture from the repository root in one PowerShell terminal:
+
+```powershell
+$env:CORS_ORIGINS = 'http://127.0.0.1:5181,http://localhost:5181'
+py backend/tests/browser_fixture.py --responsive
+```
+
+In another terminal, point Vite at the fixture:
+
+```powershell
+$env:OMS_BACKEND_URL = 'http://127.0.0.1:5001'
+npm run dev -- --host 127.0.0.1 --port 5181 --strictPort
+```
+
+Start a separate Chrome debugging profile, then run the audit:
+
+```powershell
+Start-Process -FilePath 'C:/Program Files/Google/Chrome/Application/chrome.exe' -WindowStyle Hidden -ArgumentList '--headless=new','--remote-debugging-port=9223',('--user-data-dir="' + (Join-Path (Get-Location) '.tmp/responsive-chrome') + '"'),'about:blank'
+npm run test:responsive
+```
+
+The fixture's test accounts are `customer_test` and `admin_test`, password `Demo-123!`. `--responsive` adds populated bag, checkout and order states only in its unique `oms_test_*` database. Stop the test services afterwards; the fixture's shutdown endpoint/key in `.tmp/browser-fixture.json` removes that database. `OMS_BROWSER_BASE_URL` and `OMS_CHROME_DEBUG_URL` can override the local server and Chrome JSON endpoint when needed.
+
 Loading screens use shared Tailwind skeletons for session restoration, lazy routes, storefront cards and hero images, the bag, checkout and shipping quotes, profiles, order history, admin tables/statistics/charts/settings, pagination and availability validation. Image placeholders animate until the image loads and give way to the existing fallback on failure. Skeleton regions announce loading to assistive technology, contain no interactive placeholder controls, and stop shimmering when reduced motion is preferred. Delayed-response browser checks cover all 14 screens at 320, 390 and 1440px, plus image loading, failures and retries.

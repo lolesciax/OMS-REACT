@@ -1,11 +1,24 @@
 from datetime import datetime
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, current_app, jsonify, request, g
 from ..identity import find_user, public_user
 from ..validation import profile, addresses
 from ..admin_validation import FieldValidationError
 from ..notifications import enqueue, account_event
 
 bp = Blueprint('users', __name__, url_prefix='/api/users')
+
+
+@bp.put('/workspace-preferences')
+def workspace_preferences():
+    from ..workspace_preferences import validate_workspace_preferences
+    try:
+        preferences = validate_workspace_preferences(request.get_json())
+    except ValueError as error:
+        return jsonify(success=False, error=str(error)), 400
+    current_app.db.users.update_one({'_id': g.user['_id']}, {
+        '$set': {'workspacePreferences': preferences},
+    })
+    return jsonify(success=True, workspacePreferences=preferences)
 
 
 @bp.route('/')

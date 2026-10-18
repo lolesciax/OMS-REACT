@@ -4,12 +4,11 @@ import { shortOrderReference } from "../utils/orderProgress";
 import PageSkeleton from "./PageSkeleton";
 import FieldError from "./FieldError";
 import { validateTracking } from "../utils/adminValidation";
-import Image from "./Image";
+import ProductPhoto from "./ProductPhoto";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import AdminLayout from "./AdminLayout";
 import ConfirmDialog from "./ConfirmDialog";
-import EditorDialog from "./EditorDialog";
 import Icon from "./Icon";
 import { apiFetch } from "../services/http";
 import { BACKEND_URL } from "../services/config";
@@ -50,7 +49,6 @@ export default function AdminViewOrders() {
   const [tracking, setTracking] = useState("");
   const [trackingError, setTrackingError] = useState("");
   const [confirm, setConfirm] = useState(null);
-  const [preview, setPreview] = useState(false);
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
@@ -211,7 +209,11 @@ export default function AdminViewOrders() {
                   <div className="admin-order-items">
                     {(order.items || []).map((item, index) => (
                       <div key={item.id || index}>
-                        <Image src={item.image} alt={item.name} />
+                        <ProductPhoto
+                          className="admin-order-item-photo"
+                          src={item.image}
+                          name={item.name}
+                        />
                         <div>
                           <h3>{item.name}</h3>
                           <p>
@@ -261,20 +263,12 @@ export default function AdminViewOrders() {
                   </div>
                   {order.paymentProof ? (
                     <>
-                      <button
-                        className="admin-proof-preview"
-                        onClick={() => setPreview(true)}
-                        aria-label="Enlarge payment proof"
-                      >
-                        <Image
-                          src={order.paymentProof}
-                          alt="Customer-submitted payment confirmation"
-                        />
-                        <span>
-                          <Icon name="eye" size={17} />
-                          View full image
-                        </span>
-                      </button>
+                      <ProductPhoto
+                        className="admin-proof-photo"
+                        src={order.paymentProof}
+                        name="Customer payment confirmation"
+                        caption="Compare the recipient, amount, date, and transaction reference against your merchant records."
+                      />
                       <p className="admin-help">
                         Check the recipient, amount, date, and transaction
                         reference against your payment records before
@@ -292,6 +286,21 @@ export default function AdminViewOrders() {
                     </div>
                   )}
                 </section>
+                {order.receiptProof && (
+                  <section className="admin-panel padded">
+                    <div className="admin-panel-title">
+                      <h2>Delivery photo</h2>
+                    </div>
+                    <ProductPhoto
+                      className="admin-proof-photo"
+                      src={order.receiptProof}
+                      name="Customer delivery confirmation"
+                    />
+                    <p className="admin-help">
+                      Photo submitted by the customer when confirming receipt.
+                    </p>
+                  </section>
+                )}
               </div>
               <aside>
                 <section className="admin-panel padded">
@@ -434,19 +443,6 @@ export default function AdminViewOrders() {
           onClose={() => setConfirm(null)}
           onConfirm={() => update(confirm)}
         />
-      )}{" "}
-      {preview && (
-        <EditorDialog
-          title="Payment confirmation"
-          onClose={() => setPreview(false)}
-          wide
-        >
-          <Image
-            className="admin-proof-full"
-            src={order.paymentProof}
-            alt="Full payment confirmation submitted by the customer"
-          />
-        </EditorDialog>
       )}
     </AdminLayout>
   );

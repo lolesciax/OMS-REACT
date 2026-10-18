@@ -1,4 +1,5 @@
 from ..admin_validation import product as validate_product, stock as validate_stock, FieldValidationError
+from ..catalog import catalog_options
 from ..uploads import MAX_IMAGE_BYTES, save_image
 from ..identity import next_display_id
 from ..notifications import stock_update
@@ -81,7 +82,12 @@ def get_product(product_id):
         model = ProductModel(db)
         product = model.get_by_id(product_id)
 
-        if not product:
+        if (
+            not product
+            or product.get('is_active', product.get('isActive', True)) is False
+            or not isinstance(product.get('stock'), (int, float))
+            or product.get('stock', 0) <= 0
+        ):
             return jsonify({'error': 'Product not found'}), 404
 
         return jsonify({'product': serialize_doc(product)}), 200
@@ -102,7 +108,7 @@ def create_product():
             return jsonify(success=False, error='The database is temporarily unavailable'), 503
         model = ProductModel(db)
 
-        data = validate_product(request.form)
+        data = validate_product(request.form, options=catalog_options(db))
         image = request.files.get('image')
         image_url = ''
         if image and image.filename:
@@ -147,7 +153,11 @@ def update_product(pid):
         if not existing_product:
             return jsonify({'error': 'Product not found'}), 404
 
-        data = validate_product(request.form, existing_product)
+        data = validate_product(
+            request.form,
+            existing_product,
+            catalog_options(db),
+        )
         image = request.files.get('image')
         if image and image.filename:
             try:

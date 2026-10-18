@@ -20,12 +20,18 @@ def get_user_cart(user_id):
     items = []
     for item in cart.get('items', []):
         product = db.products.find_one({'_id': item['product_id']})
-        available = product and product.get('is_active', True)
-        stock = product.get('stock', 0) if available else 0
-        items.append({'id': str(item['product_id']), 'name': product.get('name', 'Unavailable piece') if product else 'Product no longer available',
-                      'price': product.get('price', 0) if product else None, 'image': product.get('image', '') if product else '',
+        stock = product.get('stock', 0) if product else 0
+        available = (
+            product
+            and product.get('is_active', product.get('isActive', True)) is not False
+            and isinstance(stock, (int, float))
+            and stock > 0
+        )
+        stock = stock if available else 0
+        items.append({'id': str(item['product_id']), 'name': product.get('name', 'Unavailable piece') if available else 'Unavailable piece',
+                      'price': product.get('price', 0) if available else None, 'image': product.get('image', '') if available else '',
                       'condition': product.get('condition', 'Pre-loved') if available else 'Unavailable',
-                      'size': product.get('size', '') if product else '', 'currentStock': stock,
+                      'size': product.get('size', '') if available else '', 'currentStock': stock,
                       'qty': min(item['qty'], stock) if stock > 0 else item['qty'],
                       'requestedQty': item['qty'], 'quantityAdjusted': stock > 0 and item['qty'] > stock,
                       'selected': bool(item.get('selected')) and stock > 0})
@@ -44,9 +50,11 @@ def add_to_cart(user_id):
     if type(quantity) is not int or quantity < 1:
         return jsonify(success=False, error='Quantity must be a positive integer'), 400
     product = db.products.find_one({'_id': product_id})
-    if not product or not product.get('is_active', True):
+    if not product or product.get('is_active', product.get('isActive', True)) is False:
         return jsonify(success=False, error='Product not found'), 404
     stock = product.get('stock', 0)
+    if not isinstance(stock, (int, float)) or stock <= 0:
+        return jsonify(success=False, error='This piece is out of stock'), 409
     if quantity > stock:
         return jsonify(success=False, error=f'Only {stock} items available'), 400
     db.carts.update_one({'user_id': user_id}, {'$setOnInsert': {'items': [], 'created_at': datetime.utcnow()}}, upsert=True)
@@ -77,10 +85,13 @@ def update_cart_item(user_id):
     if 'selected' in data and type(data['selected']) is not bool:
         return jsonify(success=False, error='Selection must be true or false'), 400
     product = db.products.find_one({'_id': product_id})
-    if not product or not product.get('is_active', True):
+    if not product or product.get('is_active', product.get('isActive', True)) is False:
         return jsonify(success=False, error='Product not found'), 404
-    if quantity is not None and quantity > product.get('stock', 0):
-        return jsonify(success=False, error=f"Only {product.get('stock', 0)} items available"), 400
+    stock = product.get('stock', 0)
+    if not isinstance(stock, (int, float)) or stock <= 0:
+        return jsonify(success=False, error='This piece is out of stock'), 409
+    if quantity is not None and quantity > stock:
+        return jsonify(success=False, error=f"Only {stock} items available"), 400
     changes = {'updated_at': datetime.utcnow()}
     if quantity is not None:
         changes['items.$.qty'] = quantity

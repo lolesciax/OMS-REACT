@@ -1,8 +1,10 @@
 import { toast } from "../services/feedback";
 import Skeleton from "../components/Skeleton";
 import { ProductSkeletons } from "../components/PageSkeleton";
-import Image from "../components/Image";
+import ProductMedia from "../components/ProductMedia";
 import ProductPhoto from "../components/ProductPhoto";
+import LikeButton from "../components/LikeButton";
+import useFavorites from "../hooks/useFavorites";
 import {
   useState,
   useEffect,
@@ -33,6 +35,7 @@ export default function ShoppingWindow() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const requestedProduct = params.get("product");
+  const likedOnly = params.get("liked") === "true";
   const { isLoggedIn, user } = useAuth();
   const [products, setProducts] = useState([]);
   const [cartCount, setCartCount] = useState(0);
@@ -50,6 +53,32 @@ export default function ShoppingWindow() {
     if (!adding) setSelected(null);
   });
   const userId = user?._id || user?.id;
+  const favorites = useFavorites(userId);
+  const likeProduct = (product) => {
+    if (!isLoggedIn) {
+      toast.info("Sign in to keep your liked items across devices.");
+      navigate("/login", {
+        state: { from: `/?product=${encodeURIComponent(productId(product))}` },
+      });
+      return;
+    }
+    void favorites.toggle(String(productId(product)));
+  };
+  const changeLikedFilter = () => {
+    if (!isLoggedIn) {
+      navigate("/login", { state: { from: "/?liked=true#collection" } });
+      return;
+    }
+    setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        if (likedOnly) next.delete("liked");
+        else next.set("liked", "true");
+        return next;
+      },
+      { replace: true },
+    );
+  };
 
   const loadCart = useCallback(async () => {
     if (!userId) {
@@ -82,9 +111,9 @@ export default function ShoppingWindow() {
         const response = await apiFetch(`${BACKEND_URL}/api/products`, {
           signal: controller.signal,
         });
-        if (!response.ok)
-          throw new Error("We couldn’t load the collection. Please try again.");
         const data = await response.json();
+        if (!response.ok || data.success === false)
+          throw new Error("We couldn’t load the collection. Please try again.");
         const list = data.products || data;
         if (!Array.isArray(list))
           throw new Error("The collection is temporarily unavailable.");
@@ -115,14 +144,28 @@ export default function ShoppingWindow() {
   );
   const visible = useMemo(
     () =>
-      filterProducts(availableProducts, {
-        search: deferredSearch,
-        category,
-        sort,
-      }),
-    [availableProducts, deferredSearch, category, sort],
+      filterProducts(
+        likedOnly
+          ? availableProducts.filter((product) =>
+              favorites.ids.has(String(productId(product))),
+            )
+          : availableProducts,
+        {
+          search: deferredSearch,
+          category,
+          sort,
+        },
+      ),
+    [
+      availableProducts,
+      deferredSearch,
+      category,
+      sort,
+      likedOnly,
+      favorites.ids,
+    ],
   );
-  const filtered = !!search.trim() || category !== "All";
+  const filtered = !!search.trim() || category !== "All" || likedOnly;
   const collection = useScrollReveal(visible);
   useEffect(() => {
     if (loading || error || !requestedProduct) return;
@@ -151,6 +194,14 @@ export default function ShoppingWindow() {
     setSearch("");
     setCategory("All");
     setSort("featured");
+    setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        next.delete("liked");
+        return next;
+      },
+      { replace: true },
+    );
   };
   const openProduct = (product) => {
     setSelected(product);
@@ -190,7 +241,7 @@ export default function ShoppingWindow() {
         body: JSON.stringify({ items: [{ id: productId(selected), qty: 1 }] }),
       });
       const data = await response.json();
-      if (!response.ok)
+      if (!response.ok || data.success === false)
         throw new Error(data.error || "Checkout could not be started.");
       toast.success("This piece is ready for checkout.");
       navigate("/checkout");
@@ -201,7 +252,7 @@ export default function ShoppingWindow() {
     }
   };
   return (
-    <div className="shopping-window min-h-screen flex flex-col bg-paper">
+    <div className="shopping-window min-h-dvh flex flex-col bg-paper">
       <a className="skip-link" href="#collection">
         Skip to collection
       </a>
@@ -296,6 +347,35 @@ export default function ShoppingWindow() {
             <Icon name="check" size={16} /> Available finds only
           </span>
         </div>
+        <div className="shop-likes-toolbar">
+          <button
+            type="button"
+            className="shop-liked-filter"
+            aria-pressed={likedOnly}
+            onClick={changeLikedFilter}
+          >
+            <Icon
+              name="heart"
+              size={19}
+              fill={likedOnly ? "currentColor" : "none"}
+            />
+            {likedOnly ? "Showing liked items" : "Liked items"}
+            {isLoggedIn && favorites.ready && <span>{favorites.ids.size}</span>}
+          </button>
+          <span>Tap the heart to keep a piece you love.</span>
+        </div>
+        {favorites.error && (
+          <div className="ui-message error mb-4" role="alert">
+            {favorites.error}
+            <button
+              type="button"
+              className="ui-button ui-button-light"
+              onClick={favorites.reload}
+            >
+              Retry liked items
+            </button>
+          </div>
+        )}
         <div className="shop-result-line" role="status" aria-live="polite">
           <span>
             {loading ? (
@@ -324,19 +404,23 @@ export default function ShoppingWindow() {
               Try again
             </button>
           </div>
-        ) : loading ? (
+        ) : loading || (likedOnly && favorites.loading) ? (
           <ProductSkeletons />
         ) : !visible.length ? (
           <div className="ui-empty">
             <Icon name="search" size={32} />
             <h3>
               {filtered
-                ? "No finds this time."
+                ? likedOnly
+                  ? "Your liked finds"
+                  : "No finds this time."
                 : "Something good is on its way."}
             </h3>
             <p>
               {filtered
-                ? "Try a different search or clear your filters to see more pieces."
+                ? likedOnly
+                  ? "Tap a heart to save an item. Only currently available pieces are shown here."
+                  : "Try a different search or clear your filters to see more pieces."
                 : "Our collection is being refreshed. Check back for more pre-loved pieces."}
             </p>
             {filtered && (
@@ -351,19 +435,33 @@ export default function ShoppingWindow() {
         ) : (
           <div className="shop-grid grid grid-cols-4 gap-[30px_22px] max-[1000px]:grid-cols-3 max-[700px]:grid-cols-2 max-[700px]:gap-[24px_14px] max-[359px]:grid-cols-[1fr]">
             {visible.map((product, index) => (
-              <button
+              <article
                 data-reveal
                 data-reveal-delay={(index % 4) * 60}
                 className="shop-product"
                 key={productId(product)}
-                onClick={() => openProduct(product)}
-                aria-label={`View ${product.name}, ${formatPrice(product.price)}${Number(product.stock) <= 0 ? ", sold out" : ""}`}
               >
                 <div className="shop-product-image">
-                  <Image
-                    src={product.image || "/product-placeholder.svg"}
-                    alt=""
-                    loading="lazy"
+                  <button
+                    type="button"
+                    className="shop-product-open"
+                    onClick={() => openProduct(product)}
+                    aria-label={`View ${product.name}, ${formatPrice(product.price)}`}
+                  >
+                    <ProductMedia
+                      src={product.image || "/product-placeholder.svg"}
+                      name={product.name}
+                      alt=""
+                      loading="lazy"
+                    />
+                  </button>
+                  <LikeButton
+                    compact
+                    name={product.name}
+                    liked={favorites.ids.has(String(productId(product)))}
+                    pending={favorites.pending.has(String(productId(product)))}
+                    disabled={favorites.loading || !favorites.ready}
+                    onClick={() => likeProduct(product)}
                   />
                 </div>
                 <div className="shop-product-meta">
@@ -379,10 +477,23 @@ export default function ShoppingWindow() {
                     {product.category || "Pre-loved clothing"}
                     {product.size ? ` · Size ${product.size}` : ""}
                   </span>
-                  <h3>{product.name || "Pre-loved piece"}</h3>
-                  <strong>{formatPrice(product.price)}</strong>
+                  <h3>
+                    <button type="button" onClick={() => openProduct(product)}>
+                      {product.name || "Pre-loved piece"}
+                    </button>
+                  </h3>
+                  <div className="shop-product-footer">
+                    <strong>{formatPrice(product.price)}</strong>
+                    <button
+                      type="button"
+                      onClick={() => openProduct(product)}
+                      aria-label={`View details of ${product.name}`}
+                    >
+                      View details <Icon name="arrow" size={16} />
+                    </button>
+                  </div>
                 </div>
-              </button>
+              </article>
             ))}
           </div>
         )}
@@ -423,17 +534,46 @@ export default function ShoppingWindow() {
             >
               <Icon name="close" />
             </button>
-            <ProductPhoto
-              className="shop-dialog-image"
-              src={selected.image}
-              name={selected.name}
-            />
+            <div className="shop-dialog-media-panel">
+              <div className="shop-dialog-media-content">
+                <ProductPhoto
+                  className="shop-dialog-image"
+                  src={selected.image}
+                  name={selected.name}
+                />
+                <p>See the whole piece. Zoom in for a closer look.</p>
+              </div>
+            </div>
             <div className="shop-dialog-details">
               <span className="ui-eyebrow">
                 {selected.category || "A good find"}
               </span>
               <h2 id="product-title">{selected.name}</h2>
-              <p className="shop-dialog-price">{formatPrice(selected.price)}</p>
+              <div className="shop-dialog-price-row">
+                <p className="shop-dialog-price">
+                  {formatPrice(selected.price)}
+                </p>
+                <LikeButton
+                  name={selected.name}
+                  liked={favorites.ids.has(String(productId(selected)))}
+                  pending={favorites.pending.has(String(productId(selected)))}
+                  disabled={favorites.loading || !favorites.ready}
+                  onClick={() => likeProduct(selected)}
+                />
+              </div>
+              {favorites.error && (
+                <p className="ui-message error" role="alert">
+                  {favorites.error}
+                  <button
+                    type="button"
+                    className="ui-button ui-button-light"
+                    onClick={favorites.reload}
+                  >
+                    Retry liked items
+                  </button>
+                </p>
+              )}
+              <h3 className="shop-description-title">About this piece</h3>
               <p className="shop-dialog-description">
                 {selected.description ||
                   "A pre-loved piece, ready for its next chapter."}

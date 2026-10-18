@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import Image from "./Image";
+import ProductMedia from "./ProductMedia";
 import Icon from "./Icon";
 import { imageURL } from "../utils/images";
 import "../styles/product-photo.css";
@@ -8,11 +8,19 @@ export default function ProductPhoto(props) {
   return <Photo key={imageURL(props.src)} {...props} />;
 }
 
-function Photo({ src, name = "Product", className = "" }) {
+function Photo({
+  src,
+  name = "Product",
+  className = "",
+  hint = "View larger",
+  caption = "The complete image, without cropping. Zoom in to inspect the details.",
+  onUnavailable,
+}) {
   const [unavailable, setUnavailable] = useState(
     imageURL(src) === "/product-placeholder.svg",
   );
   const [open, setOpen] = useState(false);
+  const [ready, setReady] = useState(false);
   const [zoomed, setZoomed] = useState(false);
   const dialog = useRef(null);
   const trigger = useRef(null);
@@ -40,14 +48,28 @@ function Photo({ src, name = "Product", className = "" }) {
         ref={trigger}
         type="button"
         className="product-photo-trigger"
-        disabled={unavailable}
-        aria-label={`Enlarge photo of ${name}`}
+        disabled={unavailable || !ready}
+        aria-label={
+          unavailable
+            ? `Photo unavailable for ${name}`
+            : `Enlarge photo of ${name}`
+        }
         onClick={() => setOpen(true)}
       >
-        <Image src={src} alt={name} onError={() => setUnavailable(true)} />
-        {!unavailable && (
+        <ProductMedia
+          src={src}
+          name={name}
+          alt={name}
+          loading="eager"
+          onReady={() => setReady(true)}
+          onUnavailable={() => {
+            setUnavailable(true);
+            onUnavailable?.();
+          }}
+        />
+        {ready && !unavailable && (
           <span className="product-photo-hint">
-            <Icon name="search" size={18} /> View larger
+            <Icon name="search" size={18} /> <span>{hint}</span>
           </span>
         )}
       </button>
@@ -100,12 +122,12 @@ function Photo({ src, name = "Product", className = "" }) {
             tabIndex={0}
             aria-label="Product photo; scroll to explore when zoomed"
           >
-            <Image src={src} alt={name} />
+            <ProductMedia src={src} name={name} alt={name} loading="eager" />
           </div>
           <p>
             {zoomed
               ? "Scroll to inspect the details. Choose Fit photo to see the whole item."
-              : "The complete item, without cropping. Zoom in to inspect the details."}
+              : caption}
           </p>
         </dialog>
       )}

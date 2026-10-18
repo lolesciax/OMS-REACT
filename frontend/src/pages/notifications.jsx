@@ -60,12 +60,13 @@ function NotificationInbox({ admin = false }) {
           { signal: controller.signal },
         );
         const data = await response.json();
-        if (!response.ok)
+        if (!response.ok || data.success === false)
           throw new Error(
             data.error || "Your notifications could not be loaded.",
           );
         if (!controller.signal.aborted) {
-          if (requestedFeedback.current) toast.success("Notifications refreshed.");
+          if (requestedFeedback.current)
+            toast.success("Notifications refreshed.");
           requestedFeedback.current = false;
           setItems(data.notifications);
           setNextCursor(data.nextCursor);
@@ -117,7 +118,7 @@ function NotificationInbox({ admin = false }) {
         },
       );
       const data = await response.json();
-      if (!response.ok)
+      if (!response.ok || data.success === false)
         throw new Error(data.error || "The notification could not be updated.");
       refresh();
       if (mounted.current) {

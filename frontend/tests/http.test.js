@@ -83,6 +83,12 @@ test("timeouts are distinct from cancelled navigation requests", async () => {
 });
 test("historical upload URLs use the active backend and missing images fall back", () => {
   for (const source of [
+    "/static/uploads/p6.jpg",
+    "http://localhost:5000/static/uploads/p6.jpg",
+    "/uploads/p6.jpg",
+  ])
+    assert.equal(imageURL(source), "/p6.jpg");
+  for (const source of [
     "https://old-host.example/static/uploads/shirt.jpg",
     "/uploads/shirt.jpg",
     "shirt.jpg",

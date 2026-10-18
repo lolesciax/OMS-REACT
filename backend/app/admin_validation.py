@@ -79,7 +79,7 @@ def boolean(value, label):
     return value
 
 
-def product(data, existing=None):
+def product(data, existing=None, options=None):
     partial = existing is not None
     checks = {}
     for key, limit in PRODUCT_TEXT.items():
@@ -92,7 +92,22 @@ def product(data, existing=None):
     if not partial or 'condition' in data:
         value = data.get('condition', 'Good')
         checks['condition'] = lambda: clean_text(value, 'condition', 40, True) if partial and value == existing.get('condition') else choice(value, 'condition', PRODUCT_CONDITIONS)
-    return collect(checks)
+    values = collect(checks)
+    if options:
+        errors = {}
+        for field, option_key in (
+            ('category', 'categories'),
+            ('size', 'sizes'),
+            ('material', 'materials'),
+        ):
+            if field not in values or not values[field]:
+                continue
+            previous = existing.get(field, '') if existing else ''
+            if values[field] not in options[option_key] and values[field] != previous:
+                errors[field] = f'Choose a configured {field} or add it in catalog maintenance.'
+        if errors:
+            raise FieldValidationError(errors)
+    return values
 
 
 def account(data, existing=None):

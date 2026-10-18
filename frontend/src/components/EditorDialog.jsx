@@ -8,6 +8,7 @@ export default function EditorDialog({
   busy,
   onClose,
   wide = false,
+  className = "",
 }) {
   const ref = useDialog(true, () => {
     if (!busy) onClose();
@@ -21,13 +22,14 @@ export default function EditorDialog({
     >
       <section
         ref={ref}
-        className={`ui-dialog editor-dialog ${wide ? "editor-wide" : ""}`}
+        className={`ui-dialog editor-dialog ${wide ? "editor-wide" : ""} ${className}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="editor-title"
         tabIndex={-1}
       >
         <button
+          type="button"
           className="ui-dialog-close"
           aria-label="Close editor"
           disabled={busy}

@@ -1,4 +1,5 @@
 import RouteSkeleton from "./components/RouteSkeleton";
+import useViewportMetrics from "./hooks/useViewportMetrics";
 import React, { useLayoutEffect, lazy, Suspense } from "react";
 import {
   BrowserRouter as Router,
@@ -89,6 +90,7 @@ function AppContent() {
         "/order-history": "Your orders",
         "/admin/dashboard": "Store overview",
         "/admin/products": "Products & inventory",
+        "/admin/out-of-stock": "Out-of-stock products",
         "/admin/orders": "Orders",
         "/admin/customers": "People",
         "/admin/discounts": "Discount codes",
@@ -139,7 +141,7 @@ function AppContent() {
     );
 
   return (
-    <div className="App min-h-screen flex flex-col">
+    <div className="App min-h-dvh flex flex-col">
       {authError && (
         <div className="ui-message error" role="alert">
           {authError}
@@ -250,6 +252,14 @@ function AppContent() {
               }
             />
             <Route
+              path="/admin/out-of-stock"
+              element={
+                <ProtectedRoute requireAdmin={true}>
+                  <AdminProducts outOfStockOnly />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/admin/orders"
               element={
                 <ProtectedRoute requireAdmin={true}>
@@ -317,6 +327,7 @@ function AppContent() {
 
 // Main App Wrapper
 function App() {
+  useViewportMetrics();
   return (
     <AuthProvider>
       <NotificationProvider>

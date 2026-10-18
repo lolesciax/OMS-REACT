@@ -43,7 +43,8 @@ export default function useOrderResource(url, paused = false) {
             data.error || "Orders could not be refreshed. Please try again.",
           );
         if (!controller.signal.aborted) {
-          if (requestedFeedback.current) toast.success("Order status refreshed.");
+          if (requestedFeedback.current)
+            toast.success("Order status refreshed.");
           requestedFeedback.current = false;
           setState({
             url,

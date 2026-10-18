@@ -2,7 +2,7 @@ import { toast } from "../services/feedback";
 import OrderProgress from "../components/OrderProgress";
 import { shortOrderReference } from "../utils/orderProgress";
 import PageSkeleton from "../components/PageSkeleton";
-import Image from "../components/Image";
+import ProductPhoto from "../components/ProductPhoto";
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -232,9 +232,10 @@ export default function OrderHistory() {
                   <div className="order-piece-list">
                     {(order.items || []).map((item, i) => (
                       <div key={item.id || i}>
-                        <Image
-                          src={item.image || "/product-placeholder.svg"}
-                          alt={item.name}
+                        <ProductPhoto
+                          className="order-item-photo"
+                          src={item.image}
+                          name={item.name}
                         />
                         <div>
                           <h2>{item.name}</h2>
@@ -249,6 +250,31 @@ export default function OrderHistory() {
                       </div>
                     ))}
                   </div>
+                  {(order.paymentProof || order.receiptProof) && (
+                    <details className="order-image-evidence">
+                      <summary>
+                        <Icon name="photo" size={18} /> View order photos
+                        <Icon name="chevron" size={18} />
+                      </summary>
+                      <div className="order-image-evidence-grid">
+                        {[
+                          [order.paymentProof, "Payment confirmation"],
+                          [order.receiptProof, "Delivery confirmation"],
+                        ]
+                          .filter(([src]) => src)
+                          .map(([src, title]) => (
+                            <figure key={title}>
+                              <ProductPhoto
+                                className="order-evidence-photo"
+                                src={src}
+                                name={title}
+                              />
+                              <figcaption>{title}</figcaption>
+                            </figure>
+                          ))}
+                      </div>
+                    </details>
+                  )}
                   {order.trackingNumber && (
                     <div className="order-tracking">
                       <Icon name="truck" />
@@ -266,7 +292,8 @@ export default function OrderHistory() {
                             toast.success("Tracking number copied.");
                           } catch {
                             toast.info(
-                              "Copy unavailable. Your tracking number is " + order.trackingNumber,
+                              "Copy unavailable. Your tracking number is " +
+                                order.trackingNumber,
                             );
                           }
                         }}
@@ -378,6 +405,8 @@ export default function OrderHistory() {
             <form onSubmit={confirm}>
               <UploadField
                 label="Photo of the received order"
+                previewAlt="Selected delivery confirmation"
+                description="Show the pieces you received clearly before confirming delivery."
                 file={file}
                 onChange={setFile}
                 onError={setUploadError}

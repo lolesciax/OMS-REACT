@@ -47,7 +47,7 @@ export default function RolesMaintenance() {
     apiFetch(`${API_BASE_URL}/admin/roles`, { signal: controller.signal })
       .then(async (response) => {
         const data = await response.json();
-        if (!response.ok)
+        if (!response.ok || data.success === false)
           throw new Error(data.error || "Roles could not be loaded.");
         if (!controller.signal.aborted) {
           setRoles(data.roles);
@@ -68,7 +68,6 @@ export default function RolesMaintenance() {
     setForm(role ? { ...role } : { ...empty });
     validation.reset();
     setError("");
-
   };
   const mutate = async (path, method, body) => {
     const response = await apiFetch(`${API_BASE_URL}/admin/${path}`, {
@@ -81,7 +80,7 @@ export default function RolesMaintenance() {
         : {}),
     });
     const data = await response.json();
-    if (!response.ok) {
+    if (!response.ok || data.success === false) {
       validation.reject(data);
       throw new Error(data.error || "Changes could not be saved.");
     }
@@ -108,7 +107,9 @@ export default function RolesMaintenance() {
       );
       setRoles(data.roles);
       setEditor(null);
-      toast.success("Role saved. Access changes apply to the next API request.");
+      toast.success(
+        "Role saved. Access changes apply to the next API request.",
+      );
     } catch (failure) {
       setError(failure.message);
     } finally {

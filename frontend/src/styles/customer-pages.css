@@ -66,8 +66,8 @@
   .bag-item:last-child {
     @apply border-0;
   }
-  .bag-item > img {
-    @apply w-23 h-29 rounded-[6px] object-contain bg-[#e9e9e0];
+  .bag-item > .bag-item-photo {
+    @apply size-23 shrink-0 overflow-hidden rounded-xl border border-line;
   }
   .bag-item-info h2 {
     @apply text-body leading-[1.4] font-semibold mb-[6px];
@@ -90,7 +90,7 @@
   .bag-unavailable {
     color: #9c3d2b !important;
   }
-  .bag-item.unavailable > img {
+  .bag-item.unavailable > .bag-item-photo {
     @apply opacity-[0.5];
   }
   .quantity-stepper {
@@ -128,8 +128,8 @@
     @apply text-small text-accent underline border-0 bg-transparent;
   }
   @media (max-width: 1000px) {
-    .bag-item > img {
-      @apply w-19 h-25;
+    .bag-item > .bag-item-photo {
+      @apply size-19;
     }
     .bag-item-actions {
       @apply [grid-column:2/-1] flex-row items-center justify-between;
@@ -208,8 +208,8 @@
   .checkout-summary-items > div {
     @apply flex items-center gap-3;
   }
-  .checkout-summary-items img {
-    @apply w-12 h-[62px] object-contain rounded-[4px] shrink-0 bg-[#f0eee8] p-1;
+  .checkout-item-photo {
+    @apply size-14 shrink-0 overflow-hidden rounded-lg border border-line;
   }
   .checkout-summary-items h3 {
     @apply text-small leading-[1.4] [margin:0_0_5px] font-semibold;
@@ -250,8 +250,8 @@
   .checkout-qr {
     @apply bg-white border border-line p-3 rounded-[8px];
   }
-  .checkout-qr img {
-    @apply w-full h-auto block;
+  .checkout-qr-photo {
+    @apply aspect-square w-full overflow-hidden rounded-lg;
   }
   .checkout-payment p {
     @apply text-muted text-body leading-[1.8] mb-5;
@@ -381,8 +381,8 @@
   .order-piece-list > div {
     @apply flex items-center gap-4;
   }
-  .order-piece-list img {
-    @apply w-[58px] h-[74px] object-contain rounded-[5px] shrink-0 bg-[#f0eee8] p-1;
+  .order-item-photo {
+    @apply size-18 shrink-0 overflow-hidden rounded-xl border border-line;
   }
   .order-piece-list h2 {
     @apply text-body font-semibold [margin:0_0_6px];
@@ -394,17 +394,24 @@
     @apply ml-auto text-body whitespace-nowrap;
   }
   .order-tracking {
-    @apply flex items-center gap-[14px] mt-6 py-[15px] px-[18px] border border-line rounded-[7px] bg-[#f9faf5];
+    @apply flex min-w-0 items-center gap-3 mt-6 p-3 border border-line rounded-lg bg-[#f9faf5];
+  }
+  .order-tracking > svg,
+  .order-tracking > button {
+    @apply shrink-0;
+  }
+  .order-tracking > div {
+    @apply min-w-0 flex-1;
   }
   .order-tracking strong,
   .order-tracking span {
     @apply block text-small;
   }
   .order-tracking span {
-    @apply mt-1 tracking-[1px] text-muted;
+    @apply mt-1 tracking-[1px] text-muted [overflow-wrap:anywhere];
   }
   .order-tracking button {
-    @apply ml-auto text-small border-0 bg-transparent text-accent underline;
+    @apply ml-auto min-h-11 min-w-11 text-small border-0 bg-transparent text-accent underline;
   }
   .order-card-bottom {
     @apply flex items-center justify-between gap-6 border-t border-line mt-6 pt-5;
@@ -587,5 +594,49 @@
     .payment-choices {
       @apply grid-cols-[minmax(0,_1fr)];
     }
+  }
+}
+
+@layer components {
+  .bag-item-info,
+  .order-piece-list > div > div:not(.product-photo),
+  .checkout-summary-items > div > div:not(.product-photo) {
+    @apply min-w-0 [overflow-wrap:anywhere];
+  }
+  .checkout-summary-items > div {
+    @apply flex-wrap;
+  }
+  .checkout-summary-items > div > div:not(.product-photo) {
+    @apply flex-1;
+  }
+  .checkout-payment .checkout-qr {
+    @apply self-start;
+  }
+}
+
+@layer components {
+  .order-image-evidence {
+    @apply my-5 rounded-xl border border-line bg-paper p-4;
+  }
+  .order-image-evidence summary {
+    @apply flex min-h-11 cursor-pointer items-center gap-2 text-body font-semibold text-forest underline decoration-forest/30 underline-offset-4;
+  }
+  .order-image-evidence-grid {
+    @apply mt-4 grid grid-cols-2 gap-4 max-[480px]:grid-cols-1;
+  }
+  .order-image-evidence summary > svg:last-child {
+    @apply ml-auto shrink-0;
+  }
+  .order-image-evidence[open] summary > svg:last-child {
+    @apply rotate-90;
+  }
+  .order-image-evidence-grid figure {
+    @apply min-w-0;
+  }
+  .order-evidence-photo {
+    @apply aspect-[4/3] w-full max-w-80 overflow-hidden rounded-xl border border-line;
+  }
+  .order-image-evidence figcaption {
+    @apply mt-2 text-small font-medium text-muted;
   }
 }

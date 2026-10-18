@@ -29,6 +29,7 @@ export default function ConfirmDialog({
         tabIndex={-1}
       >
         <button
+          type="button"
           className="ui-dialog-close"
           aria-label="Close confirmation"
           disabled={busy}
@@ -40,6 +41,7 @@ export default function ConfirmDialog({
         <p id="confirm-description">{description}</p>
         <div className="ui-dialog-actions">
           <button
+            type="button"
             className="ui-button ui-button-light"
             disabled={busy}
             onClick={onClose}
@@ -47,6 +49,7 @@ export default function ConfirmDialog({
             Keep it
           </button>
           <button
+            type="button"
             className="ui-button ui-button-dark"
             disabled={busy}
             onClick={onConfirm}

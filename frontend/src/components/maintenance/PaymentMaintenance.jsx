@@ -1,6 +1,5 @@
 import useMaintenanceEditor from "../../hooks/useMaintenanceEditor";
 import { validatePayment, rules } from "../../utils/adminValidation";
-import Image from "../Image";
 import UploadField from "../UploadField";
 import FieldError from "../FieldError";
 import ContentEditorStatus from "./ContentEditorStatus";
@@ -65,22 +64,6 @@ function PaymentMethod({ methodKey }) {
             onChange={(event) => validation.clear(event.target.name)}
           >
             <fieldset disabled={busy} className="min-w-0 border-0">
-              {form.qrUrl ? (
-                <div className="mb-5 grid place-items-center rounded-xl border border-line bg-[#f7f8f3] p-4">
-                  <Image
-                    className="h-40 w-40 object-contain"
-                    src={form.qrUrl}
-                    alt={label + " saved merchant QR"}
-                  />
-                  <p className="mt-3 text-small text-muted">
-                    Current saved QR code
-                  </p>
-                </div>
-              ) : (
-                <div className="mb-5 rounded-xl border border-dashed border-line bg-[#f7f8f3] p-6 text-center text-body text-muted">
-                  No merchant QR uploaded yet.
-                </div>
-              )}
               <div className="ui-field mb-5">
                 <label htmlFor={methodKey + "-merchant"}>Merchant name</label>
                 <input
@@ -100,6 +83,9 @@ function PaymentMethod({ methodKey }) {
               </div>
               <UploadField
                 resetKey={editor.resetRevision}
+                currentSrc={form.qrUrl}
+                previewAlt={label + " merchant QR preview"}
+                description="Use the original merchant QR image. Keep all edges visible and verify the recipient in your wallet app."
                 name="image"
                 file={form.imageFile}
                 label={

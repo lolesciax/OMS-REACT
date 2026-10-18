@@ -1,0 +1,22 @@
+{
+  "id": "/",
+  "name": "Old Goods Thrift",
+  "short_name": "Old Goods",
+  "description": "Thoughtfully pre-loved clothing. Shop the collection and follow your orders.",
+  "lang": "en-PH",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#344c3c",
+  "background_color": "#fcfbf7",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -57,6 +57,23 @@ class MongoIntegrationTests(unittest.TestCase):
             raise RuntimeError('Refusing to remove an unexpected database')
         self.client_connection.drop_database(self.database_name)
 
+    def test_workspace_preferences_are_admin_owned_validated_and_csrf_protected(self):
+        from app.workspace_preferences import SIDEBAR_ITEMS
+        path = '/api/users/workspace-preferences'
+        preferences = {'sidebarOrder': list(SIDEBAR_ITEMS), 'sidebarWidth': 300}
+        self.assertEqual(self.client.put(path, json=preferences).status_code, 401)
+        self.login()
+        self.assertEqual(self.client.put(path, json=preferences, headers={'X-CSRF-Token': self.csrf}).status_code, 403)
+        self.db.users.update_one({'_id': self.uid}, {'$set': {'roleId': self.admin_role}})
+        self.assertEqual(self.client.put(path, json=preferences).status_code, 403)
+        headers = {'X-CSRF-Token': self.csrf}
+        self.assertEqual(self.client.put(path, json={**preferences, 'userId': str(ObjectId())}, headers=headers).status_code, 400)
+        self.assertEqual(self.client.put(path, json={**preferences, 'sidebarOrder': list(reversed(SIDEBAR_ITEMS))}, headers=headers).status_code, 400)
+        response = self.client.put(path, json=preferences, headers=headers)
+        self.assertEqual(response.status_code, 200, response.json)
+        self.assertEqual(self.db.users.find_one({'_id': self.uid})['workspacePreferences'], preferences)
+        self.assertEqual(self.client.get('/api/auth/session').json['user']['workspacePreferences'], preferences)
+
     def login(self, client=None):
         client = client or self.client
         response = client.post('/api/auth/login', json={'username': 'integration-user', 'password': 'Example-123!', 'captcha': captcha_payload(client)})
@@ -119,7 +136,10 @@ class MongoIntegrationTests(unittest.TestCase):
             self.assertNotIn('integration-user', str(document))
             self.assertNotIn('127.0.0.1', str(document))
         # Expired attempts stop blocking before MongoDB's TTL sweep runs.
-        self.db.rate_limits.update_many({}, {'$set': {'attempts': [datetime.utcnow() - timedelta(minutes=6)]}})
+        self.db.rate_limits.update_many({}, {'$set': {
+            'attempts': [datetime.utcnow() - timedelta(minutes=6)],
+            'reservations': [],
+        }})
         self.login()
 
     def test_help_content_is_public_but_updates_require_admin_and_current_revision(self):
@@ -194,8 +214,11 @@ class MongoIntegrationTests(unittest.TestCase):
         self.assertEqual(statuses.count(200), 7)
         self.assertEqual(statuses.count(429), 23)
         record = self.db.rate_limits.find_one({})
-        self.assertEqual(len(record['attempts']), 7)
-        self.assertTrue(all(isinstance(value, datetime) for value in record['attempts']))
+        self.assertEqual(len(record['reservations']), 7)
+        self.assertTrue(all(
+            isinstance(value['at'], datetime) and value['id']
+            for value in record['reservations']
+        ))
 
     def test_error_preflight_head_and_missing_routes_share_ip_budget(self):
         with patch('app.rate_limits.IP_POLICIES', (('ip:test', 4, 60),)):
@@ -780,3 +803,63 @@ class MongoIntegrationTests(unittest.TestCase):
             'image': (io.BytesIO(VALID_PNG), 'qr.png')}, headers={'X-CSRF-Token': self.csrf})
         self.assertEqual(payment.status_code, 200, payment.json)
         self.assertEqual(self.db.notifications.count_documents({'userId': self.uid, 'title': 'Payment settings changed'}), 1)
+
+    def test_liked_items_are_private_persistent_idempotent_and_csrf_protected(self):
+        path = f'/api/favorites/{self.pid}'
+        self.assertEqual(self.client.get('/api/favorites').status_code, 401)
+        self.assertEqual(self.client.put(path).status_code, 401)
+        self.login()
+        self.assertEqual(self.client.put(path).status_code, 403)
+        headers = {'X-CSRF-Token': self.csrf}
+        for _ in range(2):
+            self.assertEqual(self.client.put(path, headers=headers).status_code, 200)
+        self.assertEqual(self.client.get('/api/favorites').json['productIds'], [str(self.pid)])
+        self.assertEqual(self.db.favorites.count_documents({}), 1)
+        relation = self.db.favorites.find_one({})
+        self.assertEqual(relation['userId'], self.uid)
+        self.assertEqual(relation['productId'], self.pid)
+        self.assertNotIn('name', relation)
+        with self.assertRaises(DuplicateKeyError):
+            self.db.favorites.insert_one({'userId': self.uid, 'productId': self.pid, 'createdAt': datetime.utcnow()})
+        second_session = self.app.test_client()
+        self.login(second_session)
+        self.assertEqual(second_session.get('/api/favorites').json['productIds'], [str(self.pid)])
+        other_id = ObjectId()
+        self.db.users.insert_one({'_id': other_id, 'username': 'another-user', 'password': hash_password('Example-123!'), 'roleId': self.customer_role})
+        other = self.app.test_client()
+        response = other.post('/api/auth/login', json={'username': 'another-user', 'password': 'Example-123!', 'captcha': captcha_payload(other)})
+        self.assertEqual(response.status_code, 200, response.json)
+        other_headers = {'X-CSRF-Token': response.json['csrfToken']}
+        self.assertEqual(other.get('/api/favorites').json['productIds'], [])
+        self.assertEqual(other.put(path, json={'userId': str(self.uid)}, headers=other_headers).status_code, 400)
+        self.assertEqual(other.get('/api/favorites?userId=' + str(self.uid)).status_code, 400)
+        self.assertEqual(other.delete(path, headers=other_headers).status_code, 200)
+        self.assertEqual(self.db.favorites.count_documents({'userId': self.uid}), 1)
+        for _ in range(2):
+            self.assertEqual(second_session.delete(path, headers={'X-CSRF-Token': self.csrf}).status_code, 200)
+        self.assertEqual(self.db.favorites.count_documents({}), 0)
+
+    def test_liked_item_validation_concurrent_saves_and_product_cleanup(self):
+        from concurrent.futures import ThreadPoolExecutor
+        from app.models.product import ProductModel
+        from app.schema import ensure_validators
+        ensure_validators(self.db)
+        self.login()
+        headers = {'X-CSRF-Token': self.csrf}
+        self.assertEqual(self.client.put('/api/favorites/not-an-id', headers=headers).status_code, 400)
+        self.assertEqual(self.client.put('/api/favorites/' + str(ObjectId()), headers=headers).status_code, 404)
+        self.db.products.update_one({'_id': self.pid}, {'$set': {'is_active': False}})
+        path = '/api/favorites/' + str(self.pid)
+        self.assertEqual(self.client.put(path, headers=headers).status_code, 404)
+        self.db.products.update_one({'_id': self.pid}, {'$set': {'is_active': True, 'stock': 0}})
+        cookie = self.client.get_cookie('oms_session').value
+        def like(_):
+            client = self.app.test_client()
+            client.set_cookie('oms_session', cookie)
+            return client.put(path, headers=headers).status_code
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            self.assertEqual(list(pool.map(like, range(8))), [200] * 8)
+        self.assertEqual(self.db.favorites.count_documents({}), 1)
+        self.assertTrue(ProductModel(self.db).delete(self.pid))
+        self.assertEqual(self.client.get('/api/favorites').json['productIds'], [])
+        self.assertEqual(self.db.favorites.count_documents({}), 0)

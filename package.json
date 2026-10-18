@@ -11,6 +11,7 @@
     "build": "npm --workspace frontend run build",
     "lint": "npm --workspace frontend run lint",
     "test": "npm --workspace frontend run test",
+    "test:responsive": "npm --workspace frontend run test:responsive",
     "preview": "npm --workspace frontend run preview --",
     "format": "npm --workspace frontend run format",
     "format:check": "npm --workspace frontend run format:check"

@@ -48,6 +48,10 @@ def run():
         {'_id': ids[3], 'product_id': 'PROD-000002', 'name': 'Everyday jacket', 'price': 250,
         'stock': 3, 'category': 'Jackets', 'size': 'Large', 'condition': 'Good', 'image': '/static/uploads/p2.jpg', 'is_active': True}])
     key = secrets.token_urlsafe(32)
+    responsive = {}
+    if '--responsive' in sys.argv:
+        from responsive_fixture import seed_responsive_records
+        responsive = seed_responsive_records(app.db, ids[0], ids[2], address)
     server = make_server('127.0.0.1', 5001, app, threaded=True)
 
     @app.post('/__test__/shutdown')
@@ -58,7 +62,7 @@ def run():
         return jsonify(success=True)
 
     (directory / 'browser-fixture.json').write_text(json.dumps({'database': name, 'key': key, 'customerId': str(ids[0]),
-        'adminId': str(ids[1]), 'productId': str(ids[2]), 'otherProductId': str(ids[3])}), encoding='utf-8')
+        'adminId': str(ids[1]), 'productId': str(ids[2]), 'otherProductId': str(ids[3]), **responsive}), encoding='utf-8')
     try:
         print('Browser fixture API ready on http://127.0.0.1:5001', flush=True)
         server.serve_forever()
