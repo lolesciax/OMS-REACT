@@ -71,7 +71,7 @@ function HelpCards({ sections = policySections }) {
           <Icon
             name={section.icon}
             size={24}
-            className="mb-5 rounded-xl bg-botticelli p-2 text-primary box-content"
+            className="mb-5 rounded-xl bg-cotton p-2 text-primary box-content"
           />
           <h2 className="text-lead font-semibold">{section.title}</h2>
           <p className="my-3 text-body leading-relaxed text-muted">
@@ -126,7 +126,7 @@ function Faqs() {
               {visible.map((item) => (
                 <details
                   key={item.id}
-                  className="group rounded-xl border border-line bg-white open:border-primary/50 open:bg-botticelli/30 px-5 sm:px-6"
+                  className="group rounded-xl border border-line bg-white open:border-primary/50 open:bg-cotton/30 px-5 sm:px-6"
                   open={search.trim() ? true : undefined}
                 >
                   <summary className="cursor-pointer py-5 pr-2 text-body font-semibold text-primary break-words">

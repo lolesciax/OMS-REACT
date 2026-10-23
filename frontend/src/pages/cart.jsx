@@ -313,7 +313,7 @@ export default function Cart() {
                 </article>
               ))}
             </section>
-            <aside className="customer-summary border-t-4 border-t-tangelo sticky top-6 p-7 bg-white border border-line rounded-[12px] max-[760px]:static max-[760px]:mt-6 max-[760px]:p-6">
+            <aside className="customer-summary border-t-4 border-t-tangerine sticky top-6 p-7 bg-white border border-line rounded-[12px] max-[760px]:static max-[760px]:mt-6 max-[760px]:p-6">
               <span className="ui-eyebrow">The little details</span>
               <h2>Your order summary</h2>
               <div className="summary-row">

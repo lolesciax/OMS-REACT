@@ -82,11 +82,11 @@ The shared Tailwind theme lives in `frontend/src/index.css`.
 
 | Brand color | Hex | Main use |
 | --- | --- | --- |
-| Linen | `#FFEDE3` | Page backgrounds and light text on brown |
-| Tangelo | `#FB4D00` | Highlights, large accents, and the landing action |
-| Chocolate Brown | `#49261D` | Primary controls, headings, sidebar selection |
-| Botticelli | `#CAE7F7` | Selected states, progress cards, and supporting panels |
+| Sustainable Linen | `#FAF3E1` | Page backgrounds and light text on charcoal |
+| Electric Tangerine | `#FF6D1F` | Highlights, large accents, and the landing action |
+| Black Hole | `#222222` | Primary controls, headings, sidebar selection |
+| Recycled Cotton | `#F5E7C6` | Selected states, progress cards, and supporting panels |
 
-Use semantic tokens (`paper`, `primary`, `accent`, `muted`, `control`) in components. Small orange text uses a deeper derived tone for contrast; the bright Tangelo action uses dark ink. Charts read their colors from the same CSS theme. Keep error and warning states distinct from brand decoration.
+Use semantic tokens (`paper`, `primary`, `accent`, `muted`, `control`) in components. Small orange text uses a deeper derived tone for contrast; the Electric Tangerine action uses dark ink. Charts read their colors from the same CSS theme. Keep error and warning states distinct from brand decoration.
 
 The responsive browser audit covers public pages, customer account/checkout pages, admin pages, and every maintenance module. Run `npm run test:responsive` with the disposable browser fixture described in `backend/tests/browser_fixture.py`; it never requires production account data. `npm run test:catalog` checks the category selector, reset/sort/search, product details, liked-item sign-in, and desktop signup alignment against that same fixture.

@@ -54,9 +54,9 @@ const statusLabel = (value) =>
 export default function AdminDashboard() {
   const palette = getComputedStyle(document.documentElement);
   const chartColors = {
-    primary: palette.getPropertyValue("--color-chocolate").trim(),
-    accent: palette.getPropertyValue("--color-tangelo").trim(),
-    soft: palette.getPropertyValue("--color-botticelli").trim(),
+    primary: palette.getPropertyValue("--color-charcoal").trim(),
+    accent: palette.getPropertyValue("--color-tangerine").trim(),
+    soft: palette.getPropertyValue("--color-cotton").trim(),
     muted: palette.getPropertyValue("--color-muted").trim(),
     line: palette.getPropertyValue("--color-line").trim(),
   };

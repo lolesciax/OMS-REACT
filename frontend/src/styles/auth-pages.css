@@ -5,7 +5,7 @@
     @apply relative flex min-w-0 flex-col overflow-hidden rounded-2xl bg-primary px-9 py-9 text-paper;
   }
   .auth-story-brand {
-    @apply flex items-center gap-3 border-b border-white/20 pb-6 text-[12px] font-semibold tracking-[0.12em] text-botticelli;
+    @apply flex items-center gap-3 border-b border-white/20 pb-6 text-[12px] font-semibold tracking-[0.12em] text-cotton;
   }
   .auth-story-brand svg {
     @apply shrink-0;
@@ -20,7 +20,7 @@
     @apply mb-5 mt-4 font-sans text-[clamp(38px,4vw,54px)] font-bold leading-[1.06] tracking-[-0.055em];
   }
   .auth-story h2 > span {
-    @apply text-botticelli;
+    @apply text-cotton;
   }
   .auth-story-copy > p {
     @apply max-w-80 text-body leading-relaxed text-linen/85;
@@ -32,7 +32,7 @@
     @apply flex items-start gap-3;
   }
   .auth-story-feature-icon {
-    @apply grid size-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-botticelli;
+    @apply grid size-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-cotton;
   }
   .auth-story-features h3 {
     @apply text-small font-semibold leading-relaxed text-paper;
@@ -41,7 +41,7 @@
     @apply mt-1 text-small leading-relaxed text-linen/85;
   }
   .auth-story-signature {
-    @apply mt-auto flex items-center justify-between gap-4 border-t border-white/20 pt-5 text-small text-botticelli;
+    @apply mt-auto flex items-center justify-between gap-4 border-t border-white/20 pt-5 text-small text-cotton;
   }
   .auth-card h1 {
     @apply font-serif font-normal not-italic text-[33px] leading-[1.15] my-[14px] mx-0 tracking-[-0.8px];
@@ -115,10 +115,10 @@
 
 @layer components {
   .auth-story-brand > svg {
-    @apply text-tangelo;
+    @apply text-tangerine;
   }
   .auth-story-signature {
-    @apply border-botticelli/35;
+    @apply border-cotton/35;
   }
   @media (min-width: 1100px) {
     .signup-fields-grid {

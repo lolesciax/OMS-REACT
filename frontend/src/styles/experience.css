@@ -1,6 +1,6 @@
 @layer components {
   .site-footer {
-    @apply mt-auto bg-chocolate text-[#e9e3dd];
+    @apply mt-auto bg-charcoal text-[#e9e3dd];
   }
   .footer-inner {
     @apply mx-auto w-full max-w-[1440px] px-12 pt-16;
@@ -15,16 +15,16 @@
     @apply m-0 font-serif text-[clamp(38px,4.8vw,72px)] font-normal leading-[1.06] tracking-[-0.035em] text-linen;
   }
   .footer-invitation h2 em {
-    @apply font-normal text-botticelli;
+    @apply font-normal text-cotton;
   }
   .footer-shop-link {
     @apply inline-flex shrink-0 items-center gap-6 text-body leading-[1.6] text-[#eee9e5] no-underline;
   }
   .footer-shop-arrow {
-    @apply grid size-20 shrink-0 place-items-center rounded-full border border-botticelli/40 text-botticelli transition-colors;
+    @apply grid size-20 shrink-0 place-items-center rounded-full border border-cotton/40 text-cotton transition-colors;
   }
   .footer-shop-link:hover .footer-shop-arrow {
-    @apply bg-botticelli text-primary;
+    @apply bg-cotton text-primary;
   }
   .footer-grid {
     @apply grid grid-cols-[1.2fr_0.8fr_1fr_1.2fr_0.7fr] gap-8 py-12;
@@ -33,7 +33,7 @@
     @apply min-w-0 max-w-[300px] [overflow-wrap:anywhere];
   }
   .footer-leaf {
-    @apply mb-4 grid size-11 place-items-center rounded-full border border-white/20 text-botticelli;
+    @apply mb-4 grid size-11 place-items-center rounded-full border border-white/20 text-cotton;
   }
   .footer-story > p {
     @apply mb-5 text-body leading-[1.8] text-[#dcd3cb];
@@ -63,7 +63,7 @@
     @apply text-[#b1a295];
   }
   .footer-wordmark > svg {
-    @apply ml-auto h-[0.6em] w-[0.6em] self-center text-botticelli;
+    @apply ml-auto h-[0.6em] w-[0.6em] self-center text-cotton;
   }
   .footer-bottom {
     @apply flex flex-wrap items-center justify-between gap-5 border-t border-white/15 py-5 text-small text-[#d0c4b9];
@@ -75,7 +75,7 @@
     @apply inline-flex min-h-11 items-center gap-3 border-0 bg-transparent px-1 text-small text-[#e3dad2] underline-offset-4 hover:underline;
   }
   .site-footer :focus-visible {
-    @apply outline-botticelli;
+    @apply outline-cotton;
   }
   @media (max-width: 1000px) {
     .footer-inner {
@@ -185,7 +185,7 @@
     @apply text-primary bg-white border-control;
   }
   .ui-button-light:hover:not(:disabled) {
-    @apply bg-botticelli text-primary;
+    @apply bg-cotton text-primary;
   }
   .ui-button:disabled {
     @apply opacity-[0.55] cursor-not-allowed shadow-none;
@@ -239,7 +239,7 @@
     @apply inline-flex min-h-11 items-center gap-2 rounded-xl px-3 py-2 text-body font-medium text-muted no-underline transition-colors hover:bg-primary-soft hover:text-primary;
   }
   .store-nav-link.is-active {
-    @apply bg-botticelli text-primary;
+    @apply bg-cotton text-primary;
   }
   .store-bag-button,
   .store-mobile-toggle {

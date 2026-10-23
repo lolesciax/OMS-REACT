@@ -136,7 +136,7 @@ export default function NotificationBell() {
             }}
             className="fixed z-[2100] flex w-96 max-w-[calc(100vw-24px)] flex-col overflow-hidden rounded-2xl border border-line bg-white text-ink shadow-xl"
           >
-            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line bg-botticelli/55 p-4">
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line bg-cotton/55 p-4">
               <div>
                 <h2 className="text-body font-semibold">Notifications</h2>
                 <p className="text-small text-muted">
@@ -161,7 +161,7 @@ export default function NotificationBell() {
               {error && (
                 <div
                   role="alert"
-                  className="border-b border-line bg-botticelli/55 p-4 text-small"
+                  className="border-b border-line bg-cotton/55 p-4 text-small"
                 >
                   <p>{error}</p>
                   <button
@@ -196,9 +196,9 @@ export default function NotificationBell() {
                         onClick={() => {
                           void read(item);
                         }}
-                        className={`flex min-h-20 items-start gap-3 p-4 no-underline transition-colors hover:bg-primary-soft focus-visible:-outline-offset-2 ${item.readAt ? "bg-white" : "bg-botticelli/25"}`}
+                        className={`flex min-h-20 items-start gap-3 p-4 no-underline transition-colors hover:bg-primary-soft focus-visible:-outline-offset-2 ${item.readAt ? "bg-white" : "bg-cotton/25"}`}
                       >
-                        <span className="mt-1 grid size-9 shrink-0 place-items-center rounded-full bg-botticelli text-primary">
+                        <span className="mt-1 grid size-9 shrink-0 place-items-center rounded-full bg-cotton text-primary">
                           <Icon name="bell" size={18} />
                         </span>
                         <span className="min-w-0 flex-1 break-words">

@@ -296,7 +296,7 @@
     @apply w-full border-collapse text-left text-small;
   }
   .admin-table thead {
-    @apply bg-botticelli/45;
+    @apply bg-cotton/45;
   }
   .admin-table th {
     @apply py-[13px] px-[22px] border-b border-line text-primary uppercase text-small tracking-[1px] font-semibold whitespace-nowrap;
@@ -628,7 +628,7 @@
     @apply flex min-h-12 min-w-0 flex-1 flex-row items-center justify-start gap-3 rounded-xl px-3 py-3 text-left text-body font-medium leading-snug text-primary border-l-[3px] border-transparent no-underline transition-colors;
   }
   .admin-rail.workspace-sidebar nav.sidebar-navigation a.active {
-    @apply bg-primary text-linen border-l-tangelo shadow-sm;
+    @apply bg-primary text-linen border-l-tangerine shadow-sm;
   }
   .admin-rail.workspace-sidebar nav.sidebar-navigation a:hover:not(.active) {
     @apply bg-primary-soft text-primary;
@@ -661,7 +661,7 @@
     @apply mt-4 flex items-center gap-2 rounded-xl bg-primary-soft p-2.5;
   }
   .workspace-avatar {
-    @apply flex size-9 shrink-0 items-center justify-center rounded-full border border-primary/15 bg-botticelli text-small font-semibold text-primary;
+    @apply flex size-9 shrink-0 items-center justify-center rounded-full border border-primary/15 bg-cotton text-small font-semibold text-primary;
   }
   .workspace-signout {
     @apply flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-transparent text-muted transition-colors hover:border-line hover:bg-white hover:text-accent;
@@ -744,13 +744,13 @@
 
 @layer components {
   .dashboard-stat-grid .admin-stat {
-    @apply border-t-[3px] border-t-tangelo;
+    @apply border-t-[3px] border-t-tangerine;
   }
   .dashboard-stat-grid .admin-stat[data-stat="customers"] {
-    @apply border-t-botticelli;
+    @apply border-t-cotton;
   }
   .dashboard-stat-grid .admin-stat[data-stat="customers"] .admin-stat-icon {
-    @apply bg-botticelli text-primary;
+    @apply bg-cotton text-primary;
   }
   .dashboard-stat-grid .admin-stat[data-stat="orders"] .admin-stat-icon {
     @apply bg-primary-soft text-primary;
@@ -759,9 +759,9 @@
     @apply bg-accent-soft text-accent;
   }
   .workspace-profile {
-    @apply bg-botticelli/55;
+    @apply bg-cotton/55;
   }
   .product-editor-media {
-    @apply bg-botticelli/25;
+    @apply bg-cotton/25;
   }
 }
