@@ -9,8 +9,6 @@ from ..captcha import challenge_response, require_captcha
 from ..policies import acceptance
 from ..admin_validation import collect, FieldValidationError
 from datetime import datetime
-import random
-import string
 import os
 import re
 import secrets

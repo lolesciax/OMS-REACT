@@ -312,7 +312,6 @@ def orders():
             }), 201
 
         except Exception as e:
-            import traceback
             return jsonify({'success': False, 'error': str(e)}), 500
 
     elif request.method == 'GET':

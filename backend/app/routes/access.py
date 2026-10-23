@@ -4,7 +4,7 @@ from flask import Blueprint, current_app, jsonify, request, g
 from pymongo.errors import DuplicateKeyError
 from ..access import PERMISSIONS, validate_role
 from ..admin_validation import FieldValidationError, clean_text
-from ..catalog import DEFAULT_CATALOG_OPTIONS, catalog_options as current_catalog_options
+from ..catalog import catalog_options as current_catalog_options
 from ..notifications import enqueue, event
 from uuid import uuid4
 

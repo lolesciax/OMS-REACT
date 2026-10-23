@@ -31,3 +31,7 @@ frontend/.env
 *.njsproj
 *.sln
 *.sw?
+
+# Generated portfolio deliverables
+/portfolio-screenshots/
+/portfolio-screenshots.zip

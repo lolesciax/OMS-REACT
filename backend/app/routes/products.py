@@ -5,24 +5,13 @@ from ..identity import next_display_id
 from ..notifications import stock_update
 from ..models.product import ProductModel
 from .. import get_db
-from flask import Blueprint, request, jsonify, send_from_directory, current_app
+from flask import Blueprint, request, jsonify, current_app
 from bson import ObjectId
 from datetime import datetime
-import os
-from werkzeug.utils import secure_filename
-import json
-import math
 
 bp = Blueprint('products', __name__, url_prefix='/api/products')
 
-# Add OPTIONS handler for all product routes
-
-# ---------------- Helper ----------------
-def allowed_file(filename):
-    if not filename:
-        return False
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
-
+# ---------------- Helpers ----------------
 def get_full_image_url(image_path):
     """Convert relative image path to full URL"""
     if not image_path:
@@ -51,7 +40,6 @@ def serialize_doc(doc):
 
     return doc
 
-# ---------------- Product Model ----------------
 # ---------------- Routes ----------------
 @bp.route('/static/uploads/<path:filename>')
 def uploaded_file(filename):

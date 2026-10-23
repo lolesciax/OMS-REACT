@@ -47,4 +47,31 @@ Requirements: Node.js 22+, Python 3.11+, and MongoDB.
 
 The local frontend runs at `http://localhost:5173` and the API at `http://localhost:5000`.
 
-Deployment configuration is in `render.yaml` and `frontend/vercel.json`.
+## Verification
+
+Run frontend checks from the repository root:
+
+```sh
+npm run lint
+npm test
+npm run format:check
+npm run build
+```
+
+Run the backend regression suite from `backend/`:
+
+```sh
+py -m unittest discover -s tests
+```
+
+Database integration tests use disposable test databases and require explicit opt-in; see `backend/tests/test_mongodb_integration.py`.
+
+## Deployment
+
+`render.yaml` configures the Flask API. The root `vercel.json` builds the frontend workspace into `frontend/dist` and proxies API/upload requests to Render. Import the repository root (`./`) for new Vercel projects so the shared validation rules are included in the build.
+
+`frontend/vercel.json` retains the same proxy and SPA rewrites for existing Vercel projects already rooted in `frontend/`. Keep the configuration matching the project's chosen root; no cloud settings need to change during cleanup.
+
+## Generated files
+
+Dependencies, build output, Python caches, local environment files, and `.tmp/` browser-test artifacts are ignored by Git. `portfolio-screenshots/` and its ZIP are generated deliverables; they are kept outside the application source and are also ignored.
