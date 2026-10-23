@@ -1,4 +1,3 @@
-import Image from "./Image";
 import { Link } from "react-router-dom";
 import StoreHeader from "./StoreHeader";
 import Footer from "./Footer";
@@ -14,26 +13,56 @@ export default function AuthLayout({ mode, children }) {
       <StoreHeader compact />
       <main
         className={
-          "auth-shell w-full max-w-280 my-0 mx-auto [padding:64px_28px_80px] grid grid-cols-[1fr_1fr] gap-[110px] items-center max-[1000px]:gap-12 max-[700px]:block max-[700px]:[padding:32px_20px_48px] max-[700px]:max-w-125"
+          "auth-shell w-full max-w-280 my-0 mx-auto [padding:64px_28px_80px] grid grid-cols-[1fr_1fr] gap-8 items-stretch max-[1000px]:gap-6 max-[700px]:block max-[700px]:[padding:32px_20px_48px] max-[700px]:max-w-125"
         }
       >
-        <aside className="auth-story max-[700px]:hidden" aria-hidden="true">
-          <span className="ui-eyebrow">A little history. A fresh start.</span>
-          <h2>
-            Good clothes.
-            <br />
-            <em>Better stories.</em>
-          </h2>
-          <p>
-            Make room for pieces with character. Find something you love, give
-            it another life, and make it your own.
-          </p>
-          <div className="auth-story-image">
-            <Image src="/p2.jpg" alt="A pre-loved shirt from our collection" />
-            <span>Old goods. New possibilities.</span>
+        <aside
+          className="auth-story max-[700px]:hidden"
+          aria-label="Your Old Goods account"
+        >
+          <div className="auth-story-brand">
+            <Icon name="leaf" size={23} />
+            <span>OLD GOODS / NEW POSSIBILITIES</span>
           </div>
-          <div className="auth-story-note">
-            <Icon name="leaf" size={17} /> A thoughtful way to get dressed.
+          <div className="auth-story-copy">
+            <span className="auth-story-eyebrow">YOUR OWN LITTLE CORNER</span>
+            <h2>
+              Good finds.
+              <br />
+              <span>Start here.</span>
+            </h2>
+            <p>
+              Save your favorite finds and follow their next chapter, all in one
+              place.
+            </p>
+          </div>
+          <ul className="auth-story-features">
+            {[
+              [
+                "heart",
+                "Keep what catches your eye",
+                "Save your favorite finds in one place.",
+              ],
+              [
+                "orders",
+                "Follow every second act",
+                "Stay up to date on your orders.",
+              ],
+            ].map(([icon, title, description]) => (
+              <li key={icon}>
+                <span className="auth-story-feature-icon">
+                  <Icon name={icon} size={20} />
+                </span>
+                <div>
+                  <h3>{title}</h3>
+                  <p>{description}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="auth-story-signature">
+            <span>Less ordinary. More you.</span>
+            <Icon name="arrow" size={22} className="-rotate-45" />
           </div>
         </aside>
         <section
