@@ -19,31 +19,30 @@ export default function LandingHero({ products, loading, onSelect }) {
     <section className="landing-hero" aria-labelledby="shop-title">
       <div className="landing-hero-copy">
         <span className="landing-kicker">
-          <span /> SECONDHAND. FIRST CHOICE.
+          <Icon name="leaf" size={16} /> OLD GOODS. NEW POSSIBILITIES.
         </span>
         <h1 id="shop-title">
-          Less ordinary.
+          Find your
           <br />
-          <span>More you.</span>
+          <span>kind of good.</span>
         </h1>
         <p>
-          Good clothes don’t need to be brand new. Discover pre-loved pieces
-          with character, at prices that feel right.
+          A little character. A lot to love. Discover pre-loved pieces worth
+          making room for.
         </p>
         <div className="landing-actions">
           <a href="#collection" className="landing-shop-link">
             Shop the collection <Icon name="arrow" size={20} />
           </a>
           <Link to="/help" className="landing-help-link">
-            How it works <Icon name="arrow" size={17} />
+            Our story <Icon name="arrow" size={17} />
           </Link>
         </div>
         <div className="landing-hero-values">
-          <Icon name="truck" size={19} />
+          <Icon name="truck" size={20} />
           <span>
-            From our rack to your doorstep.
-            <br />
-            <strong>Shipping across the Philippines.</strong>
+            Thoughtfully pre-loved.
+            <strong>Delivered across the Philippines.</strong>
           </span>
         </div>
       </div>
@@ -53,9 +52,9 @@ export default function LandingHero({ products, loading, onSelect }) {
         aria-busy={loading}
       >
         <div className="landing-showcase-heading">
-          <span>ON THE RACK</span>
+          <span>THE GOOD FINDS EDIT</span>
           <span>
-            Ready for a new chapter <Icon name="arrow" size={16} />
+            Available now <span className="landing-stock-dot" />
           </span>
         </div>
         {loading ? (
@@ -77,10 +76,11 @@ export default function LandingHero({ products, loading, onSelect }) {
           <div
             className={`landing-rack ${featured.length === 1 ? "landing-rack-single" : ""}`}
           >
-            {featured.map((product, index) => (
+            {featured.map((product) => (
               <button
                 key={product._id || product.id}
                 className="landing-rack-card"
+                type="button"
                 onClick={() => onSelect(product)}
                 aria-label={`View ${product.name}, ${formatPrice(product.price)}`}
               >
@@ -89,7 +89,7 @@ export default function LandingHero({ products, loading, onSelect }) {
                     src={product.image}
                     name={product.name}
                     alt={product.name}
-                    loading={index === 0 ? "eager" : "lazy"}
+                    loading="eager"
                     onUnavailable={() =>
                       setFailed((previous) => [...previous, product.image])
                     }
@@ -119,11 +119,11 @@ export default function LandingHero({ products, loading, onSelect }) {
           </div>
         )}
         <p className="landing-rack-note">
-          <Icon name="leaf" size={16} /> A little history. A fresh start.
+          <Icon name="leaf" size={16} /> Good pieces deserve another chapter.
         </p>
       </div>
       <div className="landing-bottom">
-        <span>PRE-LOVED CLOTHES. NEW POSSIBILITIES.</span>
+        <span>A fresh perspective on secondhand.</span>
         <a href="#collection">
           Explore the finds{" "}
           <Icon name="arrow" size={18} className="rotate-90" />
