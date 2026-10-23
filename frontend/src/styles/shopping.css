@@ -51,68 +51,46 @@
     @apply inline-flex items-center gap-2;
   }
   .landing-showcase {
-    @apply relative isolate mx-auto w-full max-w-120 min-w-0 py-10;
+    @apply mx-auto w-full max-w-140 min-w-0 rounded-2xl border border-cream/20 bg-cream/5 p-5;
   }
-  .landing-showcase::before {
-    content: "";
-    @apply absolute inset-x-8 inset-y-9 -z-10 rounded-full bg-leaf/15;
+  .landing-showcase-heading {
+    @apply mb-4 flex flex-wrap items-center justify-between gap-2 text-small text-cream;
   }
-  .campaign-watermark {
-    @apply absolute -top-3 right-0 -z-10 whitespace-nowrap text-[clamp(44px,7vw,108px)] font-bold tracking-[-0.07em] text-cream/10;
+  .landing-showcase-heading > span {
+    @apply font-semibold;
   }
-  .campaign-stamp {
-    @apply absolute right-1 top-5 z-20 flex size-23 -rotate-12 flex-col items-center justify-center gap-1 rounded-full border border-primary/10 bg-leaf text-center text-[11px] font-bold leading-tight tracking-wide text-primary shadow-md;
+  .landing-showcase-heading a {
+    @apply inline-flex min-h-11 items-center gap-2 text-[12px] text-cream/80 underline underline-offset-4 hover:text-cream;
   }
   .landing-rack {
-    @apply relative grid min-w-0 grid-cols-[1.25fr_0.8fr] grid-rows-2 items-center gap-4;
+    @apply grid min-w-0 grid-cols-2 items-stretch gap-4;
   }
   .landing-rack-card {
-    @apply relative flex min-w-0 flex-col overflow-hidden rounded-xl border-4 border-white bg-white text-left text-ink no-underline shadow-[0_16px_40px_#15251b30] transition-transform duration-300 hover:-translate-y-1 focus-visible:outline-cream;
-  }
-  .landing-rack-card:first-child {
-    @apply row-span-2 -rotate-6;
-  }
-  .landing-rack-card:nth-child(2) {
-    @apply rotate-6;
-  }
-  .landing-rack-card:nth-child(3) {
-    @apply -rotate-3;
+    @apply flex min-w-0 flex-col overflow-hidden rounded-xl border border-white/20 bg-white text-left text-ink no-underline shadow-sm transition-transform duration-300 hover:-translate-y-1 focus-visible:outline-cream;
   }
   .landing-rack-photo {
-    @apply block aspect-square w-full min-w-0 overflow-hidden bg-sage;
+    @apply block aspect-[4/5] w-full min-w-0 overflow-hidden bg-surface-soft;
   }
   .landing-rack-photo .product-media {
     @apply bg-surface-soft;
   }
   .landing-rack-photo img {
-    @apply size-full object-contain p-1;
+    @apply size-full object-contain p-3;
   }
   .landing-rack-caption {
-    @apply flex min-w-0 flex-col gap-1 p-3;
+    @apply flex min-w-0 flex-1 flex-col gap-2 p-4;
   }
   .landing-rack-category {
     @apply truncate text-[12px] text-muted;
   }
   .landing-rack-caption strong {
-    @apply line-clamp-1 text-small font-semibold leading-snug;
+    @apply line-clamp-2 text-body font-semibold leading-snug;
   }
   .landing-rack-price {
-    @apply mt-1 flex items-center justify-between gap-2 text-small font-bold text-primary;
-  }
-  .landing-rack-card:not(:first-child) .landing-rack-caption {
-    @apply p-2;
-  }
-  .landing-rack-card:not(:first-child) .landing-rack-category {
-    @apply hidden;
+    @apply mt-auto flex items-center justify-between gap-2 pt-2 text-small font-bold text-primary;
   }
   .landing-rack-count-1 {
-    @apply mx-auto max-w-80 grid-cols-1 grid-rows-1;
-  }
-  .landing-rack-count-2 {
-    @apply grid-rows-1;
-  }
-  .landing-rack-count-2 .landing-rack-card:first-child {
-    @apply row-span-1;
+    @apply mx-auto max-w-72 grid-cols-1;
   }
   .landing-rack-empty {
     @apply flex min-h-80 flex-col items-center justify-center gap-4 rounded-2xl border border-cream/25 p-6 text-center text-cream;
@@ -124,16 +102,16 @@
     @apply max-w-80 text-body text-cream/80;
   }
   .campaign-price-tag {
-    @apply absolute -bottom-1 left-0 z-20 grid grid-cols-[1fr_auto] items-center gap-x-5 rounded-xl border border-line bg-cream px-5 py-3 text-primary shadow-lg transition-transform hover:-translate-y-1;
+    @apply mt-4 flex min-h-11 flex-wrap items-center gap-2 text-small text-cream no-underline;
   }
   .campaign-price-tag > span {
-    @apply text-[12px] text-muted;
+    @apply text-cream/75;
   }
   .campaign-price-tag strong {
-    @apply col-start-1 text-2xl font-bold;
+    @apply font-semibold;
   }
   .campaign-price-tag svg {
-    @apply col-start-2 row-span-2 row-start-1;
+    @apply ml-auto;
   }
   .landing-bottom {
     @apply col-span-full flex flex-wrap items-center justify-between gap-3 border-t border-cream/20 pt-3 text-small text-cream/75;
@@ -154,10 +132,7 @@
     @apply flex w-max;
   }
   .campaign-ribbon-copy {
-    @apply flex shrink-0 items-center gap-10 py-4 pr-10 text-small font-bold tracking-[0.13em];
-  }
-  .campaign-motion-toggle {
-    @apply mx-3 min-h-11 min-w-14 shrink-0 rounded-full border border-primary/30 bg-leaf px-3 text-[12px] font-semibold hover:bg-sage;
+    @apply flex min-w-[100vw] shrink-0 items-center justify-around gap-10 px-5 py-4 text-small font-bold tracking-[0.13em];
   }
   .storefront-discovery {
     @apply mx-auto w-full max-w-320 px-7 py-14;
@@ -241,18 +216,8 @@
     .campaign-ribbon-track {
       animation: campaign-scroll 28s linear infinite;
     }
-    .campaign-ribbon:hover .campaign-ribbon-track,
-    .campaign-ribbon:focus-within .campaign-ribbon-track,
-    .campaign-ribbon[data-paused="true"] .campaign-ribbon-track {
+    .campaign-ribbon:hover .campaign-ribbon-track {
       animation-play-state: paused;
-    }
-    .campaign-stamp {
-      animation: campaign-in 700ms 250ms both;
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .campaign-motion-toggle {
-      @apply hidden;
     }
   }
   @media (max-width: 1100px) {
@@ -264,12 +229,6 @@
     }
     .landing-rack {
       @apply gap-3;
-    }
-    .campaign-stamp {
-      @apply right-0 size-19 text-[10px];
-    }
-    .landing-rack-card:not(:first-child) .landing-rack-caption strong {
-      @apply hidden;
     }
   }
   @media (max-width: 800px) {
@@ -298,28 +257,10 @@
       @apply hidden;
     }
     .landing-showcase {
-      @apply mx-auto w-full max-w-90 pb-5 pt-4;
-    }
-    .campaign-watermark {
-      @apply top-0 text-[58px];
-    }
-    .campaign-stamp {
-      @apply top-1;
+      @apply mx-auto w-full max-w-120 p-3;
     }
     .landing-rack {
-      @apply grid-cols-[1.2fr_0.8fr] grid-rows-1 gap-3;
-    }
-    .landing-rack-card:first-child {
-      @apply row-span-1;
-    }
-    .landing-rack-card:nth-child(3) {
-      @apply hidden;
-    }
-    .landing-rack-card:first-child .landing-rack-photo {
-      @apply aspect-[5/4];
-    }
-    .landing-rack-card:not(:first-child) .landing-rack-photo {
-      @apply aspect-[4/3];
+      @apply grid-cols-2 gap-3;
     }
     .landing-rack-caption {
       @apply p-2;
@@ -328,10 +269,10 @@
       @apply hidden;
     }
     .campaign-price-tag {
-      @apply -bottom-1 left-1 px-4 py-2;
+      @apply mt-3;
     }
     .campaign-price-tag strong {
-      @apply text-xl;
+      @apply text-small;
     }
     .landing-bottom {
       @apply hidden;
@@ -388,9 +329,6 @@
     .landing-rack-caption strong {
       @apply text-[12px];
     }
-    .campaign-stamp {
-      @apply size-16 text-[9px];
-    }
     .storefront-circle-arrow {
       @apply size-7;
     }
@@ -409,10 +347,7 @@
       @apply mt-5;
     }
     .landing-showcase {
-      @apply mx-auto w-full max-w-110 py-6;
-    }
-    .landing-rack-card:not(:first-child) .landing-rack-photo {
-      @apply aspect-[4/3];
+      @apply mx-auto w-full max-w-120 p-4;
     }
     .landing-rack-caption {
       @apply p-2;
@@ -786,15 +721,5 @@
 @keyframes campaign-scroll {
   to {
     transform: translateX(-50%);
-  }
-}
-@keyframes campaign-in {
-  from {
-    opacity: 0;
-    transform: scale(0.85) rotate(-20deg);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) rotate(-12deg);
   }
 }

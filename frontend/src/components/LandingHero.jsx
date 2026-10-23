@@ -7,12 +7,11 @@ import Skeleton, { SkeletonRegion } from "./Skeleton";
 
 export default function LandingHero({ products, loading, onSelect }) {
   const [failed, setFailed] = useState([]);
-  const [paused, setPaused] = useState(false);
   const featured = products
     .filter(
       (p) => isProductAvailable(p) && p.image && !failed.includes(p.image),
     )
-    .slice(0, 3);
+    .slice(0, 2);
   const lowestPrice = products
     .filter(isProductAvailable)
     .reduce((price, p) => Math.min(price, Number(p.price)), Infinity);
@@ -62,23 +61,18 @@ export default function LandingHero({ products, loading, onSelect }) {
           aria-label="Shop available featured pieces"
           aria-busy={loading}
         >
-          <span className="campaign-watermark" aria-hidden="true">
-            RE / LOVE
-          </span>
-          <div className="campaign-stamp">
-            <Icon name="leaf" size={22} />
-            <span>
-              OLD GOODS
-              <br />
-              NEW STORIES
-            </span>
+          <div className="landing-showcase-heading">
+            <span>Featured finds</span>
+            <a href="#collection">
+              View collection <Icon name="arrow" size={16} />
+            </a>
           </div>
           {loading ? (
             <SkeletonRegion
               label="Loading featured pieces"
               className="landing-rack"
             >
-              {[0, 1, 2].map((index) => (
+              {[0, 1].map((index) => (
                 <div className="landing-rack-card" key={index}>
                   <Skeleton className="landing-rack-photo" />
                   <div className="space-y-3 p-4">
@@ -114,7 +108,7 @@ export default function LandingHero({ products, loading, onSelect }) {
                   <div className="landing-rack-caption">
                     <span className="landing-rack-category">
                       {product.category || "Pre-loved find"}
-                      {product.size ? ` ? ${product.size}` : ""}
+                      {product.size ? ` / ${product.size}` : ""}
                     </span>
                     <strong>{product.name}</strong>
                     <span className="landing-rack-price">
@@ -129,7 +123,7 @@ export default function LandingHero({ products, loading, onSelect }) {
             <div className="landing-rack-empty" role="status">
               <Icon name="bag" size={40} />
               <h2>A new chapter is coming.</h2>
-              <p>We?re getting the next good finds ready. Check back soon.</p>
+              <p>We're getting the next good finds ready. Check back soon.</p>
             </div>
           )}
           {!loading && Number.isFinite(lowestPrice) && (
@@ -148,7 +142,7 @@ export default function LandingHero({ products, loading, onSelect }) {
           </a>
         </div>
       </section>
-      <div className="campaign-ribbon" data-paused={paused}>
+      <div className="campaign-ribbon">
         <div className="campaign-ribbon-window">
           <div className="campaign-ribbon-track">
             {[0, 1].map((copy) => (
@@ -167,19 +161,6 @@ export default function LandingHero({ products, loading, onSelect }) {
             ))}
           </div>
         </div>
-        <button
-          type="button"
-          className="campaign-motion-toggle"
-          onClick={() => setPaused((value) => !value)}
-          aria-pressed={paused}
-          aria-label={
-            paused
-              ? "Play promotional ribbon animation"
-              : "Pause promotional ribbon animation"
-          }
-        >
-          {paused ? "Play" : "Pause"}
-        </button>
       </div>
     </>
   );
