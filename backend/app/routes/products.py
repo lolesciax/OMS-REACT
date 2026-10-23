@@ -5,7 +5,7 @@ from ..identity import next_display_id
 from ..notifications import stock_update
 from ..models.product import ProductModel
 from .. import get_db
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from datetime import datetime
 
