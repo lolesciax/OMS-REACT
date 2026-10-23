@@ -14,7 +14,7 @@ function ProgressSteps({ steps, current, complete = false, label }) {
         return (
           <li
             key={step.label}
-            className={`min-w-0 rounded-xl border p-3 ${active ? "border-primary bg-primary-soft ring-1 ring-primary" : done ? "border-[#c4cddc] bg-[#f2f5f9]" : "border-line bg-white"}`}
+            className={`min-w-0 rounded-xl border p-3 ${active ? "border-primary bg-primary-soft ring-1 ring-primary" : done ? "border-[#dacfc6] bg-[#f8f5f3]" : "border-line bg-white"}`}
             aria-current={active ? "step" : undefined}
           >
             <div className="flex items-center gap-2">

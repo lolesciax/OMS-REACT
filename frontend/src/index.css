@@ -7,16 +7,16 @@
 @theme {
   --font-sans: "Segoe UI", Arial, sans-serif;
   --font-serif: Georgia, serif;
-  --color-ink: #263247;
-  --color-muted: #626d7e;
-  --color-paper: #fcfbf7;
+  --color-ink: #29221e;
+  --color-muted: #74675c;
+  --color-paper: #faf7f1;
   --color-surface: #ffffff;
-  --color-line: #dfe3e9;
-  --color-accent: #a34c32;
-  --color-accent-soft: #f4e7dc;
-  --color-primary: #344d73;
-  --color-primary-soft: #e9edf3;
-  --color-sand: #edc7a8;
+  --color-line: #e4dcd2;
+  --color-accent: #b44822;
+  --color-accent-soft: #f7e7db;
+  --color-primary: #302a26;
+  --color-primary-soft: #eee6db;
+  --color-sand: #efc29c;
   --text-small: 0.875rem;
   --text-body: 1rem;
   --text-lead: 1.125rem;

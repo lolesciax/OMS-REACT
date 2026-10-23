@@ -57,7 +57,7 @@
     @apply flex items-center justify-center gap-2 text-small mt-[22px] no-underline;
   }
   .auth-modal-overlay {
-    @apply fixed inset-0 flex items-center justify-center p-5 bg-[#171c25c2] z-[2000] [backdrop-filter:blur(4px)];
+    @apply fixed inset-0 flex items-center justify-center p-5 bg-[#251e17c2] z-[2000] [backdrop-filter:blur(4px)];
   }
   .auth-recovery {
     @apply relative max-w-120 w-full max-h-[calc(100dvh_-_40px)] overflow-y-auto [padding:40px_32px_28px] rounded-[14px] bg-paper;

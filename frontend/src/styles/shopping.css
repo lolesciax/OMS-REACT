@@ -2,249 +2,271 @@
 
 @layer components {
   .landing-intro {
-    @apply grid min-h-svh grid-rows-[auto_1fr] bg-[#f4f2e9];
+    @apply grid min-h-svh grid-rows-[auto_1fr] bg-primary;
   }
   .landing-intro .store-header {
-    @apply bg-transparent;
+    @apply bg-paper;
   }
   .landing-hero {
-    @apply relative mx-auto grid w-full max-w-[1440px] grid-cols-[1.05fr_1fr] items-center gap-10 px-12 py-12 pb-20;
+    @apply relative mx-auto grid w-full max-w-[1440px] grid-cols-[1fr_1fr] items-center gap-x-16 gap-y-8 px-12 py-10 text-[#fff5e9];
   }
   .landing-kicker {
-    @apply mb-6 inline-flex items-center gap-2.5 text-small font-medium tracking-[0.06em] text-primary;
+    @apply mb-7 inline-flex items-center gap-3 text-small font-semibold tracking-[0.12em] text-sand;
   }
   .landing-kicker > span {
-    @apply size-2 rounded-full bg-accent;
+    @apply size-2 rounded-full bg-sand;
   }
   .landing-hero h1 {
-    @apply m-0 font-serif text-[clamp(54px,6.1vw,96px)] font-normal leading-[0.98] tracking-[-0.055em] text-ink;
+    @apply m-0 font-sans text-[clamp(56px,5.8vw,88px)] font-bold leading-[1.02] tracking-[-0.065em];
   }
-  .landing-hero h1 em {
-    @apply font-normal text-accent;
+  .landing-hero h1 > span {
+    @apply text-sand;
   }
   .landing-hero-copy > p {
-    @apply mb-7 mt-6 max-w-[390px] text-body leading-[1.75] text-muted;
+    @apply mb-8 mt-6 max-w-100 text-lead leading-relaxed text-[#ded1c5];
+  }
+  .landing-actions {
+    @apply flex flex-wrap items-center gap-x-6 gap-y-3;
   }
   .landing-shop-link {
-    @apply inline-flex min-h-14 items-center justify-between gap-8 rounded-full bg-primary py-2 pl-6 pr-2 text-body font-semibold text-white no-underline transition-colors hover:bg-ink;
+    @apply inline-flex min-h-14 items-center justify-between gap-7 rounded-lg bg-sand px-6 py-3 text-body font-bold text-primary no-underline transition-colors hover:bg-[#ffe0c5];
   }
-  .landing-shop-link > span {
-    @apply grid size-10 place-items-center rounded-full bg-accent-soft text-primary;
+  .landing-help-link {
+    @apply inline-flex min-h-11 items-center gap-2 text-body font-medium text-[#fff5e9] underline decoration-white/30 underline-offset-4 hover:decoration-white;
   }
   .landing-hero-values {
-    @apply mt-7 flex items-center gap-2 text-small text-muted;
+    @apply mt-10 flex items-center gap-3 text-small leading-relaxed text-[#ded1c5];
   }
-  .landing-composition {
-    @apply relative mx-auto h-[clamp(380px,62svh,680px)] w-full max-w-[620px];
+  .landing-hero-values strong {
+    @apply font-medium text-[#fff5e9];
   }
-  .landing-orbit {
-    @apply absolute inset-[6%_0_4%_4%] rounded-[48%] border border-primary/15 bg-[#d8dde5];
+  .landing-showcase {
+    @apply min-w-0;
   }
-  .landing-photo-index {
-    @apply absolute left-0 top-0 text-small tracking-[0.16em] text-muted;
+  .landing-showcase-heading {
+    @apply mb-4 flex flex-wrap items-center justify-between gap-2 text-small font-semibold tracking-[0.1em] text-sand;
   }
-  .landing-featured {
-    @apply absolute inset-[9%_16%_7%_7%] flex min-w-0 -rotate-6 flex-col rounded-2xl border border-white bg-white p-3 text-left text-ink shadow-[0_20px_60px_#262d3916] transition-transform hover:-rotate-3;
+  .landing-showcase-heading > span:last-child {
+    @apply inline-flex items-center gap-2 font-normal tracking-normal text-[#ded1c5];
   }
-  .landing-featured-photo {
-    @apply min-h-0 flex-1 overflow-hidden rounded-xl bg-[#e9e8df];
+  .landing-rack {
+    @apply grid min-w-0 grid-cols-2 gap-5;
   }
-  .landing-featured-photo img {
-    @apply block size-full object-contain p-4;
+  .landing-rack-single {
+    @apply mx-auto max-w-80 grid-cols-1;
   }
-  .landing-featured-caption {
-    @apply flex items-center justify-between gap-3 px-1 pb-1 pt-4 text-small;
+  .landing-rack-card {
+    @apply flex min-w-0 flex-col overflow-hidden rounded-xl border border-white/10 bg-paper text-left text-ink no-underline transition-transform duration-300 hover:-translate-y-1 focus-visible:outline-sand;
   }
-  .landing-featured-caption > span {
-    @apply flex min-w-0 flex-col gap-1;
+  .landing-rack-photo {
+    @apply block aspect-[4/5] w-full min-w-0 overflow-hidden bg-[#e9e1d6];
   }
-  .landing-featured-caption > span:last-child {
-    @apply shrink-0 items-end text-accent;
+  .landing-rack-photo .product-media {
+    @apply bg-[#e9e1d6];
   }
-  .landing-featured-caption small {
-    @apply text-muted;
+  .landing-rack-photo img {
+    @apply size-full object-contain p-3;
   }
-  .landing-featured-caption strong {
-    @apply truncate font-medium;
+  .landing-rack-caption {
+    @apply flex min-w-0 flex-1 flex-col gap-2 p-4;
   }
-  .landing-mini {
-    @apply absolute right-0 z-[1] flex h-[32%] w-[31%] flex-col rounded-xl border-[5px] border-white bg-[#f8f7f0] text-ink shadow-[0_8px_32px_#262d3920] transition-transform hover:rotate-0;
+  .landing-rack-category {
+    @apply truncate text-small text-muted;
   }
-  .landing-mini-1 {
-    @apply top-[4%] rotate-12;
+  .landing-rack-caption strong {
+    @apply line-clamp-2 text-body font-semibold leading-snug;
   }
-  .landing-mini-2 {
-    @apply bottom-[22%] rotate-6;
+  .landing-rack-price {
+    @apply mt-auto flex items-center justify-between gap-2 pt-2 text-body font-bold text-accent;
   }
-  .landing-mini img {
-    @apply size-full min-h-0 flex-1 object-contain p-2;
+  .landing-rack-price > span {
+    @apply grid size-9 place-items-center rounded-full border border-line text-primary;
   }
-  .landing-mini > span {
-    @apply flex items-center justify-between gap-1 truncate px-2 py-1.5 text-small;
+  .landing-rack-note {
+    @apply mt-4 flex items-center justify-end gap-2 text-small text-[#ded1c5];
   }
-  .landing-seal {
-    @apply absolute -left-2 bottom-[16%] z-[2] flex size-24 -rotate-12 flex-col items-center justify-center gap-1 rounded-full bg-sand text-center text-small font-semibold leading-[1.3] text-primary;
+  .landing-rack-empty {
+    @apply flex min-h-80 flex-col items-center justify-center gap-4 rounded-xl border border-white/20 p-8 text-center;
   }
-  .landing-featured-empty {
-    @apply items-center justify-center gap-5 text-center;
+  .landing-rack-empty h2 {
+    @apply font-serif text-3xl;
   }
-  .landing-featured-empty > p {
-    @apply px-3 text-small text-muted;
+  .landing-rack-empty p {
+    @apply max-w-80 text-body text-[#ded1c5];
   }
-  .landing-scroll {
-    @apply absolute bottom-5 left-12 right-12 flex items-center justify-between border-t border-primary/15 pt-4 text-small text-muted no-underline hover:text-primary;
+  .landing-bottom {
+    @apply col-span-full flex flex-wrap items-center justify-between gap-3 self-end border-t border-white/20 pt-5 text-small text-[#ded1c5];
   }
-  @media (max-width: 1000px) {
+  .landing-bottom > span {
+    @apply tracking-[0.12em];
+  }
+  .landing-bottom a {
+    @apply inline-flex min-h-11 items-center gap-3 text-[#fff5e9] underline-offset-4 hover:underline;
+  }
+  .landing-hero a:focus-visible {
+    @apply outline-sand;
+  }
+  @media (max-width: 1100px) {
     .landing-hero {
-      @apply gap-5 px-7;
+      @apply gap-x-8 px-7;
     }
-    .landing-scroll {
-      @apply left-7 right-7;
+    .landing-hero h1 {
+      @apply text-[clamp(48px,6vw,70px)];
     }
-    .landing-mini > span {
+    .landing-rack {
+      @apply gap-3;
+    }
+    .landing-showcase-heading > span:last-child {
       @apply hidden;
     }
   }
   @media (max-width: 700px) {
     .landing-hero {
-      @apply grid-cols-1 gap-5 px-5 py-6 pb-12;
+      @apply grid-cols-1 gap-5 px-5 py-6;
     }
     .landing-kicker {
-      @apply mb-3;
+      @apply mb-3 text-[12px];
     }
     .landing-hero h1 {
-      @apply text-[clamp(34px,10vw,56px)] leading-[1.02] tracking-[-0.045em];
+      @apply text-[clamp(42px,11vw,68px)];
     }
     .landing-hero-copy > p {
-      @apply mb-4 mt-3 max-w-[440px] leading-[1.6];
+      @apply my-4 max-w-110 text-body leading-relaxed;
     }
     .landing-shop-link {
-      @apply min-h-12 gap-5 py-1.5 pl-5 pr-1.5;
+      @apply min-h-12 gap-4 px-4;
     }
-    .landing-shop-link > span {
-      @apply size-9;
+    .landing-actions {
+      @apply gap-x-4;
+    }
+    .landing-help-link {
+      @apply text-small;
     }
     .landing-hero-values {
       @apply hidden;
     }
-    .landing-composition {
-      @apply h-[clamp(190px,29svh,330px)] max-w-[400px];
+    .landing-showcase-heading {
+      @apply mb-3;
     }
-    .landing-photo-index {
-      @apply hidden;
+    .landing-rack-photo {
+      @apply aspect-[5/4];
     }
-    .landing-featured {
-      @apply inset-[3%_20%_3%_12%] p-2 -rotate-3;
-    }
-    .landing-featured-photo img {
+    .landing-rack-photo img {
       @apply p-2;
     }
-    .landing-featured-caption {
-      @apply gap-2 px-0 pb-0 pt-2;
+    .landing-rack-caption {
+      @apply gap-1.5 p-3;
     }
-    .landing-featured-caption small,
-    .landing-featured-caption svg {
+    .landing-rack-caption strong {
+      @apply line-clamp-1 text-small;
+    }
+    .landing-rack-category {
+      @apply text-[12px];
+    }
+    .landing-rack-price {
+      @apply pt-1;
+    }
+    .landing-rack-price > span {
+      @apply size-6;
+    }
+    .landing-rack-note {
       @apply hidden;
     }
-    .landing-mini {
-      @apply w-[24%] h-[40%];
+    .landing-bottom {
+      @apply hidden;
     }
-    .landing-mini-1 {
-      @apply top-0;
+    .landing-bottom > span {
+      @apply text-[11px];
     }
-    .landing-mini-2 {
-      @apply bottom-[24%];
-    }
-    .landing-seal {
-      @apply left-0 bottom-[17%] size-[70px] text-[11px];
-    }
-    .landing-seal svg {
-      @apply size-4;
-    }
-    .landing-scroll {
-      @apply bottom-3 left-5 right-5 pt-2;
+    .landing-bottom a {
+      @apply text-small;
     }
   }
-  @media (max-width: 700px) and (max-height: 700px) {
+  @media (max-width: 399px) {
+    .landing-help-link {
+      @apply hidden;
+    }
+  }
+  @media (max-width: 700px) and (max-height: 760px) {
     .landing-hero {
-      @apply gap-3 py-3 pb-4;
+      @apply gap-4 py-5;
     }
-    .landing-composition {
-      @apply h-[150px];
-    }
-    .landing-featured-caption {
-      @apply hidden;
-    }
-    .landing-scroll {
-      @apply hidden;
+    .landing-hero h1 {
+      @apply text-[38px];
     }
     .landing-hero-copy > p {
       @apply my-3;
     }
+    .landing-showcase-heading,
+    .landing-rack-category {
+      @apply hidden;
+    }
+    .landing-rack-caption {
+      @apply gap-1 p-2.5;
+    }
   }
-  @media (min-width: 701px) and (max-height: 650px) {
+  @media (min-width: 701px) and (max-height: 850px) {
     .landing-hero {
-      @apply py-5 pb-12;
+      @apply gap-y-4 py-6;
     }
     .landing-hero h1 {
-      @apply text-[clamp(40px,5vw,64px)];
+      @apply text-[clamp(48px,5.5vw,68px)];
+    }
+    .landing-kicker {
+      @apply mb-5;
+    }
+    .landing-hero-copy > p {
+      @apply my-4 text-body;
+    }
+    .landing-hero-values,
+    .landing-rack-note {
+      @apply hidden;
+    }
+    .landing-bottom {
+      @apply pt-3;
+    }
+  }
+  @media (orientation: landscape) and (max-height: 500px) {
+    .landing-hero {
+      @apply grid-cols-2 gap-x-6 gap-y-4 px-5 py-5;
+    }
+    .landing-hero h1 {
+      @apply text-[clamp(32px,5vw,48px)];
     }
     .landing-kicker {
       @apply mb-3;
     }
     .landing-hero-copy > p {
-      @apply my-4;
+      @apply my-3 text-small;
     }
-    .landing-hero-values {
-      @apply hidden;
-    }
-    .landing-composition {
-      @apply h-[clamp(230px,60svh,360px)];
-    }
-    .landing-scroll {
-      @apply bottom-2 pt-2;
-    }
-  }
-  @media (orientation: landscape) and (max-height: 450px) {
-    .landing-hero {
-      @apply grid-cols-[1.2fr_1fr] gap-5 px-5 py-3;
-    }
-    .landing-hero h1 {
-      @apply text-[clamp(28px,5vw,42px)] leading-[1];
-    }
-    .landing-kicker {
-      @apply mb-3;
-    }
+    .landing-hero-values,
+    .landing-rack-note,
+    .landing-showcase-heading,
     .landing-hero-copy > p,
-    .landing-scroll,
-    .landing-photo-index {
+    .landing-bottom {
       @apply hidden;
     }
     .landing-shop-link {
-      @apply mt-4 min-h-11 gap-3 py-1 pl-4 pr-1 text-small;
+      @apply min-h-11 px-4 text-small;
     }
-    .landing-shop-link > span {
-      @apply size-8;
+    .landing-rack-caption strong {
+      @apply line-clamp-1;
     }
-    .landing-composition {
-      @apply h-[min(42svh,190px)];
+    .landing-rack-photo {
+      @apply aspect-[5/3];
     }
-    .landing-featured-caption {
+    .landing-rack-caption {
+      @apply p-2;
+    }
+    .landing-rack-category {
       @apply hidden;
     }
-    .landing-seal {
-      @apply size-14 text-[9px];
+    .landing-rack-caption strong,
+    .landing-rack-price {
+      @apply text-small;
     }
-    .landing-seal svg {
-      @apply size-3;
-    }
-  }
-  @media (max-width: 359px) and (max-height: 700px) {
-    .landing-hero {
-      @apply gap-2 py-2;
-    }
-    .landing-composition {
-      @apply h-[115px];
+    .landing-bottom {
+      @apply pt-2;
     }
   }
   .shop-benefits {
@@ -285,7 +307,7 @@
   }
   .shop-product:hover,
   .shop-product:focus-visible {
-    @apply border-[#9ba3b1] shadow-[0_5px_20px_#282d360d];
+    @apply border-[#b1a59b] shadow-[0_5px_20px_#362f280d];
   }
   .shop-product-image {
     @apply w-full shrink-0 relative overflow-hidden rounded-none aspect-square bg-[#f0eee8];
@@ -294,7 +316,7 @@
     @apply flex items-center justify-between gap-2 mb-3 text-muted;
   }
   .shop-product-badge {
-    @apply py-1 px-2 bg-[#e8ebf0] text-small rounded-[3px] text-[#3f454e];
+    @apply py-1 px-2 bg-[#f0ece8] text-small rounded-[3px] text-[#4e463f];
   }
   .shop-product-meta {
     @apply flex flex-col flex-1 w-full p-4;
@@ -312,7 +334,7 @@
     @apply opacity-[0.65] [filter:saturate(0.5)];
   }
   .shop-join-note {
-    @apply flex justify-between items-center gap-6 bg-[#e5e9ef] border border-line py-7 px-8 mt-12 rounded-[8px];
+    @apply flex justify-between items-center gap-6 bg-[#efeae5] border border-line py-7 px-8 mt-12 rounded-[8px];
   }
   .shop-join-note h3 {
     @apply font-serif font-normal not-italic text-[23px] leading-[normal] mb-[7px];
@@ -322,7 +344,7 @@
   }
 
   .shop-dialog-overlay {
-    @apply fixed inset-0 z-[2000] bg-[#171c25c2] flex items-center justify-center p-6 [backdrop-filter:blur(4px)];
+    @apply fixed inset-0 z-[2000] bg-[#251e17c2] flex items-center justify-center p-6 [backdrop-filter:blur(4px)];
   }
   .shop-dialog {
     @apply relative grid grid-cols-[1fr_1fr] max-w-220 w-full max-h-[calc(100dvh_-_48px)] overflow-y-auto rounded-[16px] bg-paper shadow-[0_24px_100px_#0003];
@@ -431,11 +453,11 @@
 
 @layer components {
   .shop-product {
-    @apply cursor-pointer rounded-2xl shadow-[0_2px_8px_#282d3604];
+    @apply cursor-pointer rounded-2xl shadow-[0_2px_8px_#362f2804];
   }
   .shop-product:hover,
   .shop-product:focus-visible {
-    @apply border-primary/50 shadow-[0_10px_28px_#282d3614];
+    @apply border-primary/50 shadow-[0_10px_28px_#362f2814];
   }
   .shop-product-image {
     @apply border-b border-line;
@@ -475,7 +497,7 @@
     @apply cursor-default;
   }
   .shop-product:focus-within {
-    @apply border-primary/50 shadow-[0_10px_28px_#282d3614];
+    @apply border-primary/50 shadow-[0_10px_28px_#362f2814];
   }
   .shop-product-open {
     @apply block size-full cursor-pointer border-0 bg-transparent p-0;

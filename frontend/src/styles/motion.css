@@ -15,25 +15,12 @@
     .landing-hero-copy > :nth-child(5) {
       animation-delay: 320ms;
     }
-    .landing-featured,
-    .landing-mini,
-    .landing-seal {
-      animation: goods-arrive 850ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    .landing-rack-card {
+      animation: goods-arrive 750ms 120ms cubic-bezier(0.22, 1, 0.36, 1)
+        backwards;
     }
-    .landing-mini-1 {
-      animation-delay: 120ms;
-    }
-    .landing-mini-2 {
+    .landing-rack-card:nth-child(2) {
       animation-delay: 220ms;
-    }
-    .landing-seal {
-      animation-delay: 300ms;
-    }
-    .landing-scroll {
-      animation: goods-arrive 750ms 400ms backwards;
-    }
-    .landing-scroll svg {
-      animation: goods-nudge 1.6s 1s 3 ease-in-out;
     }
     .shop-dialog,
     .ui-dialog,
@@ -78,11 +65,7 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .landing-hero-copy > *,
-    .landing-featured,
-    .landing-mini,
-    .landing-seal,
-    .landing-scroll,
-    .landing-scroll svg,
+    .landing-rack-card,
     .shop-dialog,
     .ui-dialog,
     .auth-recovery,

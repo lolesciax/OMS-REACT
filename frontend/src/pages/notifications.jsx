@@ -158,7 +158,7 @@ function NotificationInbox({ admin = false }) {
         className="overflow-hidden rounded-2xl border border-line bg-white shadow-sm"
         aria-label="Notification inbox"
       >
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line bg-[#f2f5f9] p-5 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line bg-[#f8f5f3] p-5 sm:p-6">
           <div className="flex items-center gap-3">
             <span className="flex size-11 items-center justify-center rounded-xl bg-primary text-white">
               <Icon name="bell" size={22} />
@@ -302,7 +302,7 @@ function NotificationInbox({ admin = false }) {
               {items.map((item) => (
                 <li
                   key={item._id}
-                  className={`my-2 flex gap-3 rounded-xl p-4 sm:gap-4 sm:p-5 ${!item.readAt ? "border-l-4 border-primary bg-[#ecf0f6]" : "border-l-4 border-transparent"}`}
+                  className={`my-2 flex gap-3 rounded-xl p-4 sm:gap-4 sm:p-5 ${!item.readAt ? "border-l-4 border-primary bg-[#f4f1ee]" : "border-l-4 border-transparent"}`}
                 >
                   <span
                     className={`mt-1 flex size-10 shrink-0 items-center justify-center rounded-xl ${!item.readAt ? "bg-white text-primary" : "bg-[#f3f3ed] text-muted"}`}

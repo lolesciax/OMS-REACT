@@ -1,146 +1,134 @@
-import { useState } from "react";
-import Image from "./Image";
+﻿import { useState } from "react";
 import Icon from "./Icon";
-import { formatPrice } from "../utils/catalog";
+import { Link } from "react-router-dom";
+import { formatPrice, isProductAvailable } from "../utils/catalog";
+import ProductMedia from "./ProductMedia";
 import Skeleton, { SkeletonRegion } from "./Skeleton";
 
 export default function LandingHero({ products, loading, onSelect }) {
   const [failed, setFailed] = useState([]);
   const featured = products
-    .filter((product) => product.image && !failed.includes(product.image))
-    .slice(0, 3);
-  const primary = featured[0];
-
+    .filter(
+      (product) =>
+        isProductAvailable(product) &&
+        product.image &&
+        !failed.includes(product.image),
+    )
+    .slice(0, 2);
   return (
     <section className="landing-hero" aria-labelledby="shop-title">
       <div className="landing-hero-copy">
         <span className="landing-kicker">
-          <span /> A fresh take on secondhand
+          <span /> SECONDHAND. FIRST CHOICE.
         </span>
         <h1 id="shop-title">
-          Good style.
+          Less ordinary.
           <br />
-          Great <em>second acts.</em>
+          <span>More you.</span>
         </h1>
         <p>
-          Pre-loved pieces with character. Find your next favorite and make it
-          yours.
+          Good clothes don’t need to be brand new. Discover pre-loved pieces
+          with character, at prices that feel right.
         </p>
-        <a href="#collection" className="landing-shop-link">
-          Find your next favorite{" "}
-          <span>
-            <Icon name="arrow" size={22} />
-          </span>
-        </a>
+        <div className="landing-actions">
+          <a href="#collection" className="landing-shop-link">
+            Shop the collection <Icon name="arrow" size={20} />
+          </a>
+          <Link to="/help" className="landing-help-link">
+            How it works <Icon name="arrow" size={17} />
+          </Link>
+        </div>
         <div className="landing-hero-values">
-          <Icon name="leaf" size={18} /> Pre-loved pieces. Plenty of
-          possibility.
+          <Icon name="truck" size={19} />
+          <span>
+            From our rack to your doorstep.
+            <br />
+            <strong>Shipping across the Philippines.</strong>
+          </span>
         </div>
       </div>
       <div
-        className="landing-composition"
-        aria-label="A selection from the available collection"
+        className="landing-showcase"
+        aria-label="Available pieces from our collection"
         aria-busy={loading}
       >
-        <div className="landing-orbit" aria-hidden="true" />
-        <span className="landing-photo-index" aria-hidden="true">
-          THE GOOD GOODS EDIT
-        </span>
+        <div className="landing-showcase-heading">
+          <span>ON THE RACK</span>
+          <span>
+            Ready for a new chapter <Icon name="arrow" size={16} />
+          </span>
+        </div>
         {loading ? (
           <SkeletonRegion
             label="Loading featured pieces"
-            className="landing-featured"
+            className="landing-rack"
           >
-            <div className="flex h-full flex-col gap-4">
-              <Skeleton className="min-h-0 flex-1 rounded-xl" />
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="h-4 w-1/3" />
-            </div>
+            {[0, 1].map((index) => (
+              <div key={index} className="landing-rack-card">
+                <Skeleton className="landing-rack-photo" />
+                <div className="space-y-3 p-4">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              </div>
+            ))}
           </SkeletonRegion>
-        ) : primary ? (
-          <button
-            className="landing-featured"
-            onClick={() => onSelect(primary)}
-            aria-label={`View ${primary.name}, ${formatPrice(primary.price)}`}
-          >
-            <div className="landing-featured-photo">
-              <Image
-                src={primary.image}
-                alt={primary.name}
-                fetchPriority="high"
-                onError={() =>
-                  setFailed((previous) => [...previous, primary.image])
-                }
-              />
-            </div>
-            <div className="landing-featured-caption">
-              <span>
-                <small>Yours to rediscover</small>
-                <strong>{primary.name}</strong>
-              </span>
-              <span>
-                {formatPrice(primary.price)}
-                <Icon name="arrow" size={18} />
-              </span>
-            </div>
-          </button>
-        ) : (
+        ) : featured.length ? (
           <div
-            className="landing-featured landing-featured-empty"
-            role="status"
+            className={`landing-rack ${featured.length === 1 ? "landing-rack-single" : ""}`}
           >
-            <Icon name="leaf" size={52} />
-            <span className="font-serif text-3xl">
-              Good things take
-              <br />a little finding.
-            </span>
-            <p>Our next chapter is on its way.</p>
+            {featured.map((product, index) => (
+              <button
+                key={product._id || product.id}
+                className="landing-rack-card"
+                onClick={() => onSelect(product)}
+                aria-label={`View ${product.name}, ${formatPrice(product.price)}`}
+              >
+                <div className="landing-rack-photo">
+                  <ProductMedia
+                    src={product.image}
+                    name={product.name}
+                    alt={product.name}
+                    loading={index === 0 ? "eager" : "lazy"}
+                    onUnavailable={() =>
+                      setFailed((previous) => [...previous, product.image])
+                    }
+                  />
+                </div>
+                <div className="landing-rack-caption">
+                  <span className="landing-rack-category">
+                    {product.category || "A good find"}
+                    {product.size ? ` / ${product.size}` : ""}
+                  </span>
+                  <strong>{product.name}</strong>
+                  <span className="landing-rack-price">
+                    {formatPrice(product.price)}
+                    <span aria-hidden="true">
+                      <Icon name="arrow" size={18} />
+                    </span>
+                  </span>
+                </div>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="landing-rack-empty" role="status">
+            <Icon name="bag" size={40} />
+            <h2>Good finds are on their way.</h2>
+            <p>Our next collection is getting ready for its second act.</p>
           </div>
         )}
-        {loading &&
-          [1, 2].map((index) => (
-            <div
-              key={index}
-              className={`landing-mini landing-mini-${index}`}
-              aria-hidden="true"
-            >
-              <Skeleton className="size-full flex-1 rounded-lg" />
-            </div>
-          ))}
-        {!loading &&
-          featured.slice(1).map((product, index) => (
-            <button
-              key={product._id || product.id}
-              className={`landing-mini landing-mini-${index + 1}`}
-              onClick={() => onSelect(product)}
-              aria-label={`View ${product.name}, ${formatPrice(product.price)}`}
-            >
-              <Image
-                src={product.image}
-                alt={product.name}
-                onError={() =>
-                  setFailed((previous) => [...previous, product.image])
-                }
-              />
-              <span>
-                {product.category || "A good find"}
-                <Icon name="arrow" size={14} />
-              </span>
-            </button>
-          ))}
-        <div className="landing-seal" aria-hidden="true">
-          <Icon name="leaf" size={22} />
-          <span>
-            OLD GOODS
-            <br />
-            NEW STORIES
-          </span>
-        </div>
+        <p className="landing-rack-note">
+          <Icon name="leaf" size={16} /> A little history. A fresh start.
+        </p>
       </div>
-      <a className="landing-scroll" href="#collection">
-        <span>Explore the collection</span>
-        <Icon name="arrow" size={18} className="rotate-90" />
-      </a>
+      <div className="landing-bottom">
+        <span>PRE-LOVED CLOTHES. NEW POSSIBILITIES.</span>
+        <a href="#collection">
+          Explore the finds{" "}
+          <Icon name="arrow" size={18} className="rotate-90" />
+        </a>
+      </div>
     </section>
   );
 }

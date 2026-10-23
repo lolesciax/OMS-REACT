@@ -15,7 +15,7 @@ export default function AdminLayout({ children, title, description, actions }) {
     workspaceLinks.find(([path]) => pathname.includes("/" + path))?.[1] ||
     "Order details";
   return (
-    <div className="admin-shell flex min-h-dvh bg-[#f0f2f6] text-ink max-[900px]:block">
+    <div className="admin-shell flex min-h-dvh bg-[#f6f3f0] text-ink max-[900px]:block">
       <a className="skip-link" href="#admin-content">
         Skip to content
       </a>
@@ -46,7 +46,7 @@ export default function AdminLayout({ children, title, description, actions }) {
             <Link
               to="/"
               aria-label="View storefront"
-              className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-line bg-white px-3 text-small font-medium text-primary no-underline hover:bg-[#e8ebf1]"
+              className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl border border-line bg-white px-3 text-small font-medium text-primary no-underline hover:bg-[#f1ece8]"
             >
               <Icon name="bag" size={18} />
               <span className="hidden sm:inline">View store</span>

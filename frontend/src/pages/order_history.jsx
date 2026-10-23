@@ -375,7 +375,7 @@ export default function OrderHistory() {
         </div>
       )}
       {receipt && (
-        <div className="ui-dialog-overlay fixed inset-0 z-[2000] flex items-center justify-center p-5 bg-[#171c25c2] [backdrop-filter:blur(4px)]">
+        <div className="ui-dialog-overlay fixed inset-0 z-[2000] flex items-center justify-center p-5 bg-[#251e17c2] [backdrop-filter:blur(4px)]">
           <section
             ref={dialog}
             className="ui-dialog"

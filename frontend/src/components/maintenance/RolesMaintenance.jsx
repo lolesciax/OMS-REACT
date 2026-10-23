@@ -197,7 +197,7 @@ export default function RolesMaintenance() {
             {visible.map((role) => (
               <article
                 key={role._id}
-                className="min-w-0 rounded-xl border border-line bg-[#f7f8fb] p-5 [overflow-wrap:anywhere]"
+                className="min-w-0 rounded-xl border border-line bg-[#faf9f8] p-5 [overflow-wrap:anywhere]"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h3 className="font-semibold text-lead">{role.label}</h3>
