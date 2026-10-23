@@ -26,6 +26,7 @@ import StoreHeader from "../components/StoreHeader";
 import Footer from "../components/Footer";
 import Icon from "../components/Icon";
 import LandingHero from "../components/LandingHero";
+import StorefrontPromotions from "../components/StorefrontPromotions";
 import useScrollReveal from "../hooks/useScrollReveal";
 import "../styles/shopping.css";
 
@@ -177,6 +178,25 @@ export default function ShoppingWindow() {
   );
   const filtered = !!search.trim() || category !== "All" || likedOnly;
   const collection = useScrollReveal(visible);
+  const browseCollection = (label = "All", affordable = false) => {
+    setCategory(label);
+    if (affordable) setSort("price-asc");
+    setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        next.delete("q");
+        next.delete("liked");
+        return next;
+      },
+      { replace: true },
+    );
+    collection.current?.focus({ preventScroll: true });
+    collection.current?.scrollIntoView({
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "instant"
+        : "smooth",
+    });
+  };
   useEffect(() => {
     if (loading || error || !requestedProduct) return;
     const product = availableProducts.find(
@@ -289,6 +309,12 @@ export default function ShoppingWindow() {
           <Icon name="shield" /> Payment reviewed by our team
         </span>
       </div>
+      <StorefrontPromotions
+        products={availableProducts}
+        loading={loading}
+        onCategory={(label) => browseCollection(label)}
+        onAffordable={() => browseCollection("All", true)}
+      />
       <main
         ref={collection}
         id="collection"

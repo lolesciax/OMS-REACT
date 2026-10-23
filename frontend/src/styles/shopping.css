@@ -2,263 +2,423 @@
 
 @layer components {
   .landing-intro {
-    @apply grid min-h-svh grid-rows-[auto_1fr] bg-paper;
+    @apply grid min-h-svh grid-rows-[auto_auto_1fr_auto] bg-paper;
   }
-  .landing-intro .store-header {
-    @apply bg-paper;
+  .store-announcement {
+    @apply flex flex-wrap items-center justify-center gap-x-8 gap-y-1 bg-sage px-5 py-2 text-small text-primary;
+  }
+  .store-announcement span,
+  .store-announcement a {
+    @apply inline-flex min-h-7 items-center gap-2;
+  }
+  .store-announcement a {
+    @apply font-semibold underline underline-offset-4;
   }
   .landing-hero {
-    @apply mx-auto grid w-full max-w-[1440px] grid-cols-[0.95fr_1.05fr] items-stretch gap-x-6 gap-y-5 px-10 py-6 text-primary;
+    @apply relative grid w-full grid-cols-[1fr_1fr] items-center gap-x-12 gap-y-4 overflow-hidden bg-primary px-[max(32px,calc((100vw-1320px)/2))] py-6 text-cream;
   }
   .landing-hero-copy {
-    @apply flex min-w-0 flex-col items-start justify-center rounded-[28px] bg-primary px-10 py-10 text-cream;
+    @apply relative z-10 min-w-0 py-5;
   }
   .landing-kicker {
-    @apply mb-9 inline-flex items-center gap-2 text-[12px] font-semibold tracking-[0.13em] text-sage;
+    @apply mb-6 inline-flex items-center gap-3 text-small font-semibold tracking-[0.15em] text-sage;
   }
-  .landing-kicker svg {
-    @apply shrink-0;
+  .landing-kicker > span {
+    @apply size-2 rounded-full bg-leaf;
   }
   .landing-hero h1 {
-    @apply m-0 font-serif text-[clamp(56px,5.5vw,82px)] font-normal leading-[1.04] tracking-[-0.055em];
+    @apply m-0 font-sans text-[clamp(60px,6.5vw,100px)] font-bold leading-[0.98] tracking-[-0.065em];
   }
   .landing-hero h1 > span {
-    @apply text-leaf italic;
+    @apply font-serif font-normal italic text-leaf;
   }
   .landing-hero-copy > p {
-    @apply mb-8 mt-6 max-w-90 text-lead leading-relaxed text-cream/85;
+    @apply mb-8 mt-6 max-w-100 text-lead leading-relaxed text-cream/85;
   }
   .landing-actions {
-    @apply flex flex-wrap items-center gap-x-5 gap-y-3;
+    @apply flex flex-wrap items-center gap-x-6 gap-y-3;
   }
   .landing-shop-link {
-    @apply inline-flex min-h-14 items-center justify-between gap-5 rounded-full bg-cream px-6 py-3 text-body font-semibold text-primary no-underline transition-colors hover:bg-sage;
+    @apply inline-flex min-h-14 items-center justify-between gap-8 rounded-full bg-cream px-7 py-3 text-body font-semibold text-primary no-underline transition-colors hover:bg-leaf;
   }
   .landing-help-link {
-    @apply inline-flex min-h-11 items-center gap-2 text-small font-medium text-cream underline decoration-cream/40 underline-offset-4 hover:decoration-cream;
+    @apply inline-flex min-h-11 items-center gap-2 text-body text-cream underline decoration-cream/40 underline-offset-4 hover:decoration-cream;
   }
   .landing-hero-values {
-    @apply mt-10 flex items-center gap-3 border-t border-cream/20 pt-5 text-small leading-relaxed text-cream/75;
+    @apply mt-8 flex flex-wrap gap-x-5 gap-y-3 text-small text-cream/80;
   }
-  .landing-hero-values svg {
-    @apply shrink-0;
-  }
-  .landing-hero-values strong {
-    @apply block font-medium text-cream;
+  .landing-hero-values > span {
+    @apply inline-flex items-center gap-2;
   }
   .landing-showcase {
-    @apply flex min-w-0 flex-col justify-center rounded-[28px] bg-sage/70 px-7 py-6;
+    @apply relative isolate mx-auto w-full max-w-120 min-w-0 py-10;
   }
-  .landing-showcase-heading {
-    @apply mb-6 flex flex-wrap items-center justify-between gap-2 text-[12px] font-semibold tracking-[0.12em] text-primary;
+  .landing-showcase::before {
+    content: "";
+    @apply absolute inset-x-8 inset-y-9 -z-10 rounded-full bg-leaf/15;
   }
-  .landing-showcase-heading > span:last-child {
-    @apply inline-flex items-center gap-2 font-normal tracking-normal text-muted;
+  .campaign-watermark {
+    @apply absolute -top-3 right-0 -z-10 whitespace-nowrap text-[clamp(44px,7vw,108px)] font-bold tracking-[-0.07em] text-cream/10;
   }
-  .landing-stock-dot {
-    @apply size-1.5 rounded-full bg-primary;
+  .campaign-stamp {
+    @apply absolute right-1 top-5 z-20 flex size-23 -rotate-12 flex-col items-center justify-center gap-1 rounded-full border border-primary/10 bg-leaf text-center text-[11px] font-bold leading-tight tracking-wide text-primary shadow-md;
   }
   .landing-rack {
-    @apply grid min-w-0 grid-cols-2 items-start gap-4;
-  }
-  .landing-rack-single {
-    @apply mx-auto w-full max-w-72 grid-cols-1;
+    @apply relative grid min-w-0 grid-cols-[1.25fr_0.8fr] grid-rows-2 items-center gap-4;
   }
   .landing-rack-card {
-    @apply flex min-w-0 flex-col overflow-hidden rounded-2xl border border-primary/10 bg-white text-left text-ink no-underline shadow-[0_8px_24px_#344c3c0a] transition-transform duration-300 hover:-translate-y-1 focus-visible:outline-primary;
+    @apply relative flex min-w-0 flex-col overflow-hidden rounded-xl border-4 border-white bg-white text-left text-ink no-underline shadow-[0_16px_40px_#15251b30] transition-transform duration-300 hover:-translate-y-1 focus-visible:outline-cream;
   }
   .landing-rack-card:first-child {
-    @apply mb-12;
+    @apply row-span-2 -rotate-6;
   }
   .landing-rack-card:nth-child(2) {
-    @apply mt-12;
+    @apply rotate-6;
   }
-  .landing-rack-single .landing-rack-card {
-    @apply mb-0;
+  .landing-rack-card:nth-child(3) {
+    @apply -rotate-3;
   }
   .landing-rack-photo {
-    @apply block aspect-square w-full min-w-0 overflow-hidden bg-surface-soft;
+    @apply block aspect-square w-full min-w-0 overflow-hidden bg-sage;
   }
   .landing-rack-photo .product-media {
     @apply bg-surface-soft;
   }
   .landing-rack-photo img {
-    @apply size-full object-contain p-2;
+    @apply size-full object-contain p-1;
   }
   .landing-rack-caption {
-    @apply flex min-w-0 flex-1 flex-col gap-2 p-4;
+    @apply flex min-w-0 flex-col gap-1 p-3;
   }
   .landing-rack-category {
     @apply truncate text-[12px] text-muted;
   }
   .landing-rack-caption strong {
-    @apply line-clamp-2 text-body font-semibold leading-snug;
+    @apply line-clamp-1 text-small font-semibold leading-snug;
   }
   .landing-rack-price {
-    @apply mt-auto flex items-center justify-between gap-2 pt-3 text-body font-semibold text-primary;
+    @apply mt-1 flex items-center justify-between gap-2 text-small font-bold text-primary;
   }
-  .landing-rack-price > span {
-    @apply grid size-8 shrink-0 place-items-center rounded-full bg-sage text-primary;
+  .landing-rack-card:not(:first-child) .landing-rack-caption {
+    @apply p-2;
   }
-  .landing-rack-note {
-    @apply mt-5 flex items-center justify-center gap-2 text-small text-muted;
+  .landing-rack-card:not(:first-child) .landing-rack-category {
+    @apply hidden;
+  }
+  .landing-rack-count-1 {
+    @apply mx-auto max-w-80 grid-cols-1 grid-rows-1;
+  }
+  .landing-rack-count-2 {
+    @apply grid-rows-1;
+  }
+  .landing-rack-count-2 .landing-rack-card:first-child {
+    @apply row-span-1;
   }
   .landing-rack-empty {
-    @apply flex min-h-72 flex-col items-center justify-center gap-4 rounded-2xl border border-primary/20 p-6 text-center;
+    @apply flex min-h-80 flex-col items-center justify-center gap-4 rounded-2xl border border-cream/25 p-6 text-center text-cream;
   }
   .landing-rack-empty h2 {
     @apply font-serif text-3xl;
   }
   .landing-rack-empty p {
-    @apply max-w-80 text-body text-muted;
+    @apply max-w-80 text-body text-cream/80;
+  }
+  .campaign-price-tag {
+    @apply absolute -bottom-1 left-0 z-20 grid grid-cols-[1fr_auto] items-center gap-x-5 rounded-xl border border-line bg-cream px-5 py-3 text-primary shadow-lg transition-transform hover:-translate-y-1;
+  }
+  .campaign-price-tag > span {
+    @apply text-[12px] text-muted;
+  }
+  .campaign-price-tag strong {
+    @apply col-start-1 text-2xl font-bold;
+  }
+  .campaign-price-tag svg {
+    @apply col-start-2 row-span-2 row-start-1;
   }
   .landing-bottom {
-    @apply col-span-full flex flex-wrap items-center justify-between gap-3 self-end px-1 text-small text-muted;
+    @apply col-span-full flex flex-wrap items-center justify-between gap-3 border-t border-cream/20 pt-3 text-small text-cream/75;
   }
   .landing-bottom a {
-    @apply inline-flex min-h-11 items-center gap-3 text-primary underline-offset-4 hover:underline;
+    @apply inline-flex min-h-11 items-center gap-3 text-cream underline-offset-4 hover:underline;
   }
-  .landing-hero-copy a:focus-visible {
+  .landing-hero a:focus-visible {
     @apply outline-cream;
+  }
+  .campaign-ribbon {
+    @apply flex min-w-0 items-center overflow-hidden bg-leaf text-primary;
+  }
+  .campaign-ribbon-window {
+    @apply min-w-0 flex-1 overflow-hidden;
+  }
+  .campaign-ribbon-track {
+    @apply flex w-max;
+  }
+  .campaign-ribbon-copy {
+    @apply flex shrink-0 items-center gap-10 py-4 pr-10 text-small font-bold tracking-[0.13em];
+  }
+  .campaign-motion-toggle {
+    @apply mx-3 min-h-11 min-w-14 shrink-0 rounded-full border border-primary/30 bg-leaf px-3 text-[12px] font-semibold hover:bg-sage;
+  }
+  .storefront-discovery {
+    @apply mx-auto w-full max-w-320 px-7 py-14;
+  }
+  .storefront-section-heading {
+    @apply mb-6 flex flex-wrap items-end justify-between gap-4;
+  }
+  .storefront-section-heading h2 {
+    @apply mt-2 font-serif text-[clamp(28px,3vw,38px)] leading-tight text-primary;
+  }
+  .storefront-section-heading > a {
+    @apply inline-flex min-h-11 items-center gap-2 text-small font-semibold text-primary underline underline-offset-4;
+  }
+  .storefront-label-grid {
+    @apply grid grid-cols-4 gap-5;
+  }
+  .storefront-label-card {
+    @apply min-w-0 overflow-hidden rounded-2xl border border-line bg-white text-left transition-shadow hover:shadow-lg;
+  }
+  .storefront-label-photo {
+    @apply aspect-[4/3] overflow-hidden bg-surface-soft;
+  }
+  .storefront-label-photo .product-media {
+    @apply bg-surface-soft;
+  }
+  .storefront-label-photo img {
+    @apply size-full object-contain p-4 transition-transform duration-500;
+  }
+  .storefront-label-card > div:last-child {
+    @apply flex items-center justify-between gap-3 p-4;
+  }
+  .storefront-label-card strong {
+    @apply block text-body font-semibold text-primary;
+  }
+  .storefront-label-card small {
+    @apply mt-1 block text-small text-muted;
+  }
+  .storefront-circle-arrow {
+    @apply grid size-9 shrink-0 place-items-center rounded-full bg-sage text-primary;
+  }
+  .storefront-promos {
+    @apply mt-12 grid grid-cols-2 gap-6;
+  }
+  .storefront-promo {
+    @apply relative isolate overflow-hidden rounded-2xl p-8;
+  }
+  .storefront-promo-value {
+    @apply bg-sage text-primary;
+  }
+  .storefront-promo-story {
+    @apply bg-primary text-cream;
+  }
+  .storefront-promo-overline {
+    @apply text-[12px] font-semibold tracking-[0.14em];
+  }
+  .storefront-promo h2 {
+    @apply mb-4 mt-5 font-serif text-[clamp(32px,3.5vw,48px)] leading-[1.08] tracking-tight;
+  }
+  .storefront-promo p {
+    @apply mb-5 max-w-80 text-body leading-relaxed;
+  }
+  .storefront-promo button,
+  .storefront-promo a {
+    @apply inline-flex min-h-12 items-center gap-4 rounded-full border border-current px-5 py-2 text-small font-semibold transition-colors;
+  }
+  .storefront-promo-value button {
+    @apply hover:bg-white;
+  }
+  .storefront-promo-story a {
+    @apply hover:bg-cream/10;
+  }
+  .storefront-promo-art {
+    @apply pointer-events-none absolute -bottom-3 -right-4 -z-10 -rotate-12 opacity-10;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .storefront-label-card:hover img {
+      @apply scale-105;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .campaign-ribbon-track {
+      animation: campaign-scroll 28s linear infinite;
+    }
+    .campaign-ribbon:hover .campaign-ribbon-track,
+    .campaign-ribbon:focus-within .campaign-ribbon-track,
+    .campaign-ribbon[data-paused="true"] .campaign-ribbon-track {
+      animation-play-state: paused;
+    }
+    .campaign-stamp {
+      animation: campaign-in 700ms 250ms both;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .campaign-motion-toggle {
+      @apply hidden;
+    }
   }
   @media (max-width: 1100px) {
     .landing-hero {
-      @apply gap-x-4 px-6;
-    }
-    .landing-hero-copy {
-      @apply px-7 py-8;
+      @apply gap-x-8 px-7;
     }
     .landing-hero h1 {
-      @apply text-[clamp(48px,5.5vw,64px)];
-    }
-    .landing-showcase {
-      @apply px-5;
+      @apply text-[clamp(54px,6.5vw,74px)];
     }
     .landing-rack {
       @apply gap-3;
     }
-    .landing-showcase-heading > span:last-child {
-      @apply hidden;
+    .campaign-stamp {
+      @apply right-0 size-19 text-[10px];
     }
-    .landing-rack-caption {
-      @apply p-3;
+    .landing-rack-card:not(:first-child) .landing-rack-caption strong {
+      @apply hidden;
     }
   }
   @media (max-width: 800px) {
     .landing-hero {
-      @apply grid-cols-1 gap-4 px-5 py-5;
+      @apply grid-cols-1 gap-4 px-6 pb-6 pt-5;
     }
     .landing-hero-copy {
-      @apply px-7 py-7;
+      @apply py-0;
     }
     .landing-kicker {
-      @apply mb-4;
+      @apply mb-4 text-[12px];
     }
     .landing-hero h1 {
-      @apply text-[clamp(44px,8vw,64px)];
+      @apply text-[clamp(50px,9vw,76px)];
     }
     .landing-hero-copy > p {
-      @apply mb-5 mt-4 max-w-110 text-body;
+      @apply mb-4 mt-3 max-w-110 text-body;
+    }
+    .landing-shop-link {
+      @apply min-h-12 gap-5 px-5;
+    }
+    .landing-help-link {
+      @apply text-small;
     }
     .landing-hero-values {
       @apply hidden;
     }
     .landing-showcase {
-      @apply px-5 py-5;
+      @apply mx-auto w-full max-w-90 pb-5 pt-4;
     }
-    .landing-showcase-heading {
-      @apply mb-4;
+    .campaign-watermark {
+      @apply top-0 text-[58px];
     }
-    .landing-showcase-heading > span:last-child {
-      @apply inline-flex;
+    .campaign-stamp {
+      @apply top-1;
+    }
+    .landing-rack {
+      @apply grid-cols-[1.2fr_0.8fr] grid-rows-1 gap-3;
     }
     .landing-rack-card:first-child {
-      @apply mb-5;
+      @apply row-span-1;
     }
-    .landing-rack-card:nth-child(2) {
-      @apply mt-5;
+    .landing-rack-card:nth-child(3) {
+      @apply hidden;
     }
-    .landing-rack-photo {
+    .landing-rack-card:first-child .landing-rack-photo {
       @apply aspect-[5/4];
     }
+    .landing-rack-card:not(:first-child) .landing-rack-photo {
+      @apply aspect-[4/3];
+    }
     .landing-rack-caption {
-      @apply gap-1.5 p-3;
-    }
-    .landing-rack-caption strong {
-      @apply line-clamp-1 text-small;
-    }
-    .landing-rack-price {
-      @apply pt-1 text-small;
-    }
-    .landing-rack-price > span {
-      @apply size-7;
-    }
-    .landing-rack-note {
-      @apply hidden;
-    }
-    .landing-bottom {
-      @apply hidden;
-    }
-  }
-  @media (max-width: 399px) {
-    .landing-hero {
-      @apply px-3 py-3;
-    }
-    .landing-hero-copy {
-      @apply px-5 py-6;
-    }
-    .landing-kicker {
-      @apply text-[10px] tracking-[0.09em];
-    }
-    .landing-hero h1 {
-      @apply text-[42px];
-    }
-    .landing-shop-link {
-      @apply min-h-12 gap-3 px-4 text-small;
-    }
-    .landing-actions {
-      @apply gap-x-3;
-    }
-    .landing-help-link {
-      @apply text-[12px];
-    }
-    .landing-showcase {
-      @apply px-3 py-4;
-    }
-    .landing-showcase-heading {
-      @apply text-[10px];
+      @apply p-2;
     }
     .landing-rack-category {
       @apply hidden;
     }
-  }
-  @media (min-width: 801px) and (max-height: 800px) {
-    .landing-hero {
-      @apply py-4;
+    .campaign-price-tag {
+      @apply -bottom-1 left-1 px-4 py-2;
     }
-    .landing-hero-copy {
-      @apply py-6;
+    .campaign-price-tag strong {
+      @apply text-xl;
+    }
+    .landing-bottom {
+      @apply hidden;
+    }
+    .store-announcement {
+      @apply gap-x-3 py-1 text-[12px];
+    }
+    .storefront-discovery {
+      @apply px-5 py-10;
+    }
+    .storefront-label-grid {
+      @apply grid-cols-2 gap-3;
+    }
+    .storefront-label-card > div:last-child {
+      @apply p-3;
+    }
+    .storefront-promos {
+      @apply mt-8 gap-4;
+    }
+    .storefront-promo {
+      @apply p-6;
+    }
+  }
+  @media (max-width: 600px) {
+    .storefront-promos {
+      @apply grid-cols-1;
+    }
+  }
+  @media (max-width: 399px) {
+    .landing-hero {
+      @apply px-5 py-6;
     }
     .landing-hero h1 {
-      @apply text-[clamp(48px,5vw,66px)];
+      @apply text-[50px];
     }
-    .landing-kicker {
-      @apply mb-5;
+    .landing-actions {
+      @apply gap-x-4;
+    }
+    .landing-shop-link {
+      @apply text-small;
+    }
+    .landing-help-link {
+      @apply text-[12px];
+    }
+    .landing-hero-values > span:last-child {
+      @apply hidden;
+    }
+    .store-announcement > span {
+      @apply hidden;
+    }
+    .landing-rack-card {
+      @apply border-2;
+    }
+    .landing-rack-caption strong {
+      @apply text-[12px];
+    }
+    .campaign-stamp {
+      @apply size-16 text-[9px];
+    }
+    .storefront-circle-arrow {
+      @apply size-7;
+    }
+  }
+  @media (min-width: 801px) and (max-height: 850px) {
+    .landing-hero {
+      @apply gap-y-1 py-3;
+    }
+    .landing-hero h1 {
+      @apply text-[clamp(54px,6vw,82px)];
     }
     .landing-hero-copy > p {
       @apply my-4 text-body;
     }
     .landing-hero-values {
-      @apply mt-6 pt-4;
+      @apply mt-5;
     }
-    .landing-rack-note {
-      @apply hidden;
+    .landing-showcase {
+      @apply mx-auto w-full max-w-110 py-6;
     }
-    .landing-rack-card:first-child {
-      @apply mb-6;
+    .landing-rack-card:not(:first-child) .landing-rack-photo {
+      @apply aspect-[4/3];
     }
-    .landing-rack-card:nth-child(2) {
-      @apply mt-6;
+    .landing-rack-caption {
+      @apply p-2;
+    }
+    .landing-bottom {
+      @apply pt-1;
     }
   }
   .shop-benefits {
@@ -620,5 +780,21 @@
     .shop-availability {
       @apply min-h-9 justify-start bg-transparent px-0;
     }
+  }
+}
+
+@keyframes campaign-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes campaign-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85) rotate(-20deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(-12deg);
   }
 }
