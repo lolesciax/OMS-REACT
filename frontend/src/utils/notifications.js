@@ -6,8 +6,9 @@ export const notificationCategories = {
 };
 
 export function notificationDestination(value, isAdmin) {
-  if (typeof value !== "string" || /[\\\s]/.test(value))
-    return "/notifications";
+  const fallback = isAdmin ? "/admin/notifications" : "/notifications";
+  if (value === "/admin/settings" && isAdmin) return "/admin/maintenance";
+  if (typeof value !== "string" || /[\\\s]/.test(value)) return fallback;
   if (
     /^\/order-history\?order=[a-f0-9]{24}$/i.test(value) ||
     value === "/profile"
@@ -18,7 +19,11 @@ export function notificationDestination(value, isAdmin) {
     (/^\/admin\/view-orders\/[a-f0-9]{24}$/i.test(value) ||
       [
         "/admin/products",
-        "/admin/settings",
+        "/admin/maintenance",
+        "/admin/maintenance/roles",
+        "/admin/maintenance/security",
+        "/admin/maintenance/profile",
+        "/admin/maintenance/catalog",
         "/admin/customers",
         "/admin/maintenance/payments",
         "/admin/maintenance/policies",
@@ -27,7 +32,7 @@ export function notificationDestination(value, isAdmin) {
       ].includes(value))
   )
     return value;
-  return "/notifications";
+  return fallback;
 }
 
 export function notificationTime(value, now = Date.now()) {

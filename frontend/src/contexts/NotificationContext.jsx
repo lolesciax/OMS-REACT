@@ -19,6 +19,7 @@ export function NotificationProvider({ children }) {
   const [summary, setSummary] = useState({
     identity: "",
     count: 0,
+    items: [],
     loading: true,
     error: "",
   });
@@ -34,7 +35,7 @@ export function NotificationProvider({ children }) {
       running = true;
       try {
         const response = await apiFetch(
-          `${API_BASE_URL}/notifications?limit=1`,
+          `${API_BASE_URL}/notifications?limit=8`,
           { signal: controller.signal },
         );
         const data = await response.json();
@@ -46,6 +47,7 @@ export function NotificationProvider({ children }) {
           setSummary({
             identity,
             count: data.unreadCount,
+            items: data.notifications,
             loading: false,
             error: "",
           });
@@ -54,6 +56,7 @@ export function NotificationProvider({ children }) {
           setSummary((previous) => ({
             identity,
             count: previous.identity === identity ? previous.count : 0,
+            items: previous.identity === identity ? previous.items : [],
             loading: false,
             error: error.message,
           }));
@@ -80,11 +83,12 @@ export function NotificationProvider({ children }) {
   const current =
     summary.identity === identity
       ? summary
-      : { count: 0, loading: !!identity, error: "" };
+      : { count: 0, items: [], loading: !!identity, error: "" };
   return (
     <NotificationContext.Provider
       value={{
         unreadCount: current.count,
+        notifications: current.items,
         loading: current.loading,
         error: current.error,
         refresh,

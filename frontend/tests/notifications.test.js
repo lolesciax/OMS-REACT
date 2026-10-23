@@ -25,6 +25,18 @@ test("notification destinations are internal and respect current admin access", 
   ])
     assert.equal(notificationDestination(value, false), "/notifications");
   assert.equal(notificationDestination("/profile", false), "/profile");
+  assert.equal(
+    notificationDestination("/admin/settings", true),
+    "/admin/maintenance",
+  );
+  assert.equal(
+    notificationDestination("https://evil.invalid", true),
+    "/admin/notifications",
+  );
+  assert.equal(
+    notificationDestination("/admin/maintenance/security", true),
+    "/admin/maintenance/security",
+  );
 });
 
 test("notification times have readable recent labels and tolerate invalid clocks", () => {
