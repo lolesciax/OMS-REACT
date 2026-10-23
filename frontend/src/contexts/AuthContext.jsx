@@ -9,6 +9,7 @@ import {
 } from "react";
 import { apiFetch, setCSRFToken } from "../services/http";
 import { API_BASE_URL } from "../services/config";
+import { fetchSession } from "../services/session";
 const AuthContext = createContext();
 // eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
@@ -23,47 +24,63 @@ export const AuthProvider = ({ children }) => {
   const [sessionError, setSessionError] = useState("");
   const epoch = useRef(0);
   const restored = useRef(false);
+  const signedIn = useRef(false);
+  const inFlight = useRef(null);
   const clearSession = useCallback(() => {
     epoch.current++;
     setCSRFToken();
+    signedIn.current = false;
     setUser(null);
   }, []);
   const checkAuthStatus = useCallback(
-    async (signal) => {
+    (signal) => {
+      if (inFlight.current && !inFlight.current.signal?.aborted)
+        return inFlight.current.promise;
       const version = epoch.current;
-      if (!signal) setLoading(true);
+      const startup = !restored.current;
+      if (startup || !signal) setLoading(true);
       setSessionError("");
-      try {
-        const response = await apiFetch(`${API_BASE_URL}/auth/session`, {
-          signal,
-        });
-        if (version !== epoch.current) return;
-        if (response.status === 401) {
+      const promise = (async () => {
+        try {
+          const response = await fetchSession({ signal, startup });
+          if (version !== epoch.current || signal?.aborted) return;
+          const data = await response.json();
+          if (
+            response.status === 401 ||
+            (response.ok && data.authenticated === false && data.user === null)
+          ) {
+            restored.current = true;
+            clearSession();
+            setAuthError("");
+            return;
+          }
+          if (!response.ok || !data.user)
+            throw new Error(data.error || "Your session could not be loaded.");
           restored.current = true;
-          clearSession();
-          return;
+          signedIn.current = true;
+          setAuthError((previous) =>
+            previous.startsWith("Session refresh failed.") ? "" : previous,
+          );
+          setUser((previous) =>
+            JSON.stringify(previous) === JSON.stringify(data.user)
+              ? previous
+              : data.user,
+          );
+        } catch (error) {
+          if (!signal?.aborted && version === epoch.current) {
+            if (restored.current)
+              setAuthError(`Session refresh failed. ${error.message}`);
+            else setSessionError(error.message);
+          }
+        } finally {
+          if (inFlight.current?.promise === promise) {
+            inFlight.current = null;
+            if (!signal?.aborted) setLoading(false);
+          }
         }
-        const data = await response.json();
-        if (!response.ok || !data.user)
-          throw new Error(data.error || "Your session could not be loaded.");
-        restored.current = true;
-        setAuthError((previous) =>
-          previous.startsWith("Session refresh failed.") ? "" : previous,
-        );
-        setUser((previous) =>
-          JSON.stringify(previous) === JSON.stringify(data.user)
-            ? previous
-            : data.user,
-        );
-      } catch (error) {
-        if (!signal?.aborted && version === epoch.current) {
-          if (restored.current)
-            setAuthError(`Session refresh failed. ${error.message}`);
-          else setSessionError(error.message);
-        }
-      } finally {
-        if (!signal?.aborted) setLoading(false);
-      }
+      })();
+      inFlight.current = { promise, signal };
+      return promise;
     },
     [clearSession],
   );
@@ -71,7 +88,7 @@ export const AuthProvider = ({ children }) => {
     const controller = new AbortController();
     checkAuthStatus(controller.signal);
     const refresh = () => {
-      if (document.visibilityState === "visible")
+      if (document.visibilityState === "visible" && signedIn.current)
         checkAuthStatus(controller.signal);
     };
     window.addEventListener("auth:expired", clearSession);
@@ -105,6 +122,8 @@ export const AuthProvider = ({ children }) => {
   const login = (data) => {
     epoch.current++;
     restored.current = true;
+    signedIn.current = true;
+    setLoading(false);
     setUser(data);
     setAuthError("");
     setSessionError("");

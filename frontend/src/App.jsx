@@ -1,4 +1,5 @@
 import RouteSkeleton from "./components/RouteSkeleton";
+import StartupLoading from "./components/StartupLoading";
 import useViewportMetrics from "./hooks/useViewportMetrics";
 import React, { useLayoutEffect, lazy, Suspense } from "react";
 import {
@@ -124,7 +125,7 @@ function AppContent() {
   const { loading, authError, sessionError, checkAuthStatus } = useAuth();
 
   if (loading) {
-    return <RouteSkeleton />;
+    return <StartupLoading />;
   }
 
   if (sessionError)

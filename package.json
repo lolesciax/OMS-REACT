@@ -14,6 +14,7 @@
     "test:responsive": "npm --workspace frontend run test:responsive",
     "preview": "npm --workspace frontend run preview --",
     "format": "npm --workspace frontend run format",
-    "format:check": "npm --workspace frontend run format:check"
+    "format:check": "npm --workspace frontend run format:check",
+    "test:startup": "npm --workspace frontend run test:startup"
   }
 }

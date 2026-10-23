@@ -37,7 +37,8 @@ class SecurityTests(unittest.TestCase):
             self.assertEqual(client.post('/api/auth/login', json={}, headers={'Origin': origin}).status_code, 403)
         app.db.sessions.find_one.return_value = None
         response = client.get('/api/auth/session')
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json, {'authenticated': False, 'user': None})
         self.assertNotIn('Clear-Site-Data', response.headers)
         self.assertEqual(response.headers['Cache-Control'], 'no-store')
 
@@ -62,10 +63,14 @@ class SecurityTests(unittest.TestCase):
         self.assertEqual(response.status_code, 503)
         self.assertNotIn('private connection', response.get_data(as_text=True))
 
-    def test_session_and_logout_trailing_slashes_require_authentication(self):
+    def test_session_probe_is_public_but_logout_still_requires_authentication(self):
         self.app.db.sessions.find_one.return_value = None
-        for path, method in (('/api/auth/session/', 'get'), ('/api/auth/logout/', 'post')):
-            self.assertEqual(getattr(self.client, method)(path).status_code, 401)
+        for path in ('/api/auth/session', '/api/auth/session/'):
+            response = self.client.get(path)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json, {'authenticated': False, 'user': None})
+        self.assertEqual(self.client.post('/api/auth/logout/').status_code, 401)
+        self.assertEqual(self.client.get('/api/favorites').status_code, 401)
 
     def test_proxy_boundary_rejects_direct_spoofed_and_untrusted_peers(self):
         from flask import Flask, jsonify, request

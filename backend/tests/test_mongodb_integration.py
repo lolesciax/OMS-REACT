@@ -286,13 +286,14 @@ class MongoIntegrationTests(unittest.TestCase):
         self.assertEqual(restored_response.headers['Cache-Control'], 'no-store')
         self.assertEqual(self.client.post('/api/auth/logout').status_code, 403)
         self.assertEqual(self.mutate('post', '/api/auth/logout').status_code, 200)
-        self.assertEqual(restored.get('/api/auth/session').status_code, 401)
+        self.assertEqual(restored.get('/api/auth/session').json, {'authenticated': False, 'user': None})
+        self.assertEqual(restored.get(f'/api/cart/{self.uid}').status_code, 401)
         self.login()
         self.db.sessions.update_many({}, {'$set': {'expiresAt': datetime.utcnow() - timedelta(seconds=1)}})
-        self.assertEqual(self.client.get('/api/auth/session').status_code, 401)
+        self.assertEqual(self.client.get('/api/auth/session').json, {'authenticated': False, 'user': None})
         self.login()
         self.db.users.update_one({'_id': self.uid}, {'$set': {'password': hash_password('Changed-123!')}})
-        self.assertEqual(self.client.get('/api/auth/session').status_code, 401)
+        self.assertEqual(self.client.get('/api/auth/session').json, {'authenticated': False, 'user': None})
 
     def test_database_checkout_reload_idempotent_order_and_proof_cleanup(self):
         self.login()
@@ -631,7 +632,7 @@ class MongoIntegrationTests(unittest.TestCase):
         reset['token'] = token
         self.assertEqual(self.client.post('/api/auth/forgot-password', json=reset).status_code, 200)
         self.assertEqual(self.db.notifications.count_documents({'userId': self.uid, 'title': 'Password changed'}), 1)
-        self.assertEqual(self.client.get('/api/auth/session').status_code, 401)
+        self.assertEqual(self.client.get('/api/auth/session').json, {'authenticated': False, 'user': None})
         self.assertEqual(self.client.post('/api/auth/forgot-password', json=reset).status_code, 400)
         self.assertEqual(self.client.post('/api/auth/login', json={**details, 'password': 'Changed-password-123!', 'captcha': captcha_payload(self.client)}).status_code, 200)
 

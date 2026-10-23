@@ -53,7 +53,10 @@ export async function apiFetch(input, { timeout = 20000, ...options } = {}) {
     try {
       data = JSON.parse(body);
     } catch {
-      throw new Error(failureMessage(response.status));
+      const failure = new Error(failureMessage(response.status));
+      failure.status = response.status;
+      failure.code = "INVALID_JSON";
+      throw failure;
     }
     if (!data || typeof data !== "object")
       throw new Error(failureMessage(response.status));

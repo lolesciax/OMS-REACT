@@ -133,6 +133,8 @@ def authorize_request():
     except PyMongoError:
         return jsonify(success=False, error='The database is temporarily unavailable. Please try again shortly.'), 503
     if not user:
+        if request.endpoint == 'auth.current_session' and request.method in ('GET', 'HEAD'):
+            return jsonify(authenticated=False, user=None), 200
         return jsonify(success=False, error='Your session has expired. Please log in again.'), 401
     from .rate_limits import limit_user_requests
     blocked = limit_user_requests()

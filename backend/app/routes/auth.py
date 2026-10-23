@@ -302,8 +302,8 @@ def forgot_password():
 def current_session():
     user = current_app.db.users.find_one({'_id': g.user['_id']})
     if not user:
-        return jsonify(error='Your account is unavailable. Please sign in again.'), 401
-    return jsonify(user=public_user(user), csrfToken=g.session['csrfToken'])
+        return jsonify(authenticated=False, user=None), 200
+    return jsonify(authenticated=True, user=public_user(user), csrfToken=g.session['csrfToken'])
 
 
 @bp.route('/logout', methods=['POST'])

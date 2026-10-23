@@ -136,7 +136,7 @@ class ClusterTests(unittest.TestCase):
             self.assertEqual(request('/api/auth/session')[0], 200)
             self.assertEqual(request('/api/auth/logout/', body={})[0], 403)
             self.assertEqual(request('/api/auth/logout/', body={}, headers={'X-CSRF-Token': login['csrfToken']})[0], 200)
-            self.assertEqual(request('/api/auth/session/')[0], 401)
+            self.assertEqual(request('/api/auth/session/')[0], 200)
             self.assertEqual(request(proof['proofPath'])[0], 404)
         finally:
             state = json.loads(state_path.read_text()) if state_path.exists() else {}

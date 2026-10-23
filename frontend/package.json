@@ -11,7 +11,8 @@
     "test:responsive": "node tests/responsive.browser.mjs",
     "preview": "vite preview",
     "format": "prettier --write src tests",
-    "format:check": "prettier --check src tests"
+    "format:check": "prettier --check src tests",
+    "test:startup": "node tests/startup.browser.mjs"
   },
   "dependencies": {
     "altcha": "3.4.0",
