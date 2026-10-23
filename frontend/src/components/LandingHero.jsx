@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import Icon from "./Icon";
 import { formatPrice, isProductAvailable } from "../utils/catalog";
@@ -7,11 +7,28 @@ import Skeleton, { SkeletonRegion } from "./Skeleton";
 
 export default function LandingHero({ products, loading, onSelect }) {
   const [failed, setFailed] = useState([]);
-  const featured = products
-    .filter(
-      (p) => isProductAvailable(p) && p.image && !failed.includes(p.image),
-    )
-    .slice(0, 2);
+  const [offset, setOffset] = useState(0);
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const eligible = useMemo(
+    () =>
+      products.filter(
+        (p) => isProductAvailable(p) && p.image && !failed.includes(p.image),
+      ),
+    [products, failed],
+  );
+  const featured = Array.from(
+    { length: Math.min(2, eligible.length) },
+    (_, index) => eligible[(offset + index) % eligible.length],
+  );
+  useEffect(() => {
+    if (loading || hovered || focused || eligible.length <= 2) return;
+    const timer = window.setInterval(() => {
+      if (!document.hidden)
+        setOffset((previous) => (previous + 2) % eligible.length);
+    }, 6000);
+    return () => window.clearInterval(timer);
+  }, [loading, hovered, focused, eligible.length]);
   const lowestPrice = products
     .filter(isProductAvailable)
     .reduce((price, p) => Math.min(price, Number(p.price)), Infinity);
@@ -60,6 +77,13 @@ export default function LandingHero({ products, loading, onSelect }) {
           className="landing-showcase"
           aria-label="Shop available featured pieces"
           aria-busy={loading}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          onFocusCapture={() => setFocused(true)}
+          onBlurCapture={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget))
+              setFocused(false);
+          }}
         >
           <div className="landing-showcase-heading">
             <span>Featured finds</span>
