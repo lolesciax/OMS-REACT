@@ -308,10 +308,8 @@ export default function ShoppingWindow() {
           <div>
             <span className="ui-eyebrow">The collection</span>
             <h2>Find your next favorite.</h2>
+            <p>Different pieces. Same good feeling.</p>
           </div>
-          <p>Different pieces. Same good feeling.</p>
-        </div>
-        <div className="shop-toolbar flex items-center justify-end gap-6 max-[700px]:flex-wrap max-[700px]:gap-4">
           <label className="shop-sort flex items-center gap-[10px] whitespace-nowrap text-small text-muted max-[700px]:ml-auto">
             Sort by
             <select
@@ -325,27 +323,25 @@ export default function ShoppingWindow() {
             </select>
           </label>
         </div>
-        <div className="shop-filter-row flex items-center justify-between gap-6 [margin:24px_0_20px] max-[700px]:items-start max-[700px]:flex-col max-[700px]:gap-4">
-          <div
-            className="shop-categories flex flex-wrap gap-2"
-            role="group"
-            aria-label="Filter by category"
-          >
-            {categories.map((item) => (
-              <button
-                key={item}
-                aria-pressed={category === item}
-                onClick={() => setCategory(item)}
-              >
-                {item === "All" ? "All finds" : item}
-              </button>
-            ))}
-          </div>
-          <span className="inline-flex shrink-0 items-center gap-2 text-small text-primary">
-            <Icon name="check" size={16} /> Available finds only
-          </span>
-        </div>
-        <div className="shop-likes-toolbar">
+        <div
+          className="shop-collection-controls shop-likes-toolbar"
+          role="group"
+          aria-label="Collection filters"
+        >
+          <label className="shop-category-select" htmlFor="collection-category">
+            <span>Category</span>
+            <select
+              id="collection-category"
+              value={category}
+              onChange={(event) => setCategory(event.target.value)}
+            >
+              {categories.map((item) => (
+                <option key={item} value={item}>
+                  {item === "All" ? "All finds" : item}
+                </option>
+              ))}
+            </select>
+          </label>
           <button
             type="button"
             className="shop-liked-filter"
@@ -360,7 +356,9 @@ export default function ShoppingWindow() {
             {likedOnly ? "Showing liked items" : "Liked items"}
             {isLoggedIn && favorites.ready && <span>{favorites.ids.size}</span>}
           </button>
-          <span>Tap the heart to keep a piece you love.</span>
+          <span className="shop-availability">
+            <Icon name="check" size={17} /> Available finds only
+          </span>
         </div>
         {favorites.error && (
           <div className="ui-message error mb-4" role="alert">

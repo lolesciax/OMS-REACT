@@ -70,15 +70,15 @@ export function MaintenanceSaveBar({
   busy,
   onDiscard,
   label = "Save changes",
-  busyLabel = "Savingâ€¦",
+  busyLabel = "Saving...",
   note,
   disabled = false,
 }) {
   return (
-    <div className="sticky bottom-0 z-10 -mx-1 mt-7 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-line bg-white/95 p-4 shadow-sm backdrop-blur-sm">
+    <div className="sticky bottom-0 z-10 -mx-1 mt-7 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-primary/20 bg-botticelli/95 p-4 shadow-sm backdrop-blur-sm">
       <div className="min-w-0">
         <p
-          className={`flex items-center gap-2 text-small font-semibold ${dirty ? "text-[#8b572b]" : "text-primary"}`}
+          className={`flex items-center gap-2 text-small font-semibold ${dirty ? "text-accent" : "text-primary"}`}
           role="status"
         >
           <Icon name={dirty ? "orders" : "check"} size={16} />

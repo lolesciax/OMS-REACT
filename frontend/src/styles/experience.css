@@ -1,6 +1,6 @@
 @layer components {
   .site-footer {
-    @apply mt-auto bg-[#362b22] text-[#e9e3dd];
+    @apply mt-auto bg-chocolate text-[#e9e3dd];
   }
   .footer-inner {
     @apply mx-auto w-full max-w-[1440px] px-12 pt-16;
@@ -12,19 +12,19 @@
     @apply mb-5 block text-small font-medium tracking-[0.1em] text-[#d1c3b7];
   }
   .footer-invitation h2 {
-    @apply m-0 font-serif text-[clamp(38px,4.8vw,72px)] font-normal leading-[1.06] tracking-[-0.035em] text-[#f7f5eb];
+    @apply m-0 font-serif text-[clamp(38px,4.8vw,72px)] font-normal leading-[1.06] tracking-[-0.035em] text-linen;
   }
   .footer-invitation h2 em {
-    @apply font-normal text-sand;
+    @apply font-normal text-botticelli;
   }
   .footer-shop-link {
     @apply inline-flex shrink-0 items-center gap-6 text-body leading-[1.6] text-[#eee9e5] no-underline;
   }
   .footer-shop-arrow {
-    @apply grid size-20 shrink-0 place-items-center rounded-full border border-sand/40 text-sand transition-colors;
+    @apply grid size-20 shrink-0 place-items-center rounded-full border border-botticelli/40 text-botticelli transition-colors;
   }
   .footer-shop-link:hover .footer-shop-arrow {
-    @apply bg-sand text-primary;
+    @apply bg-botticelli text-primary;
   }
   .footer-grid {
     @apply grid grid-cols-[1.2fr_0.8fr_1fr_1.2fr_0.7fr] gap-8 py-12;
@@ -33,7 +33,7 @@
     @apply min-w-0 max-w-[300px] [overflow-wrap:anywhere];
   }
   .footer-leaf {
-    @apply mb-4 grid size-11 place-items-center rounded-full border border-white/20 text-sand;
+    @apply mb-4 grid size-11 place-items-center rounded-full border border-white/20 text-botticelli;
   }
   .footer-story > p {
     @apply mb-5 text-body leading-[1.8] text-[#dcd3cb];
@@ -63,7 +63,7 @@
     @apply text-[#b1a295];
   }
   .footer-wordmark > svg {
-    @apply ml-auto h-[0.6em] w-[0.6em] self-center text-sand;
+    @apply ml-auto h-[0.6em] w-[0.6em] self-center text-botticelli;
   }
   .footer-bottom {
     @apply flex flex-wrap items-center justify-between gap-5 border-t border-white/15 py-5 text-small text-[#d0c4b9];
@@ -75,7 +75,7 @@
     @apply inline-flex min-h-11 items-center gap-3 border-0 bg-transparent px-1 text-small text-[#e3dad2] underline-offset-4 hover:underline;
   }
   .site-footer :focus-visible {
-    @apply outline-sand;
+    @apply outline-botticelli;
   }
   @media (max-width: 1000px) {
     .footer-inner {
@@ -167,7 +167,7 @@
     @apply block text-accent text-small font-bold tracking-[2px] uppercase;
   }
   .ui-button {
-    @apply min-h-[46px] inline-flex items-center justify-center gap-3 py-3 px-[22px] border border-transparent rounded-[8px] text-body font-semibold leading-[1.3] no-underline cursor-pointer shadow-sm [transition:background_0.18s,_transform_0.18s,_box-shadow_0.18s];
+    @apply min-h-12 inline-flex items-center justify-center gap-3 py-3 px-[22px] border border-transparent rounded-xl text-body font-semibold leading-[1.3] no-underline cursor-pointer shadow-sm [transition:background_0.18s,_transform_0.18s,_box-shadow_0.18s];
   }
   .ui-button:hover:not(:disabled) {
     @apply [transform:translateY(-1px)] shadow-md;
@@ -176,16 +176,16 @@
     @apply translate-y-0 shadow-none;
   }
   .ui-button-dark {
-    @apply bg-ink text-white;
+    @apply bg-primary text-linen;
   }
   .ui-button-dark:hover:not(:disabled) {
-    @apply bg-primary text-white;
+    @apply bg-ink text-linen;
   }
   .ui-button-light {
-    @apply text-ink bg-white border-[#bfb9b3];
+    @apply text-primary bg-white border-control;
   }
   .ui-button-light:hover:not(:disabled) {
-    @apply bg-[#efefe7] text-ink;
+    @apply bg-botticelli text-primary;
   }
   .ui-button:disabled {
     @apply opacity-[0.55] cursor-not-allowed shadow-none;
@@ -236,26 +236,26 @@
     @apply block text-body font-medium tracking-[0.3px];
   }
   .store-nav-link {
-    @apply inline-flex min-h-11 items-center gap-2 rounded-xl px-3 py-2 text-body font-medium text-muted no-underline transition-colors hover:bg-[#f1ece8] hover:text-primary;
+    @apply inline-flex min-h-11 items-center gap-2 rounded-xl px-3 py-2 text-body font-medium text-muted no-underline transition-colors hover:bg-primary-soft hover:text-primary;
   }
   .store-nav-link.is-active {
-    @apply bg-[#f1ece8] text-primary;
+    @apply bg-botticelli text-primary;
   }
   .store-bag-button,
   .store-mobile-toggle {
-    @apply relative inline-flex size-11 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl border border-line bg-white text-primary no-underline transition-colors hover:bg-[#f1ece8];
+    @apply relative inline-flex size-11 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-xl border border-line bg-white text-primary no-underline transition-colors hover:bg-primary-soft;
   }
   .store-bag-button.is-active {
-    @apply border-primary bg-[#f1ece8];
+    @apply border-primary bg-primary-soft;
   }
   .store-bag-count {
     @apply absolute -top-2 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-bold text-white ring-2 ring-paper;
   }
   .store-account-toggle {
-    @apply inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-line bg-white px-3 text-body font-medium text-ink transition-colors hover:bg-[#f1ece8];
+    @apply inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-line bg-white px-3 text-body font-medium text-ink transition-colors hover:bg-primary-soft;
   }
   .store-account-toggle.is-active {
-    @apply border-primary bg-[#f1ece8] text-primary;
+    @apply border-primary bg-primary-soft text-primary;
   }
   .store-account-panel {
     @apply absolute top-full right-0 z-50 mt-3 w-64 rounded-2xl border border-line bg-white p-3 text-body shadow-xl;
@@ -289,12 +289,12 @@
   .ui-field input,
   .ui-field select,
   .ui-field textarea {
-    @apply block w-full border border-[#dbd5cf] rounded-[6px] bg-white text-ink text-body min-h-[46px] py-[11px] px-[13px];
+    @apply block w-full border border-control rounded-xl bg-white text-ink text-body min-h-[46px] py-[11px] px-[13px];
   }
   .ui-field input:focus,
   .ui-field select:focus,
   .ui-field textarea:focus {
-    @apply border-[#7d6e61] [outline:2px_solid_#e9e2dc] outline-offset-0;
+    @apply border-primary outline-2 outline-primary outline-offset-2;
   }
   .ui-field input[aria-invalid="true"] {
     @apply border-[#ad5443] bg-[#fffaf8];

@@ -5,7 +5,7 @@
     @apply relative flex min-w-0 flex-col overflow-hidden rounded-2xl bg-primary px-9 py-9 text-paper;
   }
   .auth-story-brand {
-    @apply flex items-center gap-3 border-b border-white/20 pb-6 text-[11px] font-semibold tracking-[0.12em] text-sand;
+    @apply flex items-center gap-3 border-b border-white/20 pb-6 text-[12px] font-semibold tracking-[0.12em] text-botticelli;
   }
   .auth-story-brand svg {
     @apply shrink-0;
@@ -14,16 +14,16 @@
     @apply pb-8 pt-10;
   }
   .auth-story-eyebrow {
-    @apply text-[11px] font-semibold tracking-[0.14em] text-[#d4c1af];
+    @apply text-[12px] font-semibold tracking-[0.14em] text-linen/80;
   }
   .auth-story h2 {
     @apply mb-5 mt-4 font-sans text-[clamp(38px,4vw,54px)] font-bold leading-[1.06] tracking-[-0.055em];
   }
   .auth-story h2 > span {
-    @apply text-sand;
+    @apply text-botticelli;
   }
   .auth-story-copy > p {
-    @apply max-w-80 text-body leading-relaxed text-[#ded1c5];
+    @apply max-w-80 text-body leading-relaxed text-linen/85;
   }
   .auth-story-features {
     @apply mb-9 flex flex-col gap-5;
@@ -32,16 +32,16 @@
     @apply flex items-start gap-3;
   }
   .auth-story-feature-icon {
-    @apply grid size-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-sand;
+    @apply grid size-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-botticelli;
   }
   .auth-story-features h3 {
     @apply text-small font-semibold leading-relaxed text-paper;
   }
   .auth-story-features p {
-    @apply mt-1 text-small leading-relaxed text-[#ded1c5];
+    @apply mt-1 text-small leading-relaxed text-linen/85;
   }
   .auth-story-signature {
-    @apply mt-auto flex items-center justify-between gap-4 border-t border-white/20 pt-5 text-small text-sand;
+    @apply mt-auto flex items-center justify-between gap-4 border-t border-white/20 pt-5 text-small text-botticelli;
   }
   .auth-card h1 {
     @apply font-serif font-normal not-italic text-[33px] leading-[1.15] my-[14px] mx-0 tracking-[-0.8px];
@@ -109,6 +109,20 @@
     }
     .auth-recovery {
       @apply [padding:40px_24px_24px];
+    }
+  }
+}
+
+@layer components {
+  .auth-story-brand > svg {
+    @apply text-tangelo;
+  }
+  .auth-story-signature {
+    @apply border-botticelli/35;
+  }
+  @media (min-width: 1100px) {
+    .signup-fields-grid {
+      @apply grid grid-cols-2 items-start gap-x-5 gap-y-5;
     }
   }
 }

@@ -15,6 +15,7 @@
     "preview": "npm --workspace frontend run preview --",
     "format": "npm --workspace frontend run format",
     "format:check": "npm --workspace frontend run format:check",
-    "test:startup": "npm --workspace frontend run test:startup"
+    "test:startup": "npm --workspace frontend run test:startup",
+    "test:catalog": "npm --workspace frontend run test:catalog"
   }
 }

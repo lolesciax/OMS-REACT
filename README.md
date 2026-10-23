@@ -75,3 +75,18 @@ Database integration tests use disposable test databases and require explicit op
 ## Generated files
 
 Dependencies, build output, Python caches, local environment files, and `.tmp/` browser-test artifacts are ignored by Git. `portfolio-screenshots/` and its ZIP are generated deliverables; they are kept outside the application source and are also ignored.
+
+## UI theme
+
+The shared Tailwind theme lives in `frontend/src/index.css`.
+
+| Brand color | Hex | Main use |
+| --- | --- | --- |
+| Linen | `#FFEDE3` | Page backgrounds and light text on brown |
+| Tangelo | `#FB4D00` | Highlights, large accents, and the landing action |
+| Chocolate Brown | `#49261D` | Primary controls, headings, sidebar selection |
+| Botticelli | `#CAE7F7` | Selected states, progress cards, and supporting panels |
+
+Use semantic tokens (`paper`, `primary`, `accent`, `muted`, `control`) in components. Small orange text uses a deeper derived tone for contrast; the bright Tangelo action uses dark ink. Charts read their colors from the same CSS theme. Keep error and warning states distinct from brand decoration.
+
+The responsive browser audit covers public pages, customer account/checkout pages, admin pages, and every maintenance module. Run `npm run test:responsive` with the disposable browser fixture described in `backend/tests/browser_fixture.py`; it never requires production account data. `npm run test:catalog` checks the category selector, reset/sort/search, product details, liked-item sign-in, and desktop signup alignment against that same fixture.

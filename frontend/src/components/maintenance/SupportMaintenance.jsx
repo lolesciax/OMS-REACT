@@ -85,7 +85,7 @@ export default function SupportMaintenance() {
                 </div>
               ))}
             </fieldset>
-            <details className="mt-6 rounded-xl border border-line bg-[#f8f5f3] px-5">
+            <details className="mt-6 rounded-xl border border-line bg-surface-soft px-5">
               <summary className="cursor-pointer py-4 text-body font-semibold text-primary">
                 Preview contact details
               </summary>

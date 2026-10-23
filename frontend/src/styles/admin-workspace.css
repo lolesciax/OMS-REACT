@@ -2,7 +2,7 @@
 
 @layer components {
   .admin-topbar {
-    @apply flex min-h-[88px] items-center justify-between gap-4 border-b border-line bg-[#fcfbfa] px-5 py-4 sm:px-9;
+    @apply flex min-h-[88px] items-center justify-between gap-4 border-b border-line bg-white px-5 py-4 sm:px-9;
   }
   .admin-topbar :is(a, button):focus-visible {
     @apply outline-2 outline-offset-2 outline-primary;
@@ -11,7 +11,7 @@
     @apply font-serif font-normal not-italic text-[34px] leading-[1.2] tracking-[-0.8px] [margin:14px_0_12px];
   }
   .admin-page-heading p {
-    @apply text-small text-muted max-w-150 leading-[1.8];
+    @apply text-body text-muted max-w-150 leading-[1.8];
   }
   .admin-heading-actions {
     @apply flex gap-[10px] shrink-0;
@@ -23,13 +23,13 @@
     @apply mt-auto flex justify-between py-5 px-9 border-t border-line text-muted text-small;
   }
   .admin-workspace-footer span {
-    @apply text-[#938981];
+    @apply text-muted;
   }
   .admin-stat-grid {
     @apply grid grid-cols-4 gap-[18px] mb-7;
   }
   .dashboard-stat-grid .admin-stat {
-    @apply min-h-40 rounded-2xl border-[#e9e4df] bg-white p-5 shadow-[0_5px_20px_#362f2808];
+    @apply min-h-40 rounded-2xl border-line bg-white p-5 shadow-[0_5px_20px_#362f2808];
   }
   .dashboard-stat-grid .admin-stat-label {
     @apply flex items-center justify-between gap-3 text-small font-medium text-muted;
@@ -41,7 +41,7 @@
     @apply bg-[#f5f0e2] text-[#927637];
   }
   .dashboard-stat-grid .admin-stat[data-stat="customers"] .admin-stat-icon {
-    @apply bg-[#f4f1ee] text-[#826c58];
+    @apply bg-surface-soft text-[#826c58];
   }
   .dashboard-stat-grid .admin-stat[data-stat="revenue"] .admin-stat-icon {
     @apply bg-[#f6ece7] text-[#a55439];
@@ -53,7 +53,7 @@
     @apply text-[length:clamp(1.15rem,2vw,1.65rem)] tracking-[-0.5px];
   }
   .dashboard-stat-grid .admin-stat > small {
-    @apply text-small leading-relaxed text-[#847b74];
+    @apply text-small leading-relaxed text-muted;
   }
   .admin-dashboard-charts {
     @apply grid grid-cols-2 gap-6 min-w-0;
@@ -65,7 +65,7 @@
     @apply h-72 min-w-0;
   }
   .admin-stat {
-    @apply bg-white border border-line rounded-[10px] p-[22px];
+    @apply bg-white border border-line rounded-2xl p-[22px];
   }
   .admin-stat > span {
     @apply block text-muted text-small;
@@ -74,7 +74,7 @@
     @apply block text-[length:32px] font-medium leading-[1.2] [margin:12px_0_8px] text-ink tracking-[-1px];
   }
   .admin-stat > small {
-    @apply text-small text-[#908378];
+    @apply text-small text-muted;
   }
   .admin-stat-grid.compact .admin-stat {
     @apply py-[18px] px-[22px];
@@ -83,7 +83,7 @@
     @apply text-[length:26px] mb-0;
   }
   .admin-panel {
-    @apply bg-white border border-line rounded-[10px] overflow-hidden mb-6;
+    @apply bg-white border border-line rounded-2xl overflow-hidden mb-6;
   }
   .admin-panel.padded {
     @apply p-6;
@@ -107,7 +107,7 @@
     @apply mt-1 text-small leading-relaxed text-muted;
   }
   .admin-revenue-summary {
-    @apply shrink-0 rounded-xl bg-[#f6f3f0] px-3 py-2 text-right;
+    @apply shrink-0 rounded-xl bg-surface-soft px-3 py-2 text-right;
   }
   .admin-revenue-summary > span,
   .admin-revenue-summary > strong {
@@ -197,7 +197,7 @@
   }
   .admin-status-empty,
   .admin-stock-clear {
-    @apply flex min-h-28 items-center gap-3 rounded-xl border border-dashed border-[#e4ded8] bg-[#fbf9f8] px-4 py-5;
+    @apply flex min-h-28 items-center gap-3 rounded-xl border border-dashed border-[#e4ded8] bg-surface-soft px-4 py-5;
   }
   .admin-status-empty-icon,
   .admin-stock-clear-icon {
@@ -222,7 +222,7 @@
     @apply mt-1 text-small leading-relaxed text-muted;
   }
   .admin-activity-link {
-    @apply mt-auto flex min-h-11 items-center justify-between gap-3 border-t border-[#f0ece8] pt-3 text-small font-medium text-primary no-underline transition-colors hover:text-accent;
+    @apply mt-auto flex min-h-11 items-center justify-between gap-3 border-t border-primary-soft pt-3 text-small font-medium text-primary no-underline transition-colors hover:text-accent;
   }
   .admin-stock-summary {
     @apply mb-3 flex flex-wrap items-baseline gap-x-2 gap-y-1 rounded-xl bg-[#f6f4f2] px-4 py-3;
@@ -240,7 +240,7 @@
     @apply grid min-w-0 gap-2;
   }
   .admin-low-stock-row {
-    @apply flex min-w-0 items-center gap-3 rounded-xl border border-[#f0ece8] bg-white px-3 py-3 transition-colors hover:bg-[#fbf9f8];
+    @apply flex min-w-0 items-center gap-3 rounded-xl border border-primary-soft bg-white px-3 py-3 transition-colors hover:bg-surface-soft;
   }
   .admin-low-stock-indicator {
     @apply h-9 w-1 shrink-0 rounded-full bg-[#c49a43];
@@ -272,7 +272,7 @@
     @apply text-small text-muted no-underline;
   }
   .admin-search {
-    @apply flex items-center gap-[10px] border border-line rounded-[6px] py-0 px-3 w-[350px] max-w-full text-muted bg-[#fcfbfa];
+    @apply flex items-center gap-[10px] border border-line rounded-[6px] py-0 px-3 w-[350px] max-w-full text-muted bg-surface-soft;
   }
   .admin-search input {
     @apply border-0 outline-none bg-transparent py-[11px] px-0 text-small w-full min-w-0;
@@ -296,19 +296,19 @@
     @apply w-full border-collapse text-left text-small;
   }
   .admin-table thead {
-    @apply bg-[#f7f5f3];
+    @apply bg-botticelli/45;
   }
   .admin-table th {
-    @apply py-[13px] px-[22px] border-b border-line text-[#81776e] uppercase text-small tracking-[1px] font-semibold whitespace-nowrap;
+    @apply py-[13px] px-[22px] border-b border-line text-primary uppercase text-small tracking-[1px] font-semibold whitespace-nowrap;
   }
   .admin-table td {
-    @apply py-[19px] px-[22px] border-b border-[#efebe7] text-[#584f47] [vertical-align:middle];
+    @apply py-[19px] px-[22px] border-b border-line text-ink [vertical-align:middle];
   }
   .admin-table tr:last-child td {
     @apply [border-bottom:0];
   }
   .admin-table tbody tr:hover {
-    @apply bg-[#fbfafa];
+    @apply bg-surface-soft;
   }
   .admin-number {
     @apply whitespace-nowrap font-medium;
@@ -335,7 +335,7 @@
     @apply py-12 px-6 text-center text-muted text-small;
   }
   .admin-badge {
-    @apply inline-flex py-[5px] px-[9px] rounded-[20px] bg-[#efeae5] text-[#6b5746] text-small font-medium whitespace-nowrap;
+    @apply inline-flex py-[5px] px-[9px] rounded-[20px] bg-primary-soft text-[#6b5746] text-small font-medium whitespace-nowrap;
   }
   .admin-badge.pending,
   .admin-badge.pending_payment,
@@ -445,7 +445,7 @@
     @apply flex items-center justify-between [list-style:none] py-[22px] px-[10px] [margin:0_0_8px] gap-[18px];
   }
   .admin-order-progress li {
-    @apply flex items-center gap-[9px] text-[#948b83] text-small;
+    @apply flex items-center gap-[9px] text-muted text-small;
   }
   .admin-order-progress li > span {
     @apply flex items-center justify-center w-[25px] h-[25px] rounded-full border border-[#ddd4cd] text-small;
@@ -625,13 +625,13 @@
     }
   }
   .admin-rail.workspace-sidebar nav.sidebar-navigation a {
-    @apply flex min-h-12 min-w-0 flex-1 flex-row items-center justify-start gap-3 rounded-xl px-3 py-3 text-left text-body font-medium leading-snug text-[#625a53] no-underline transition-colors;
+    @apply flex min-h-12 min-w-0 flex-1 flex-row items-center justify-start gap-3 rounded-xl px-3 py-3 text-left text-body font-medium leading-snug text-primary border-l-[3px] border-transparent no-underline transition-colors;
   }
   .admin-rail.workspace-sidebar nav.sidebar-navigation a.active {
-    @apply bg-primary text-white shadow-sm;
+    @apply bg-primary text-linen border-l-tangelo shadow-sm;
   }
   .admin-rail.workspace-sidebar nav.sidebar-navigation a:hover:not(.active) {
-    @apply bg-[#f1ece8] text-primary;
+    @apply bg-primary-soft text-primary;
   }
   .admin-rail.workspace-sidebar nav.sidebar-navigation a > svg:last-child {
     @apply ml-auto block opacity-0;
@@ -652,16 +652,16 @@
     @apply mt-4 border-t border-line pt-4;
   }
   .workspace-store-link {
-    @apply flex min-h-11 items-center gap-3 rounded-xl border border-line bg-white px-3 text-small font-medium text-primary no-underline transition-colors hover:bg-[#f1ece8];
+    @apply flex min-h-11 items-center gap-3 rounded-xl border border-line bg-white px-3 text-small font-medium text-primary no-underline transition-colors hover:bg-primary-soft;
   }
   .workspace-store-link > svg:last-child {
     @apply ml-auto;
   }
   .workspace-profile {
-    @apply mt-4 flex items-center gap-2 rounded-xl bg-[#f3efeb] p-2.5;
+    @apply mt-4 flex items-center gap-2 rounded-xl bg-primary-soft p-2.5;
   }
   .workspace-avatar {
-    @apply flex size-9 shrink-0 items-center justify-center rounded-full border border-primary/15 bg-white text-small font-semibold text-primary;
+    @apply flex size-9 shrink-0 items-center justify-center rounded-full border border-primary/15 bg-botticelli text-small font-semibold text-primary;
   }
   .workspace-signout {
     @apply flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-transparent text-muted transition-colors hover:border-line hover:bg-white hover:text-accent;
@@ -687,7 +687,7 @@
     @apply grid grid-cols-[minmax(240px,0.85fr)_minmax(0,1.4fr)] items-start gap-7;
   }
   .product-editor-media {
-    @apply min-w-0 rounded-2xl border border-line bg-[#f7f5f3] p-4;
+    @apply min-w-0 rounded-2xl border border-line bg-surface-soft p-4;
   }
   .product-editor-media > h3,
   .product-editor-details > h3 {
@@ -739,5 +739,29 @@
     .product-editor-dialog .editor-footer .ui-button {
       @apply flex-1;
     }
+  }
+}
+
+@layer components {
+  .dashboard-stat-grid .admin-stat {
+    @apply border-t-[3px] border-t-tangelo;
+  }
+  .dashboard-stat-grid .admin-stat[data-stat="customers"] {
+    @apply border-t-botticelli;
+  }
+  .dashboard-stat-grid .admin-stat[data-stat="customers"] .admin-stat-icon {
+    @apply bg-botticelli text-primary;
+  }
+  .dashboard-stat-grid .admin-stat[data-stat="orders"] .admin-stat-icon {
+    @apply bg-primary-soft text-primary;
+  }
+  .dashboard-stat-grid .admin-stat[data-stat="revenue"] .admin-stat-icon {
+    @apply bg-accent-soft text-accent;
+  }
+  .workspace-profile {
+    @apply bg-botticelli/55;
+  }
+  .product-editor-media {
+    @apply bg-botticelli/25;
   }
 }

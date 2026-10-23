@@ -7,16 +7,24 @@
 @theme {
   --font-sans: "Segoe UI", Arial, sans-serif;
   --font-serif: Georgia, serif;
-  --color-ink: #29221e;
-  --color-muted: #74675c;
-  --color-paper: #faf7f1;
+  /* Brand palette; semantic roles below keep components consistent. */
+  --color-linen: #ffede3;
+  --color-tangelo: #fb4d00;
+  --color-chocolate: #49261d;
+  --color-botticelli: #cae7f7;
+  --color-ink: #2b1710;
+  --color-muted: #785b50;
+  --color-paper: var(--color-linen);
   --color-surface: #ffffff;
-  --color-line: #e4dcd2;
-  --color-accent: #b44822;
-  --color-accent-soft: #f7e7db;
-  --color-primary: #302a26;
-  --color-primary-soft: #eee6db;
-  --color-sand: #efc29c;
+  --color-surface-soft: #fff7f2;
+  --color-line: #dfc5b7;
+  --color-control: #9b7565;
+  /* Deeper orange is reserved for small text on light surfaces. */
+  --color-accent: #a8350c;
+  --color-accent-soft: #ffdfcf;
+  --color-primary: var(--color-chocolate);
+  --color-primary-soft: #f6dfd1;
+  --color-sand: var(--color-linen);
   --text-small: 0.875rem;
   --text-body: 1rem;
   --text-lead: 1.125rem;

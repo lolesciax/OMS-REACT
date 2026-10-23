@@ -125,16 +125,20 @@ export default function StoreHeader({
   return (
     <header
       ref={headerRef}
-      className="store-header relative z-30 border-b border-line bg-paper"
+      className="store-header relative min-w-0 z-30 border-b border-line bg-paper"
     >
-      <div className="mx-auto grid min-h-[88px] max-w-[1328px] grid-cols-[auto_1fr_auto] items-center gap-x-2 px-4 py-4 sm:gap-x-6 sm:px-6 min-[1280px]:grid-cols-[auto_minmax(180px,1fr)_auto_auto]">
+      <div className="mx-auto grid w-full min-w-0 min-h-[88px] max-w-[1328px] grid-cols-[auto_1fr_auto] items-center gap-x-2 px-4 py-4 sm:gap-x-6 sm:px-6 min-[1280px]:grid-cols-[auto_minmax(180px,1fr)_auto_auto] max-[359px]:gap-x-1 max-[359px]:px-2">
         <Link
           className="store-brand shrink-0"
           to="/"
           aria-label="Old Goods Thrift home"
           onClick={closeMenus}
         >
-          <Image src="/Shop Icon.jpg" alt="" className="max-[900px]:size-9" />
+          <Image
+            src="/Shop Icon.jpg"
+            alt=""
+            className="max-[900px]:size-9 max-[359px]:size-8"
+          />
           <span>
             Old Goods<span className="brand-second">Thrift.</span>
           </span>
@@ -163,7 +167,7 @@ export default function StoreHeader({
             ))}
           </nav>
         )}
-        <div className="col-start-3 row-start-1 flex items-center justify-end gap-1.5 sm:gap-3 min-[1280px]:col-start-4">
+        <div className="col-start-3 row-start-1 flex items-center justify-end gap-1.5 sm:gap-3 min-[1280px]:col-start-4 max-[359px]:gap-1">
           {isLoggedIn ? (
             <>
               <NotificationBell />
@@ -256,7 +260,7 @@ export default function StoreHeader({
                       onClick={signOut}
                     >
                       <Icon name="logout" size={18} />
-                      {signingOut ? "Signing out?" : "Sign out"}
+                      {signingOut ? "Signing out..." : "Sign out"}
                     </button>
                   </nav>
                 )}
@@ -342,7 +346,7 @@ export default function StoreHeader({
                   onClick={signOut}
                 >
                   <Icon name="logout" size={19} />
-                  {signingOut ? "Signing out?" : "Sign out"}
+                  {signingOut ? "Signing out..." : "Sign out"}
                 </button>
               </div>
             ) : (

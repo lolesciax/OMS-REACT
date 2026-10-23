@@ -104,7 +104,7 @@ export default function CatalogOptionsMaintenance() {
                     {choices[key]?.map((value, index) => (
                       <span
                         key={`${value}-${index}`}
-                        className="max-w-full rounded-full border border-line bg-[#f8f5f3] px-3 py-1.5 text-small [overflow-wrap:anywhere]"
+                        className="max-w-full rounded-full border border-line bg-surface-soft px-3 py-1.5 text-small [overflow-wrap:anywhere]"
                       >
                         {value}
                       </span>

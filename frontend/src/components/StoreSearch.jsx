@@ -16,7 +16,7 @@ export default function StoreSearch({ value, onChange, onSubmit }) {
     <form
       role="search"
       aria-label="Search products"
-      className="col-span-full row-start-2 mt-3 flex min-w-0 items-center gap-1 rounded-xl border border-line bg-white pl-3 text-primary transition-shadow focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 min-[1280px]:col-span-1 min-[1280px]:col-start-2 min-[1280px]:row-start-1 min-[1280px]:mt-0"
+      className="col-span-full row-start-2 mt-3 flex min-w-0 items-center gap-1 rounded-xl border border-control bg-white pl-3 text-primary transition-shadow focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 min-[1280px]:col-span-1 min-[1280px]:col-start-2 min-[1280px]:row-start-1 min-[1280px]:mt-0"
       onSubmit={(event) => {
         event.preventDefault();
         onSubmit?.();

@@ -20,7 +20,7 @@
     @apply mx-auto my-4 aspect-[4/3] w-full max-w-96 overflow-hidden rounded-xl border border-line bg-[#f0eee8];
   }
   .image-upload-dropzone {
-    @apply relative mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-dashed border-[#c4bab2] bg-[#f7f5f3] p-4 transition-colors;
+    @apply relative mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-dashed border-[#c4bab2] bg-surface-soft p-4 transition-colors;
   }
   .image-upload[data-dragging="true"] .image-upload-dropzone {
     @apply border-primary bg-[#ece7e2] ring-2 ring-primary/20;

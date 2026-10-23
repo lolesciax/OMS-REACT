@@ -2,7 +2,7 @@
 
 @layer components {
   .product-media {
-    @apply relative block size-full min-w-0 bg-[#f0eee8];
+    @apply relative block size-full min-w-0 bg-surface-soft;
     container: product-image / inline-size;
   }
   .product-media > img {
@@ -12,7 +12,7 @@
     @apply flex size-full min-h-0 flex-col items-center justify-center gap-3 px-3 py-5 text-center text-small font-medium text-muted;
   }
   .product-media-empty-icon {
-    @apply grid size-14 place-items-center rounded-2xl border border-[#dcd6d1] bg-[#e9e5e1] text-[#857c74];
+    @apply grid size-14 place-items-center rounded-2xl border border-line bg-botticelli text-primary;
   }
   @container product-image (max-width: 110px) {
     .product-media-empty {

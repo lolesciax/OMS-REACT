@@ -52,6 +52,14 @@ const statusLabel = (value) =>
   "Unknown";
 
 export default function AdminDashboard() {
+  const palette = getComputedStyle(document.documentElement);
+  const chartColors = {
+    primary: palette.getPropertyValue("--color-chocolate").trim(),
+    accent: palette.getPropertyValue("--color-tangelo").trim(),
+    soft: palette.getPropertyValue("--color-botticelli").trim(),
+    muted: palette.getPropertyValue("--color-muted").trim(),
+    line: palette.getPropertyValue("--color-line").trim(),
+  };
   const [stats, setStats] = useState(null);
   const [overview, setOverview] = useState({});
   const [monthly, setMonthly] = useState([]);
@@ -151,15 +159,17 @@ export default function AdminDashboard() {
       {
         label: "Revenue",
         data: monthPoints.map((item) => item.revenue),
-        borderColor: "#5b4b3d",
-        backgroundColor: "#e5ddd680",
+        borderColor: chartColors.primary,
+        backgroundColor: chartColors.soft,
         borderWidth: 3,
         pointRadius: 4,
         pointHoverRadius: 7,
         pointBorderWidth: 2,
         pointBorderColor: "#fff",
         pointBackgroundColor: monthPoints.map((item, index) =>
-          index === monthPoints.length - 1 ? "#b15c3e" : "#6f5d4d",
+          index === monthPoints.length - 1
+            ? chartColors.accent
+            : chartColors.primary,
         ),
         fill: true,
         tension: 0.35,
@@ -188,7 +198,7 @@ export default function AdminDashboard() {
       x: {
         grid: { display: false },
         ticks: {
-          color: "#756b63",
+          color: chartColors.muted,
           font: { size: 12, weight: "500" },
           maxRotation: 0,
           autoSkip: true,
@@ -199,9 +209,9 @@ export default function AdminDashboard() {
       y: {
         beginAtZero: true,
         border: { display: false },
-        grid: { color: "#f0ece8" },
+        grid: { color: chartColors.line },
         ticks: {
-          color: "#756b63",
+          color: chartColors.muted,
           font: { size: 12 },
           maxTicksLimit: 5,
           callback: (value) => compactPriceFormatter.format(Number(value)),
@@ -216,7 +226,9 @@ export default function AdminDashboard() {
       {
         label: "Pieces ordered",
         data: best.map((item) => item.totalSold || 0),
-        backgroundColor: "#c7b6a8",
+        backgroundColor: chartColors.soft,
+        borderColor: chartColors.primary,
+        borderWidth: 1,
         borderRadius: 4,
         maxBarThickness: 28,
       },
@@ -473,7 +485,7 @@ export default function AdminDashboard() {
                     },
                     y: {
                       grid: { display: false },
-                      ticks: { font: { size: 14 }, color: "#72655a" },
+                      ticks: { font: { size: 14 }, color: chartColors.muted },
                     },
                   },
                 }}

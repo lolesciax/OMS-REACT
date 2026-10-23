@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="104" fill="#302a26"/>
-  <path d="M342 90c-75 0-126 22-126 68a55 55 0 0 0 55 55c58 0 71-70 71-123Z" fill="none" stroke="#edc7a8" stroke-width="9" stroke-linejoin="round"/>
-  <path d="m208 222 95-88" fill="none" stroke="#edc7a8" stroke-width="9" stroke-linecap="round"/>
-  <text x="256" y="327" text-anchor="middle" fill="#faf7f1" font-family="Georgia,serif" font-size="82">Old Goods</text>
-  <text x="256" y="385" text-anchor="middle" fill="#edc7a8" font-family="Arial,sans-serif" font-size="28" letter-spacing="7">THRIFT</text>
+  <rect width="512" height="512" rx="104" fill="#49261d"/>
+  <path d="M342 90c-75 0-126 22-126 68a55 55 0 0 0 55 55c58 0 71-70 71-123Z" fill="none" stroke="#cae7f7" stroke-width="9" stroke-linejoin="round"/>
+  <path d="m208 222 95-88" fill="none" stroke="#cae7f7" stroke-width="9" stroke-linecap="round"/>
+  <text x="256" y="327" text-anchor="middle" fill="#ffede3" font-family="Georgia,serif" font-size="82">Old Goods</text>
+  <text x="256" y="385" text-anchor="middle" fill="#cae7f7" font-family="Arial,sans-serif" font-size="28" letter-spacing="7">THRIFT</text>
 </svg>

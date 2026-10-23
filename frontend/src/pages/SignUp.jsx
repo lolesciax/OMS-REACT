@@ -146,101 +146,106 @@ export default function SignUp() {
           disabled={busy}
           className="ui-fieldset min-w-0 border-0 p-0 m-0"
         >
-          {["username", "email"].map((field) => {
-            const invalid = !!errors[field] || availability[field] === "taken";
-            const feedback =
-              errors[field] ||
-              (availability[field] === "checking"
-                ? "Checking availability…"
-                : availability[field] === "available"
-                  ? "Available — you can use this."
-                  : availability[field] === "taken"
-                    ? `This ${field === "email" ? "email is already registered" : "username is already taken"}.`
-                    : availability[field] === "unavailable"
-                      ? "Availability could not be checked. We’ll check again when you submit."
-                      : field === "username"
-                        ? "Use 3–16 letters, numbers or underscores."
-                        : "Enter a valid email address you can access. We’ll use it for account recovery.");
-            return (
-              <div className="ui-field mb-5 min-w-0" key={field}>
-                <FieldTooltip
-                  id={`signup-${field}-feedback`}
-                  htmlFor={`signup-${field}`}
-                  label={field === "username" ? "Username" : "Email address"}
-                  message={feedback}
-                  invalid={invalid}
-                  active={focused === field && invalid}
-                  available={availability[field] === "available" && !invalid}
-                />
-                <input
-                  id={`signup-${field}`}
-                  name={field}
-                  type={field === "email" ? "email" : "text"}
-                  autoComplete={field}
-                  value={form[field]}
-                  onChange={(event) => change(field, event.target.value)}
-                  onFocus={() => setFocused(field)}
-                  onBlur={() => {
-                    setFocused(null);
-                    check(field);
-                  }}
-                  maxLength={field === "username" ? 16 : 254}
-                  aria-invalid={
-                    !!errors[field] || availability[field] === "taken"
-                  }
-                  aria-describedby={`signup-${field}-feedback`}
-                  placeholder={
-                    field === "username"
-                      ? "Choose a username"
-                      : "you@example.com"
-                  }
-                />
-              </div>
-            );
-          })}
+          <div className="signup-fields-grid">
+            {["username", "email"].map((field) => {
+              const invalid =
+                !!errors[field] || availability[field] === "taken";
+              const feedback =
+                errors[field] ||
+                (availability[field] === "checking"
+                  ? "Checking availability…"
+                  : availability[field] === "available"
+                    ? "Available — you can use this."
+                    : availability[field] === "taken"
+                      ? `This ${field === "email" ? "email is already registered" : "username is already taken"}.`
+                      : availability[field] === "unavailable"
+                        ? "Availability could not be checked. We’ll check again when you submit."
+                        : field === "username"
+                          ? "Use 3–16 letters, numbers or underscores."
+                          : "Enter a valid email address you can access. We’ll use it for account recovery.");
+              return (
+                <div
+                  className="ui-field mb-5 min-w-0 min-[1100px]:mb-0"
+                  key={field}
+                >
+                  <FieldTooltip
+                    id={`signup-${field}-feedback`}
+                    htmlFor={`signup-${field}`}
+                    label={field === "username" ? "Username" : "Email address"}
+                    message={feedback}
+                    invalid={invalid}
+                    active={focused === field && invalid}
+                    available={availability[field] === "available" && !invalid}
+                  />
+                  <input
+                    id={`signup-${field}`}
+                    name={field}
+                    type={field === "email" ? "email" : "text"}
+                    autoComplete={field}
+                    value={form[field]}
+                    onChange={(event) => change(field, event.target.value)}
+                    onFocus={() => setFocused(field)}
+                    onBlur={() => {
+                      setFocused(null);
+                      check(field);
+                    }}
+                    maxLength={field === "username" ? 16 : 254}
+                    aria-invalid={
+                      !!errors[field] || availability[field] === "taken"
+                    }
+                    aria-describedby={`signup-${field}-feedback`}
+                    placeholder={
+                      field === "username"
+                        ? "Choose a username"
+                        : "you@example.com"
+                    }
+                  />
+                </div>
+              );
+            })}
 
-          <PasswordField
-            id="signup-password"
-            name="password"
-            value={form.password}
-            onChange={(event) => change("password", event.target.value)}
-            autoComplete="new-password"
-            maxLength={128}
-            error={errors.password}
-            onBlur={() =>
-              setErrors((previous) => ({
-                ...previous,
-                password: validatePassword(form.password),
-              }))
-            }
-            hint="Use 8–128 characters. Spaces and symbols are welcome."
-            compact
-            tooltip
-          />
-          <div className="mt-5">
             <PasswordField
-              id="signup-confirm"
-              label="Confirm password"
-              name="confirm"
-              value={form.confirm}
-              onChange={(event) => change("confirm", event.target.value)}
+              id="signup-password"
+              name="password"
+              value={form.password}
+              onChange={(event) => change("password", event.target.value)}
               autoComplete="new-password"
               maxLength={128}
-              error={errors.confirm}
-              hint="Enter your password again. Both passwords must match."
-              compact
-              tooltip
+              error={errors.password}
               onBlur={() =>
                 setErrors((previous) => ({
                   ...previous,
-                  confirm: !form.confirm
-                    ? "Confirm your password."
-                    : validateConfirmPassword(form.password, form.confirm),
+                  password: validatePassword(form.password),
                 }))
               }
+              hint="Use 8–128 characters. Spaces and symbols are welcome."
+              compact
+              tooltip
             />
+            <div className="mt-5 min-[1100px]:mt-0">
+              <PasswordField
+                id="signup-confirm"
+                label="Confirm password"
+                name="confirm"
+                value={form.confirm}
+                onChange={(event) => change("confirm", event.target.value)}
+                autoComplete="new-password"
+                maxLength={128}
+                error={errors.confirm}
+                hint="Enter your password again. Both passwords must match."
+                compact
+                tooltip
+                onBlur={() =>
+                  setErrors((previous) => ({
+                    ...previous,
+                    confirm: !form.confirm
+                      ? "Confirm your password."
+                      : validateConfirmPassword(form.password, form.confirm),
+                  }))
+                }
+              />
+            </div>
           </div>
-
           <div className="mt-5">
             <TermsAgreement
               key={termsKey}

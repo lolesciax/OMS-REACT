@@ -32,7 +32,7 @@ export default function RouteSkeleton() {
   );
   if (admin)
     return (
-      <div className="flex min-h-dvh flex-col bg-[#f6f3f0] min-[901px]:flex-row">
+      <div className="flex min-h-dvh flex-col bg-surface-soft min-[901px]:flex-row">
         <SkeletonRegion
           label="Loading workspace navigation"
           className="w-full shrink-0 bg-[#392f26] p-6 min-[901px]:w-65"

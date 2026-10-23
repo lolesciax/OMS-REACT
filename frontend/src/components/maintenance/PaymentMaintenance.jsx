@@ -39,7 +39,7 @@ function PaymentMethod({ methodKey }) {
             className={
               "rounded-full px-3 py-1 text-small font-semibold " +
               (editor.saved?.enabled
-                ? "bg-[#ede7e2] text-primary"
+                ? "bg-primary-soft text-primary"
                 : "bg-[#f3eee3] text-[#795e2e]")
             }
           >

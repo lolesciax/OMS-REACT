@@ -121,6 +121,7 @@ try {
   for (const path of [
     "/admin/dashboard",
     "/admin/products",
+    "/admin/out-of-stock",
     "/admin/orders",
     "/admin/customers",
     "/admin/discounts",
@@ -130,6 +131,7 @@ try {
     "/admin/maintenance/payments",
     "/admin/maintenance/roles",
     "/admin/maintenance/profile",
+    "/admin/maintenance/catalog",
     "/admin/maintenance/policies",
     "/admin/maintenance/faqs",
     "/admin/maintenance/support",
