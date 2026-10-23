@@ -294,7 +294,7 @@ export default function Profile() {
                     .join(" ") || user?.username}
                 </h2>
                 <p>@{user?.username}</p>
-                <span className="mb-4 inline-flex rounded-full bg-[#edf3e9] px-3 py-1 text-small font-semibold text-forest">
+                <span className="mb-4 inline-flex rounded-full bg-primary-soft px-3 py-1 text-small font-semibold text-primary">
                   {user?.roleLabel || "Account"}
                 </span>
               </div>
@@ -352,7 +352,7 @@ export default function Profile() {
           <div>
             <section className="customer-panel" id="profile-details">
               <div className="flex items-start gap-3 mb-5">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#edf3e9] text-forest">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
                   <Icon name="user" size={20} />
                 </span>
                 <div>

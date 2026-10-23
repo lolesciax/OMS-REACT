@@ -62,7 +62,7 @@ export default function TermsAgreement({
           <input
             id={id}
             name="termsAccepted"
-            className="mt-0.5 size-5 shrink-0 cursor-pointer accent-forest"
+            className="mt-0.5 size-5 shrink-0 cursor-pointer accent-primary"
             type="checkbox"
             checked={value.accepted}
             disabled={disabled}
@@ -84,7 +84,7 @@ export default function TermsAgreement({
               to={`/terms#${kind}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-semibold text-forest underline underline-offset-2 hover:text-accent"
+              className="font-semibold text-primary underline underline-offset-2 hover:text-accent"
             >
               {kind === "order"
                 ? "Order Terms & Conditions"
@@ -96,7 +96,7 @@ export default function TermsAgreement({
               to="/policies/privacy"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-semibold text-forest underline underline-offset-2 hover:text-accent"
+              className="font-semibold text-primary underline underline-offset-2 hover:text-accent"
             >
               Privacy Policy
               <span className="sr-only"> (opens in a new tab)</span>

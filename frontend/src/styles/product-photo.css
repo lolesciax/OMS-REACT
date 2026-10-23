@@ -9,7 +9,7 @@
     @apply relative block w-full h-full p-0 border-0 bg-[#f0eee8] text-ink cursor-zoom-in overflow-hidden rounded-[inherit];
   }
   .product-photo-trigger:focus-visible {
-    @apply outline-2 outline-offset-[-4px] outline-forest;
+    @apply outline-2 outline-offset-[-4px] outline-primary;
   }
   .product-photo-trigger:disabled {
     @apply opacity-[1] cursor-default;
@@ -35,7 +35,7 @@
     @apply flex flex-col;
   }
   .product-photo-viewer::backdrop {
-    @apply bg-[#142219d9] [backdrop-filter:blur(5px)];
+    @apply bg-[#141922d9] [backdrop-filter:blur(5px)];
   }
   .product-photo-toolbar {
     @apply flex items-center gap-3 p-4 border-b border-line;

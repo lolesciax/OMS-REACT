@@ -11,7 +11,7 @@
     @apply text-body font-semibold text-ink;
   }
   .image-upload-status {
-    @apply rounded-full bg-[#eef2e9] px-2.5 py-1 text-small font-medium text-forest;
+    @apply rounded-full bg-primary-soft px-2.5 py-1 text-small font-medium text-primary;
   }
   .image-upload-description {
     @apply mt-2 text-small leading-relaxed text-muted;
@@ -20,13 +20,13 @@
     @apply mx-auto my-4 aspect-[4/3] w-full max-w-96 overflow-hidden rounded-xl border border-line bg-[#f0eee8];
   }
   .image-upload-dropzone {
-    @apply relative mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-dashed border-[#b9c4b2] bg-[#f6f8f2] p-4 transition-colors;
+    @apply relative mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-dashed border-[#b2b9c4] bg-[#f2f4f8] p-4 transition-colors;
   }
   .image-upload[data-dragging="true"] .image-upload-dropzone {
-    @apply border-forest bg-[#e6efdf] ring-2 ring-forest/20;
+    @apply border-primary bg-[#dfe5ef] ring-2 ring-primary/20;
   }
   .image-upload-dropzone:focus-within {
-    @apply border-forest ring-2 ring-forest/20;
+    @apply border-primary ring-2 ring-primary/20;
   }
   .image-upload-dropzone strong {
     @apply block text-body font-semibold;
@@ -35,7 +35,7 @@
     @apply mt-1 text-small leading-relaxed text-muted;
   }
   .image-upload-icon {
-    @apply grid size-11 shrink-0 place-items-center rounded-xl border border-line bg-white text-forest;
+    @apply grid size-11 shrink-0 place-items-center rounded-xl border border-line bg-white text-primary;
   }
   .image-upload-input {
     @apply absolute bottom-0 left-0 size-px opacity-0;
@@ -44,7 +44,7 @@
     @apply mt-3 text-small leading-relaxed text-muted;
   }
   .image-upload-file {
-    @apply mt-3 flex min-w-0 flex-wrap items-center gap-2 text-small text-forest;
+    @apply mt-3 flex min-w-0 flex-wrap items-center gap-2 text-small text-primary;
   }
   .image-upload-file:empty {
     @apply hidden;

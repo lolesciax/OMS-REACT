@@ -10,7 +10,7 @@ export default function NotificationBell() {
   return (
     <Link
       to={user.isAdmin ? "/admin/notifications" : "/notifications"}
-      className="notification-bell relative inline-flex size-11 shrink-0 items-center justify-center rounded-xl border border-line bg-white text-forest shadow-sm hover:bg-[#edf3e9] hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-forest"
+      className="notification-bell relative inline-flex size-11 shrink-0 items-center justify-center rounded-xl border border-line bg-white text-primary shadow-sm hover:bg-primary-soft hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
       aria-label={
         error
           ? "Notifications, refresh unavailable"

@@ -158,9 +158,9 @@ function NotificationInbox({ admin = false }) {
         className="overflow-hidden rounded-2xl border border-line bg-white shadow-sm"
         aria-label="Notification inbox"
       >
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line bg-[#f7f9f2] p-5 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-line bg-[#f2f5f9] p-5 sm:p-6">
           <div className="flex items-center gap-3">
-            <span className="flex size-11 items-center justify-center rounded-xl bg-forest text-white">
+            <span className="flex size-11 items-center justify-center rounded-xl bg-primary text-white">
               <Icon name="bell" size={22} />
             </span>
             <div>
@@ -207,7 +207,7 @@ function NotificationInbox({ admin = false }) {
             ].map(([key, label]) => (
               <button
                 key={key}
-                className={`min-h-11 cursor-pointer rounded-lg border px-4 text-body font-semibold transition-colors ${filter === key ? "border-forest bg-forest text-white" : "border-line bg-white text-ink hover:bg-[#edf3e9]"}`}
+                className={`min-h-11 cursor-pointer rounded-lg border px-4 text-body font-semibold transition-colors ${filter === key ? "border-primary bg-primary text-white" : "border-line bg-white text-ink hover:bg-primary-soft"}`}
                 aria-pressed={filter === key}
                 disabled={!!busy}
                 onClick={() => change("filter", key)}
@@ -272,7 +272,7 @@ function NotificationInbox({ admin = false }) {
             </SkeletonRegion>
           ) : !items.length && !error ? (
             <div className="mx-auto max-w-md py-14 text-center">
-              <span className="mx-auto flex size-16 items-center justify-center rounded-full bg-[#edf3e9] text-forest">
+              <span className="mx-auto flex size-16 items-center justify-center rounded-full bg-primary-soft text-primary">
                 <Icon name={filter === "unread" ? "check" : "bell"} size={30} />
               </span>
               <h3 className="mt-5 text-lead font-semibold">
@@ -302,10 +302,10 @@ function NotificationInbox({ admin = false }) {
               {items.map((item) => (
                 <li
                   key={item._id}
-                  className={`my-2 flex gap-3 rounded-xl p-4 sm:gap-4 sm:p-5 ${!item.readAt ? "border-l-4 border-forest bg-[#f1f6ec]" : "border-l-4 border-transparent"}`}
+                  className={`my-2 flex gap-3 rounded-xl p-4 sm:gap-4 sm:p-5 ${!item.readAt ? "border-l-4 border-primary bg-[#ecf0f6]" : "border-l-4 border-transparent"}`}
                 >
                   <span
-                    className={`mt-1 flex size-10 shrink-0 items-center justify-center rounded-xl ${!item.readAt ? "bg-white text-forest" : "bg-[#f3f3ed] text-muted"}`}
+                    className={`mt-1 flex size-10 shrink-0 items-center justify-center rounded-xl ${!item.readAt ? "bg-white text-primary" : "bg-[#f3f3ed] text-muted"}`}
                   >
                     <Icon
                       name={
@@ -321,7 +321,7 @@ function NotificationInbox({ admin = false }) {
                   </span>
                   <div className="min-w-0 flex-1 break-words">
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                      <span className="text-small font-semibold text-forest">
+                      <span className="text-small font-semibold text-primary">
                         {notificationCategories[item.category] || "Update"}
                       </span>
                       {item.audience === "admin" && (
@@ -330,8 +330,8 @@ function NotificationInbox({ admin = false }) {
                         </span>
                       )}
                       {!item.readAt && (
-                        <span className="inline-flex items-center gap-1.5 text-small font-semibold text-forest">
-                          <span className="size-2 rounded-full bg-forest" />
+                        <span className="inline-flex items-center gap-1.5 text-small font-semibold text-primary">
+                          <span className="size-2 rounded-full bg-primary" />
                           Unread
                         </span>
                       )}

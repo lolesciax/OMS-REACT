@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="104" fill="#344c3c"/>
-  <path d="M342 90c-75 0-126 22-126 68a55 55 0 0 0 55 55c58 0 71-70 71-123Z" fill="none" stroke="#d7dfb6" stroke-width="9" stroke-linejoin="round"/>
-  <path d="m208 222 95-88" fill="none" stroke="#d7dfb6" stroke-width="9" stroke-linecap="round"/>
+  <rect width="512" height="512" rx="104" fill="#344d73"/>
+  <path d="M342 90c-75 0-126 22-126 68a55 55 0 0 0 55 55c58 0 71-70 71-123Z" fill="none" stroke="#edc7a8" stroke-width="9" stroke-linejoin="round"/>
+  <path d="m208 222 95-88" fill="none" stroke="#edc7a8" stroke-width="9" stroke-linecap="round"/>
   <text x="256" y="327" text-anchor="middle" fill="#fcfbf7" font-family="Georgia,serif" font-size="82">Old Goods</text>
-  <text x="256" y="385" text-anchor="middle" fill="#d7dfb6" font-family="Arial,sans-serif" font-size="28" letter-spacing="7">THRIFT</text>
+  <text x="256" y="385" text-anchor="middle" fill="#edc7a8" font-family="Arial,sans-serif" font-size="28" letter-spacing="7">THRIFT</text>
 </svg>

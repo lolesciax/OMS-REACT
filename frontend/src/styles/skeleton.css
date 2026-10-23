@@ -1,7 +1,7 @@
 @layer components {
   .skeleton,
   img[data-image-state="loading"] {
-    @apply block rounded bg-[#e9eae2];
+    @apply block rounded bg-[#e2e5ea];
     background-image: linear-gradient(
       100deg,
       transparent 25%,

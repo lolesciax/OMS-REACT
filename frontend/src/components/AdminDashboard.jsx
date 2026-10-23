@@ -151,15 +151,15 @@ export default function AdminDashboard() {
       {
         label: "Revenue",
         data: monthPoints.map((item) => item.revenue),
-        borderColor: "#425b3d",
-        backgroundColor: "#dce8d380",
+        borderColor: "#3d485b",
+        backgroundColor: "#d3dbe880",
         borderWidth: 3,
         pointRadius: 4,
         pointHoverRadius: 7,
         pointBorderWidth: 2,
         pointBorderColor: "#fff",
         pointBackgroundColor: monthPoints.map((item, index) =>
-          index === monthPoints.length - 1 ? "#b15c3e" : "#536f4d",
+          index === monthPoints.length - 1 ? "#b15c3e" : "#4d596f",
         ),
         fill: true,
         tension: 0.35,
@@ -188,7 +188,7 @@ export default function AdminDashboard() {
       x: {
         grid: { display: false },
         ticks: {
-          color: "#697563",
+          color: "#636a75",
           font: { size: 12, weight: "500" },
           maxRotation: 0,
           autoSkip: true,
@@ -199,9 +199,9 @@ export default function AdminDashboard() {
       y: {
         beginAtZero: true,
         border: { display: false },
-        grid: { color: "#edf0e8" },
+        grid: { color: "#e8ebf0" },
         ticks: {
-          color: "#697563",
+          color: "#636a75",
           font: { size: 12 },
           maxTicksLimit: 5,
           callback: (value) => compactPriceFormatter.format(Number(value)),
@@ -216,7 +216,7 @@ export default function AdminDashboard() {
       {
         label: "Pieces ordered",
         data: best.map((item) => item.totalSold || 0),
-        backgroundColor: "#b8c9a6",
+        backgroundColor: "#a6b3c9",
         borderRadius: 4,
         maxBarThickness: 28,
       },
@@ -469,11 +469,11 @@ export default function AdminDashboard() {
                     x: {
                       beginAtZero: true,
                       ticks: { precision: 0, font: { size: 14 } },
-                      grid: { color: "#eef0e7" },
+                      grid: { color: "#e7eaf0" },
                     },
                     y: {
                       grid: { display: false },
-                      ticks: { font: { size: 14 }, color: "#64725a" },
+                      ticks: { font: { size: 14 }, color: "#5a6372" },
                     },
                   },
                 }}

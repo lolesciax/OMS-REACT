@@ -203,7 +203,7 @@ export default function OrderHistory() {
             const awaitingPayment = isAwaitingPayment(order);
             return (
               <article
-                className={`order-card ${targetOrder === order._id ? "ring-2 ring-forest ring-offset-4" : ""}`}
+                className={`order-card ${targetOrder === order._id ? "ring-2 ring-primary ring-offset-4" : ""}`}
                 id={`order-${order._id}`}
                 key={order._id}
               >
@@ -375,7 +375,7 @@ export default function OrderHistory() {
         </div>
       )}
       {receipt && (
-        <div className="ui-dialog-overlay fixed inset-0 z-[2000] flex items-center justify-center p-5 bg-[#17251cc2] [backdrop-filter:blur(4px)]">
+        <div className="ui-dialog-overlay fixed inset-0 z-[2000] flex items-center justify-center p-5 bg-[#171c25c2] [backdrop-filter:blur(4px)]">
           <section
             ref={dialog}
             className="ui-dialog"

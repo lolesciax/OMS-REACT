@@ -15,7 +15,7 @@ export default function EditorDialog({
   });
   return (
     <div
-      className="ui-dialog-overlay fixed inset-0 z-[2000] flex items-center justify-center p-5 bg-[#17251cc2] [backdrop-filter:blur(4px)]"
+      className="ui-dialog-overlay fixed inset-0 z-[2000] flex items-center justify-center p-5 bg-[#171c25c2] [backdrop-filter:blur(4px)]"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !busy) onClose();
       }}

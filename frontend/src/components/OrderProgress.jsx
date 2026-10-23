@@ -14,12 +14,12 @@ function ProgressSteps({ steps, current, complete = false, label }) {
         return (
           <li
             key={step.label}
-            className={`min-w-0 rounded-xl border p-3 ${active ? "border-forest bg-[#edf3e9] ring-1 ring-forest" : done ? "border-[#cbdcc4] bg-[#f6f9f2]" : "border-line bg-white"}`}
+            className={`min-w-0 rounded-xl border p-3 ${active ? "border-primary bg-primary-soft ring-1 ring-primary" : done ? "border-[#c4cddc] bg-[#f2f5f9]" : "border-line bg-white"}`}
             aria-current={active ? "step" : undefined}
           >
             <div className="flex items-center gap-2">
               <span
-                className={`flex size-7 shrink-0 items-center justify-center rounded-full text-small font-bold ${done || active ? "bg-forest text-white" : "bg-[#eeeee5] text-muted"}`}
+                className={`flex size-7 shrink-0 items-center justify-center rounded-full text-small font-bold ${done || active ? "bg-primary text-white" : "bg-[#eeeee5] text-muted"}`}
               >
                 {done ? <Icon name="check" size={15} /> : index + 1}
               </span>
@@ -28,7 +28,7 @@ function ProgressSteps({ steps, current, complete = false, label }) {
               </span>
             </div>
             <p
-              className={`mt-2 text-small ${active ? "font-semibold text-forest" : "text-muted"}`}
+              className={`mt-2 text-small ${active ? "font-semibold text-primary" : "text-muted"}`}
             >
               {date && Number.isFinite(date.getTime()) ? (
                 <time dateTime={step.at}>
@@ -65,7 +65,7 @@ export default function OrderProgress({
       <p className="mb-4 text-body leading-relaxed text-muted">
         {state.detail}
       </p>
-      <p className="mb-4 text-small font-semibold text-forest">
+      <p className="mb-4 text-small font-semibold text-primary">
         {order.status === "completed"
           ? "Order complete"
           : state.current >= 0
@@ -85,7 +85,7 @@ export default function OrderProgress({
       className="group mb-6 rounded-xl border border-line px-4"
       open={open || undefined}
     >
-      <summary className="cursor-pointer py-4 text-body font-semibold text-forest">
+      <summary className="cursor-pointer py-4 text-body font-semibold text-primary">
         {state.title}
         <span className="ml-2 text-small font-normal text-muted group-open:hidden">
           View progress

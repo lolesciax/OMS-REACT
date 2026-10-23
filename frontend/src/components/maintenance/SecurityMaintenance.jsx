@@ -71,13 +71,17 @@ export default function SecurityMaintenance() {
                 className="rounded-xl border border-line p-5"
               >
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                  <Icon name={control.icon} size={23} className="text-forest" />
+                  <Icon
+                    name={control.icon}
+                    size={23}
+                    className="text-primary"
+                  />
                   <span
                     className={
                       "rounded-full px-3 py-1 text-small font-semibold " +
                       (control.attention
                         ? "bg-[#fbefd8] text-[#805d23]"
-                        : "bg-[#edf3e9] text-forest")
+                        : "bg-primary-soft text-primary")
                     }
                   >
                     {control.badge}

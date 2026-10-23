@@ -41,7 +41,7 @@ export default function AdminSidebar() {
         if (event.target === event.currentTarget && gesture.current) cancel();
       }}
       style={{ "--workspace-sidebar-width": `${preferences.sidebarWidth}px` }}
-      className="admin-rail workspace-sidebar relative sticky top-0 flex h-dvh w-[var(--workspace-sidebar-width)] flex-[0_0_var(--workspace-sidebar-width)] flex-col overflow-y-auto border-r border-line bg-[#fdfefb] px-4 py-6 text-ink max-[900px]:static max-[900px]:h-auto max-[900px]:w-full max-[900px]:basis-auto max-[900px]:border-b max-[900px]:px-5 max-[900px]:py-4"
+      className="admin-rail workspace-sidebar relative sticky top-0 flex h-dvh w-[var(--workspace-sidebar-width)] flex-[0_0_var(--workspace-sidebar-width)] flex-col overflow-y-auto border-r border-line bg-[#fbfcfe] px-4 py-6 text-ink max-[900px]:static max-[900px]:h-auto max-[900px]:w-full max-[900px]:basis-auto max-[900px]:border-b max-[900px]:px-5 max-[900px]:py-4"
     >
       <div className="flex items-center justify-between gap-3">
         <Link to="/admin/dashboard" className="workspace-brand">
@@ -52,7 +52,7 @@ export default function AdminSidebar() {
         </Link>
         <button
           type="button"
-          className="flex size-11 items-center justify-center rounded-xl border border-line bg-white text-forest min-[901px]:hidden"
+          className="flex size-11 items-center justify-center rounded-xl border border-line bg-white text-primary min-[901px]:hidden"
           aria-label={mobileOpen ? "Hide store menu" : "Show store menu"}
           aria-expanded={mobileOpen}
           aria-controls="store-management-nav"
@@ -74,7 +74,7 @@ export default function AdminSidebar() {
             arranging ? "Finish arranging navigation" : "Arrange navigation"
           }
           aria-pressed={arranging}
-          className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-lg px-2.5 text-small font-medium text-muted transition-colors hover:bg-[#edf1e8] hover:text-forest disabled:opacity-50"
+          className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-lg px-2.5 text-small font-medium text-muted transition-colors hover:bg-[#e8ebf1] hover:text-primary disabled:opacity-50"
           onClick={() => setArranging(!arranging)}
         >
           <Icon name={arranging ? "check" : "sliders"} size={16} />
@@ -84,7 +84,7 @@ export default function AdminSidebar() {
       {arranging && (
         <p
           id="sidebar-reorder-help"
-          className={`mb-3 rounded-xl bg-[#edf1e8] p-3 text-small leading-relaxed text-forest ${!mobileOpen ? "max-[900px]:hidden" : ""}`}
+          className={`mb-3 rounded-xl bg-[#e8ebf1] p-3 text-small leading-relaxed text-primary ${!mobileOpen ? "max-[900px]:hidden" : ""}`}
         >
           Drag the grips to reorder. With a grip focused, use the up and down
           arrow keys. Changes save automatically.
@@ -118,7 +118,7 @@ export default function AdminSidebar() {
             <div
               key={key}
               data-sidebar-item={key}
-              className={`sidebar-nav-item ${pinned ? "sidebar-nav-pinned" : ""} ${dragging === key ? "ring-2 ring-forest/40 bg-[#edf1e8] rounded-xl" : ""}`}
+              className={`sidebar-nav-item ${pinned ? "sidebar-nav-pinned" : ""} ${dragging === key ? "ring-2 ring-primary/40 bg-[#e8ebf1] rounded-xl" : ""}`}
             >
               <div className="flex min-w-0 items-center gap-1">
                 {arranging && !pinned && (
@@ -128,7 +128,7 @@ export default function AdminSidebar() {
                     title={`Drag ${label}`}
                     disabled={busy}
                     aria-describedby="sidebar-reorder-help"
-                    className="flex min-h-11 w-7 shrink-0 touch-none cursor-grab select-none items-center justify-center rounded-lg text-muted hover:bg-[#e8eee1] hover:text-forest active:cursor-grabbing"
+                    className="flex min-h-11 w-7 shrink-0 touch-none cursor-grab select-none items-center justify-center rounded-lg text-muted hover:bg-[#e1e6ee] hover:text-primary active:cursor-grabbing"
                     onPointerDown={(event) => begin(event, "order", key)}
                     onKeyDown={(event) => {
                       if (event.key === "Escape") cancel();
@@ -180,7 +180,7 @@ export default function AdminSidebar() {
         <button
           type="button"
           disabled={busy}
-          className={`mt-3 min-h-10 cursor-pointer rounded-lg text-small font-medium text-muted underline decoration-line underline-offset-4 hover:text-forest disabled:opacity-50 ${!mobileOpen ? "max-[900px]:hidden" : ""}`}
+          className={`mt-3 min-h-10 cursor-pointer rounded-lg text-small font-medium text-muted underline decoration-line underline-offset-4 hover:text-primary disabled:opacity-50 ${!mobileOpen ? "max-[900px]:hidden" : ""}`}
           onClick={() => {
             const next = workspacePreferences();
             preview(next);
@@ -237,7 +237,7 @@ export default function AdminSidebar() {
         aria-valuenow={preferences.sidebarWidth}
         tabIndex={busy ? -1 : 0}
         title="Drag to resize. Use arrow keys to adjust width."
-        className="absolute inset-y-0 right-0 z-10 w-2 touch-none cursor-col-resize border-r border-transparent hover:bg-forest/15 focus-visible:bg-forest/15 focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-forest max-[900px]:hidden"
+        className="absolute inset-y-0 right-0 z-10 w-2 touch-none cursor-col-resize border-r border-transparent hover:bg-primary/15 focus-visible:bg-primary/15 focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-primary max-[900px]:hidden"
         onPointerDown={(event) => begin(event, "width")}
         onKeyDown={(event) => {
           if (event.key === "Escape") {

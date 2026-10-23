@@ -343,7 +343,7 @@ export default function ShoppingWindow() {
               </button>
             ))}
           </div>
-          <span className="inline-flex shrink-0 items-center gap-2 text-small text-forest">
+          <span className="inline-flex shrink-0 items-center gap-2 text-small text-primary">
             <Icon name="check" size={16} /> Available finds only
           </span>
         </div>

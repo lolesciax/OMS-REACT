@@ -15,7 +15,7 @@ export default function StartupLoading() {
         aria-live="polite"
         className="pointer-events-none fixed inset-x-4 bottom-[max(1rem,env(safe-area-inset-bottom))] z-50 mx-auto max-w-lg rounded-2xl border border-line bg-white/95 px-5 py-4 text-center shadow-lg backdrop-blur-sm"
       >
-        <p className="text-body font-semibold text-forest">
+        <p className="text-body font-semibold text-primary">
           {slow ? "Getting the store ready…" : "Opening the store…"}
         </p>
         {slow && (

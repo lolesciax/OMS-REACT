@@ -39,7 +39,7 @@ function PaymentMethod({ methodKey }) {
             className={
               "rounded-full px-3 py-1 text-small font-semibold " +
               (editor.saved?.enabled
-                ? "bg-[#e7f0df] text-forest"
+                ? "bg-[#dfe5f0] text-primary"
                 : "bg-[#f3eee3] text-[#795e2e]")
             }
           >
@@ -104,7 +104,7 @@ function PaymentMethod({ methodKey }) {
               <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-line p-4 text-body">
                 <input
                   type="checkbox"
-                  className="mt-1 size-5 shrink-0 accent-forest"
+                  className="mt-1 size-5 shrink-0 accent-primary"
                   {...validation.bind("enabled")}
                   checked={form.enabled}
                   onChange={(event) =>

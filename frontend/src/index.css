@@ -7,14 +7,16 @@
 @theme {
   --font-sans: "Segoe UI", Arial, sans-serif;
   --font-serif: Georgia, serif;
-  --color-ink: #292d26;
-  --color-muted: #687064;
+  --color-ink: #263247;
+  --color-muted: #626d7e;
   --color-paper: #fcfbf7;
   --color-surface: #ffffff;
-  --color-line: #e2e3d9;
+  --color-line: #dfe3e9;
   --color-accent: #a34c32;
   --color-accent-soft: #f4e7dc;
-  --color-forest: #344c3c;
+  --color-primary: #344d73;
+  --color-primary-soft: #e9edf3;
+  --color-sand: #edc7a8;
   --text-small: 0.875rem;
   --text-body: 1rem;
   --text-lead: 1.125rem;
@@ -49,7 +51,7 @@
     @apply cursor-not-allowed opacity-65;
   }
   :focus-visible {
-    @apply outline-2 outline-forest outline-offset-4;
+    @apply outline-2 outline-primary outline-offset-4;
   }
   img {
     @apply max-w-full;

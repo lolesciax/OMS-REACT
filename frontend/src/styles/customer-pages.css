@@ -8,7 +8,7 @@
     @apply text-muted text-body;
   }
   .heading-count {
-    @apply inline-flex justify-center items-center w-[30px] h-[30px] [font:500_16px_"Segoe_UI",_sans-serif] tracking-[0] text-forest border border-[#d3d9c9] bg-[#eef1e7] rounded-full;
+    @apply inline-flex justify-center items-center w-[30px] h-[30px] [font:500_16px_"Segoe_UI",_sans-serif] tracking-[0] text-primary border border-[#c9cfd9] bg-[#e7ebf1] rounded-full;
   }
   .customer-back {
     @apply flex items-center gap-2 text-muted text-small no-underline;
@@ -57,7 +57,7 @@
   }
   .bag-selection input,
   .bag-item > input {
-    @apply w-[17px] h-[17px] accent-forest shrink-0;
+    @apply w-[17px] h-[17px] accent-primary shrink-0;
   }
   .bag-selection > button,
   .bag-remove {
@@ -76,7 +76,7 @@
     @apply text-small text-muted mb-2;
   }
   .bag-item-info > span {
-    @apply block text-[#5e7354] text-small mb-[10px];
+    @apply block text-[#545f73] text-small mb-[10px];
   }
   .bag-item-info > strong {
     @apply text-accent text-body font-medium;
@@ -153,7 +153,7 @@
     }
   }
   .checkout-progress li {
-    @apply flex items-center gap-2 text-small text-[#7d8577];
+    @apply flex items-center gap-2 text-small text-[#777c85];
   }
   .checkout-progress li > span {
     @apply flex items-center justify-center w-[26px] h-[26px] border border-line rounded-full text-small;
@@ -163,7 +163,7 @@
   }
   .checkout-progress .current > span,
   .checkout-progress .complete > span {
-    @apply bg-forest text-white border-forest;
+    @apply bg-primary text-white border-primary;
   }
   .address-fields {
     @apply grid grid-cols-[1fr_1fr] gap-[0_18px];
@@ -178,10 +178,10 @@
     @apply flex items-center gap-[14px] border border-line rounded-[8px] p-[18px] cursor-pointer;
   }
   .payment-choices label:has(:checked) {
-    @apply border-forest bg-[#f2f5eb];
+    @apply border-primary bg-[#ebeff5];
   }
   .payment-choices input {
-    @apply w-[17px] h-[17px] accent-forest;
+    @apply w-[17px] h-[17px] accent-primary;
   }
   .payment-choices strong,
   .payment-choices small {
@@ -200,7 +200,7 @@
     @apply flex items-start gap-[10px] mt-5 text-muted text-small leading-[1.8];
   }
   .checkout-agreement input {
-    @apply w-[17px] h-[17px] accent-forest shrink-0 mt-[3px];
+    @apply w-[17px] h-[17px] accent-primary shrink-0 mt-[3px];
   }
   .checkout-summary-items {
     @apply grid gap-[18px] pb-[22px] border-b border-line;
@@ -275,7 +275,7 @@
     @apply max-w-160 my-[30px] mx-auto text-center bg-white border border-line p-12 rounded-[16px];
   }
   .checkout-success-icon {
-    @apply w-[70px] h-[70px] flex items-center justify-center rounded-full bg-[#edf3e6] text-forest [margin:0_auto_25px];
+    @apply w-[70px] h-[70px] flex items-center justify-center rounded-full bg-[#e6ebf3] text-primary [margin:0_auto_25px];
   }
   .checkout-success h1 {
     @apply font-serif font-normal not-italic text-[38px] leading-[1.2] my-4 mx-0 tracking-[-1px];
@@ -325,7 +325,7 @@
     @apply flex items-center gap-[10px] border border-line bg-transparent rounded-[24px] py-[10px] px-4 text-small text-muted;
   }
   .order-tabs button[aria-pressed="true"] {
-    @apply bg-forest text-white border-forest;
+    @apply bg-primary text-white border-primary;
   }
   .order-tabs button span {
     @apply text-small opacity-[0.8];
@@ -337,7 +337,7 @@
     @apply border border-line rounded-[12px] bg-white overflow-hidden;
   }
   .order-card-header {
-    @apply flex items-center justify-between gap-5 bg-[#f3f4ec] border-b border-line py-5 px-7;
+    @apply flex items-center justify-between gap-5 bg-[#eceff4] border-b border-line py-5 px-7;
   }
   .order-card-header > div > span {
     @apply block text-small font-semibold tracking-[0.5px] [overflow-wrap:anywhere];
@@ -349,16 +349,16 @@
     @apply inline-flex py-[6px] px-3 rounded-[20px] text-small whitespace-nowrap bg-[#eee7d4] text-[#746336];
   }
   .order-state.completed {
-    @apply bg-[#e4efdc] text-[#3c5c37];
+    @apply bg-[#dce3ef] text-[#37455c];
   }
   .order-state.shipped {
-    @apply bg-[#e3ecee] text-[#3e6064];
+    @apply bg-[#e3e7ee] text-[#3e4c64];
   }
   .order-card-body {
     @apply p-7;
   }
   .order-journey li {
-    @apply relative flex-1 flex flex-col items-center gap-[9px] text-[#858b7d] text-center;
+    @apply relative flex-1 flex flex-col items-center gap-[9px] text-[#7d828b] text-center;
   }
   .order-journey li:not(:last-child)::after {
     @apply [content:""] absolute left-[calc(50%_+_17px)] right-[calc(-50%_+_17px)] top-[13px] h-[1px] bg-line;
@@ -367,10 +367,10 @@
     @apply w-[27px] h-[27px] flex items-center justify-center rounded-full border border-line bg-white text-small;
   }
   .order-journey li.reached > span {
-    @apply text-white bg-forest border-forest;
+    @apply text-white bg-primary border-primary;
   }
   .order-journey li.reached {
-    @apply text-forest;
+    @apply text-primary;
   }
   .order-journey small {
     @apply text-small;
@@ -394,7 +394,7 @@
     @apply ml-auto text-body whitespace-nowrap;
   }
   .order-tracking {
-    @apply flex min-w-0 items-center gap-3 mt-6 p-3 border border-line rounded-lg bg-[#f9faf5];
+    @apply flex min-w-0 items-center gap-3 mt-6 p-3 border border-line rounded-lg bg-[#f5f7fa];
   }
   .order-tracking > svg,
   .order-tracking > button {
@@ -459,10 +459,10 @@
     @apply grid gap-4 text-left mt-7 pt-6 border-t border-line;
   }
   .profile-identity nav a {
-    @apply flex items-center gap-3 text-ink text-body font-medium no-underline rounded-lg border border-line px-3 py-3 bg-[#fafbf7];
+    @apply flex items-center gap-3 text-ink text-body font-medium no-underline rounded-lg border border-line px-3 py-3 bg-[#f7f8fb];
   }
   .profile-identity nav a:hover {
-    @apply text-forest bg-[#edf3e9] border-[#b7c7b0];
+    @apply text-primary bg-primary-soft border-[#b0b8c7];
   }
   .profile-section-intro {
     @apply [margin:-8px_0_24px];
@@ -480,7 +480,7 @@
     @apply grid gap-4;
   }
   .profile-address-list article {
-    @apply flex justify-between gap-6 p-5 border border-line rounded-[8px] bg-[#f9faf5] min-w-0;
+    @apply flex justify-between gap-6 p-5 border border-line rounded-[8px] bg-[#f5f7fa] min-w-0;
   }
   .profile-address-list article > div:first-child {
     @apply min-w-0 break-words;
@@ -489,7 +489,7 @@
     @apply flex flex-wrap items-center gap-3 text-body;
   }
   .profile-address-list h3 span {
-    @apply text-small font-medium py-[3px] px-2 rounded-[14px] bg-[#e6eddc] text-forest;
+    @apply text-small font-medium py-[3px] px-2 rounded-[14px] bg-[#dce2ed] text-primary;
   }
   .profile-address-list p {
     @apply text-muted text-small leading-[1.8];
@@ -619,7 +619,7 @@
     @apply my-5 rounded-xl border border-line bg-paper p-4;
   }
   .order-image-evidence summary {
-    @apply flex min-h-11 cursor-pointer items-center gap-2 text-body font-semibold text-forest underline decoration-forest/30 underline-offset-4;
+    @apply flex min-h-11 cursor-pointer items-center gap-2 text-body font-semibold text-primary underline decoration-primary/30 underline-offset-4;
   }
   .order-image-evidence-grid {
     @apply mt-4 grid grid-cols-2 gap-4 max-[480px]:grid-cols-1;

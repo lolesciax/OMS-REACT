@@ -23,7 +23,7 @@ function Toast({ item, hidden }) {
     >
       <span
         aria-hidden="true"
-        className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#edf3e9] font-bold text-forest"
+        className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary-soft font-bold text-primary"
       >
         {item.tone === "success" ? "✓" : "i"}
       </span>
@@ -40,7 +40,7 @@ function Toast({ item, hidden }) {
       </div>
       <button
         type="button"
-        className="-my-2 -mr-2 flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-lg text-xl text-muted hover:bg-paper hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-forest"
+        className="-my-2 -mr-2 flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-lg text-xl text-muted hover:bg-paper hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         aria-label={`Dismiss: ${item.message}`}
         onClick={() => toast.dismiss(item.id)}
       >

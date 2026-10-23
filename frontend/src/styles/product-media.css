@@ -12,7 +12,7 @@
     @apply flex size-full min-h-0 flex-col items-center justify-center gap-3 px-3 py-5 text-center text-small font-medium text-muted;
   }
   .product-media-empty-icon {
-    @apply grid size-14 place-items-center rounded-2xl border border-[#dadcd1] bg-[#e8e9e1] text-[#7b8574];
+    @apply grid size-14 place-items-center rounded-2xl border border-[#d1d5dc] bg-[#e1e4e9] text-[#747a85];
   }
   @container product-image (max-width: 110px) {
     .product-media-empty {

@@ -76,7 +76,7 @@ export default function ProfileOptionsMaintenance() {
                   Up to 20 unique choices. Maximum 30 characters per choice.
                 </p>
               </div>
-              <aside className="rounded-xl border border-line bg-[#f7f8f3] p-5">
+              <aside className="rounded-xl border border-line bg-[#f3f5f8] p-5">
                 <h3 className="text-body font-semibold">
                   Customer choices preview
                 </h3>

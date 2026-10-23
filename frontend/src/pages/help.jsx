@@ -66,14 +66,14 @@ function HelpCards({ sections = policySections }) {
         <Link
           key={section.kind}
           to={section.path}
-          className="group rounded-2xl border border-line bg-white p-6 transition hover:border-forest hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-forest"
+          className="group rounded-2xl border border-line bg-white p-6 transition hover:border-primary hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
         >
-          <Icon name={section.icon} size={24} className="mb-5 text-forest" />
+          <Icon name={section.icon} size={24} className="mb-5 text-primary" />
           <h2 className="text-lead font-semibold">{section.title}</h2>
           <p className="my-3 text-body leading-relaxed text-muted">
             {section.description}
           </p>
-          <span className="inline-flex min-h-11 items-center gap-2 text-body font-semibold text-forest">
+          <span className="inline-flex min-h-11 items-center gap-2 text-body font-semibold text-primary">
             Read more <Icon name="arrow" size={17} />
           </span>
         </Link>
@@ -125,7 +125,7 @@ function Faqs() {
                   className="group rounded-xl border border-line bg-white px-5 sm:px-6"
                   open={search.trim() ? true : undefined}
                 >
-                  <summary className="cursor-pointer py-5 pr-2 text-body font-semibold text-forest break-words">
+                  <summary className="cursor-pointer py-5 pr-2 text-body font-semibold text-primary break-words">
                     {item.question}
                   </summary>
                   <p className="pb-6 whitespace-pre-wrap break-words text-body leading-relaxed text-muted">
@@ -180,8 +180,8 @@ function Contact() {
               Call {info.phone}
             </a>
           </section>
-          <section className="rounded-2xl border border-line bg-[#f0f3e9] p-6 sm:p-8">
-            <Icon name="leaf" size={28} className="text-forest" />
+          <section className="rounded-2xl border border-line bg-primary-soft p-6 sm:p-8">
+            <Icon name="leaf" size={28} className="text-primary" />
             <h2 className="mt-5 text-lead font-semibold">Here to help</h2>
             <dl className="mt-5 space-y-5 text-body leading-relaxed">
               <div>
@@ -241,7 +241,7 @@ export default function HelpPage() {
     <CustomerLayout>
       <Link
         to="/"
-        className="inline-flex min-h-11 items-center gap-2 text-small font-semibold text-forest"
+        className="inline-flex min-h-11 items-center gap-2 text-small font-semibold text-primary"
       >
         <Icon name="arrow" size={16} className="rotate-180" /> Back to the store
       </Link>
@@ -296,7 +296,10 @@ export default function HelpPage() {
         <>
           {pathname === "/help" && (
             <div className="mb-6 grid gap-4 sm:grid-cols-2">
-              <Link to="/faqs" className="rounded-2xl bg-forest p-6 text-white">
+              <Link
+                to="/faqs"
+                className="rounded-2xl bg-primary p-6 text-white"
+              >
                 <h2 className="text-2xl sm:text-3xl font-serif">
                   Start with the FAQs
                 </h2>
@@ -309,7 +312,7 @@ export default function HelpPage() {
               </Link>
               <Link
                 to="/contact"
-                className="rounded-2xl border border-line bg-[#edf3e9] p-6"
+                className="rounded-2xl border border-line bg-primary-soft p-6"
               >
                 <h2 className="text-2xl sm:text-3xl font-serif">
                   Ask the store
@@ -317,7 +320,7 @@ export default function HelpPage() {
                 <p className="my-4 text-body text-muted">
                   Have a question about an order or a piece you love?
                 </p>
-                <span className="inline-flex min-h-11 items-center gap-2 font-semibold text-forest">
+                <span className="inline-flex min-h-11 items-center gap-2 font-semibold text-primary">
                   Get in touch <Icon name="arrow" size={17} />
                 </span>
               </Link>
@@ -327,7 +330,7 @@ export default function HelpPage() {
         </>
       )}
       {!["/contact", "/help"].includes(pathname) && (
-        <aside className="mt-8 flex flex-wrap items-center justify-between gap-5 rounded-2xl bg-[#edf3e9] p-6">
+        <aside className="mt-8 flex flex-wrap items-center justify-between gap-5 rounded-2xl bg-primary-soft p-6">
           <div>
             <h2 className="text-lead font-semibold">Still have a question?</h2>
             <p className="mt-2 text-body text-muted">

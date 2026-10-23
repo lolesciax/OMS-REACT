@@ -2,10 +2,10 @@
 
 @layer components {
   .admin-topbar {
-    @apply flex min-h-[88px] items-center justify-between gap-4 border-b border-line bg-[#fcfdf9] px-5 py-4 sm:px-9;
+    @apply flex min-h-[88px] items-center justify-between gap-4 border-b border-line bg-[#f9fbfd] px-5 py-4 sm:px-9;
   }
   .admin-topbar :is(a, button):focus-visible {
-    @apply outline-2 outline-offset-2 outline-forest;
+    @apply outline-2 outline-offset-2 outline-primary;
   }
   .admin-page-heading h1 {
     @apply font-serif font-normal not-italic text-[34px] leading-[1.2] tracking-[-0.8px] [margin:14px_0_12px];
@@ -23,19 +23,19 @@
     @apply mt-auto flex justify-between py-5 px-9 border-t border-line text-muted text-small;
   }
   .admin-workspace-footer span {
-    @apply text-[#8a9381];
+    @apply text-[#818893];
   }
   .admin-stat-grid {
     @apply grid grid-cols-4 gap-[18px] mb-7;
   }
   .dashboard-stat-grid .admin-stat {
-    @apply min-h-40 rounded-2xl border-[#e6e9df] bg-white p-5 shadow-[0_5px_20px_#28362c08];
+    @apply min-h-40 rounded-2xl border-[#dfe3e9] bg-white p-5 shadow-[0_5px_20px_#282d3608];
   }
   .dashboard-stat-grid .admin-stat-label {
     @apply flex items-center justify-between gap-3 text-small font-medium text-muted;
   }
   .dashboard-stat-grid .admin-stat-icon {
-    @apply flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#edf2e9] text-forest;
+    @apply flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary;
   }
   .dashboard-stat-grid .admin-stat[data-stat="orders"] .admin-stat-icon {
     @apply bg-[#f5f0e2] text-[#927637];
@@ -53,7 +53,7 @@
     @apply text-[length:clamp(1.15rem,2vw,1.65rem)] tracking-[-0.5px];
   }
   .dashboard-stat-grid .admin-stat > small {
-    @apply text-small leading-relaxed text-[#7a8474];
+    @apply text-small leading-relaxed text-[#747a84];
   }
   .admin-dashboard-charts {
     @apply grid grid-cols-2 gap-6 min-w-0;
@@ -74,7 +74,7 @@
     @apply block text-[length:32px] font-medium leading-[1.2] [margin:12px_0_8px] text-ink tracking-[-1px];
   }
   .admin-stat > small {
-    @apply text-small text-[#849078];
+    @apply text-small text-[#788190];
   }
   .admin-stat-grid.compact .admin-stat {
     @apply py-[18px] px-[22px];
@@ -107,7 +107,7 @@
     @apply mt-1 text-small leading-relaxed text-muted;
   }
   .admin-revenue-summary {
-    @apply shrink-0 rounded-xl bg-[#f4f6f0] px-3 py-2 text-right;
+    @apply shrink-0 rounded-xl bg-[#f0f2f6] px-3 py-2 text-right;
   }
   .admin-revenue-summary > span,
   .admin-revenue-summary > strong {
@@ -117,7 +117,7 @@
     @apply text-small text-muted;
   }
   .admin-revenue-summary > strong {
-    @apply mt-1 text-body font-semibold tabular-nums text-forest;
+    @apply mt-1 text-body font-semibold tabular-nums text-primary;
   }
   .dashboard-activity-card,
   .dashboard-stock-card {
@@ -149,10 +149,10 @@
     @apply mb-2 flex items-center justify-between gap-3 text-small;
   }
   .admin-status-row-heading > span {
-    @apply flex min-w-0 items-center gap-2.5 font-medium text-[#465344];
+    @apply flex min-w-0 items-center gap-2.5 font-medium text-[#444a53];
   }
   .admin-status-row-heading > span > i {
-    @apply size-2.5 shrink-0 rounded-full bg-[#849778];
+    @apply size-2.5 shrink-0 rounded-full bg-[#788397];
   }
   .admin-status-row-heading > span > i.pending,
   .admin-status-row-heading > span > i.pending_payment {
@@ -165,19 +165,19 @@
     @apply bg-[#8a78a2];
   }
   .admin-status-row-heading > span > i.shipped {
-    @apply bg-[#548d91];
+    @apply bg-[#546a91];
   }
   .admin-status-row-heading > span > i.completed {
-    @apply bg-[#65824f];
+    @apply bg-[#4f6282];
   }
   .admin-status-row-heading > strong {
     @apply shrink-0 tabular-nums text-ink;
   }
   .admin-status-track {
-    @apply h-2 overflow-hidden rounded-full bg-[#eef1e9];
+    @apply h-2 overflow-hidden rounded-full bg-[#e9ecf1];
   }
   .admin-status-track > span {
-    @apply block h-full min-w-1 rounded-full bg-[#849778] transition-[width] duration-500;
+    @apply block h-full min-w-1 rounded-full bg-[#788397] transition-[width] duration-500;
   }
   .admin-status-row.pending .admin-status-track > span,
   .admin-status-row.pending_payment .admin-status-track > span {
@@ -190,18 +190,18 @@
     @apply bg-[#8a78a2];
   }
   .admin-status-row.shipped .admin-status-track > span {
-    @apply bg-[#548d91];
+    @apply bg-[#546a91];
   }
   .admin-status-row.completed .admin-status-track > span {
-    @apply bg-[#65824f];
+    @apply bg-[#4f6282];
   }
   .admin-status-empty,
   .admin-stock-clear {
-    @apply flex min-h-28 items-center gap-3 rounded-xl border border-dashed border-[#dfe4d8] bg-[#fafbf8] px-4 py-5;
+    @apply flex min-h-28 items-center gap-3 rounded-xl border border-dashed border-[#d8dce4] bg-[#f8f9fb] px-4 py-5;
   }
   .admin-status-empty-icon,
   .admin-stock-clear-icon {
-    @apply flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#edf2e9] text-forest;
+    @apply flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary;
   }
   .admin-status-empty > span:last-child,
   .admin-stock-clear > span:last-child {
@@ -222,10 +222,10 @@
     @apply mt-1 text-small leading-relaxed text-muted;
   }
   .admin-activity-link {
-    @apply mt-auto flex min-h-11 items-center justify-between gap-3 border-t border-[#edf0e8] pt-3 text-small font-medium text-forest no-underline transition-colors hover:text-accent;
+    @apply mt-auto flex min-h-11 items-center justify-between gap-3 border-t border-[#e8ebf0] pt-3 text-small font-medium text-primary no-underline transition-colors hover:text-accent;
   }
   .admin-stock-summary {
-    @apply mb-3 flex flex-wrap items-baseline gap-x-2 gap-y-1 rounded-xl bg-[#f5f7f1] px-4 py-3;
+    @apply mb-3 flex flex-wrap items-baseline gap-x-2 gap-y-1 rounded-xl bg-[#f1f3f7] px-4 py-3;
   }
   .admin-stock-summary > strong {
     @apply text-[25px] font-semibold leading-none tabular-nums text-ink;
@@ -240,7 +240,7 @@
     @apply grid min-w-0 gap-2;
   }
   .admin-low-stock-row {
-    @apply flex min-w-0 items-center gap-3 rounded-xl border border-[#edf0e8] bg-white px-3 py-3 transition-colors hover:bg-[#fafbf8];
+    @apply flex min-w-0 items-center gap-3 rounded-xl border border-[#e8ebf0] bg-white px-3 py-3 transition-colors hover:bg-[#f8f9fb];
   }
   .admin-low-stock-indicator {
     @apply h-9 w-1 shrink-0 rounded-full bg-[#c49a43];
@@ -272,13 +272,13 @@
     @apply text-small text-muted no-underline;
   }
   .admin-search {
-    @apply flex items-center gap-[10px] border border-line rounded-[6px] py-0 px-3 w-[350px] max-w-full text-muted bg-[#fcfdf9];
+    @apply flex items-center gap-[10px] border border-line rounded-[6px] py-0 px-3 w-[350px] max-w-full text-muted bg-[#f9fbfd];
   }
   .admin-search input {
     @apply border-0 outline-none bg-transparent py-[11px] px-0 text-small w-full min-w-0;
   }
   .admin-search:focus-within {
-    @apply border-forest ring-2 ring-forest/20;
+    @apply border-primary ring-2 ring-primary/20;
   }
   .admin-search input:focus-visible {
     @apply outline-none;
@@ -296,19 +296,19 @@
     @apply w-full border-collapse text-left text-small;
   }
   .admin-table thead {
-    @apply bg-[#f7f8f2];
+    @apply bg-[#f2f4f8];
   }
   .admin-table th {
-    @apply py-[13px] px-[22px] border-b border-line text-[#78816e] uppercase text-small tracking-[1px] font-semibold whitespace-nowrap;
+    @apply py-[13px] px-[22px] border-b border-line text-[#6e7581] uppercase text-small tracking-[1px] font-semibold whitespace-nowrap;
   }
   .admin-table td {
-    @apply py-[19px] px-[22px] border-b border-[#eef0e6] text-[#4d5847] [vertical-align:middle];
+    @apply py-[19px] px-[22px] border-b border-[#e6eaf0] text-[#474d58] [vertical-align:middle];
   }
   .admin-table tr:last-child td {
     @apply [border-bottom:0];
   }
   .admin-table tbody tr:hover {
-    @apply bg-[#fcfdf8];
+    @apply bg-[#f9fafc];
   }
   .admin-number {
     @apply whitespace-nowrap font-medium;
@@ -326,7 +326,7 @@
     @apply flex gap-2 items-center;
   }
   .admin-row-actions button {
-    @apply min-h-11 border border-[#c8cebf] rounded-lg bg-white text-forest text-small font-semibold py-2 px-3 shadow-sm cursor-pointer hover:bg-[#edf3e9] hover:border-forest disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none;
+    @apply min-h-11 border border-[#bfc4ce] rounded-lg bg-white text-primary text-small font-semibold py-2 px-3 shadow-sm cursor-pointer hover:bg-primary-soft hover:border-primary disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none;
   }
   .admin-row-actions button:last-child {
     @apply text-[#8d6356];
@@ -335,7 +335,7 @@
     @apply py-12 px-6 text-center text-muted text-small;
   }
   .admin-badge {
-    @apply inline-flex py-[5px] px-[9px] rounded-[20px] bg-[#edf0e4] text-[#546b46] text-small font-medium whitespace-nowrap;
+    @apply inline-flex py-[5px] px-[9px] rounded-[20px] bg-[#e4e8f0] text-[#46546b] text-small font-medium whitespace-nowrap;
   }
   .admin-badge.pending,
   .admin-badge.pending_payment,
@@ -343,7 +343,7 @@
     @apply bg-[#f5edd6] text-[#8b7136];
   }
   .admin-badge.shipped {
-    @apply bg-[#e2eef0] text-[#4b7073];
+    @apply bg-[#e2e7f0] text-[#4b5a73];
   }
   .admin-badge.inactive,
   .admin-badge.empty {
@@ -351,7 +351,7 @@
   }
   .admin-badge.completed,
   .admin-badge.active {
-    @apply bg-[#e6efd9] text-[#4d6c39];
+    @apply bg-[#d9e1ef] text-[#394c6c];
   }
   .admin-pagination {
     @apply flex items-center justify-between gap-5 py-4 px-[22px] border-t border-line text-muted text-small;
@@ -369,7 +369,7 @@
     @apply flex flex-col items-center justify-center text-center py-11 px-6 text-muted text-small;
   }
   .admin-state > svg {
-    @apply text-forest mb-4;
+    @apply text-primary mb-4;
   }
   .admin-state h3 {
     @apply font-serif font-normal not-italic text-[23px] leading-[normal] text-ink mb-[10px];
@@ -384,7 +384,7 @@
     @apply text-small text-muted leading-[1.8] mb-[22px];
   }
   .admin-notice {
-    @apply p-[15px] bg-[#f2f4e9] border border-line rounded-[7px] text-small leading-[1.8] text-muted;
+    @apply p-[15px] bg-[#e9edf4] border border-line rounded-[7px] text-small leading-[1.8] text-muted;
   }
   .admin-full-button {
     @apply w-full text-small px-3;
@@ -445,16 +445,16 @@
     @apply flex items-center justify-between [list-style:none] py-[22px] px-[10px] [margin:0_0_8px] gap-[18px];
   }
   .admin-order-progress li {
-    @apply flex items-center gap-[9px] text-[#8b9483] text-small;
+    @apply flex items-center gap-[9px] text-[#838994] text-small;
   }
   .admin-order-progress li > span {
-    @apply flex items-center justify-center w-[25px] h-[25px] rounded-full border border-[#d7ddcd] text-small;
+    @apply flex items-center justify-center w-[25px] h-[25px] rounded-full border border-[#cdd3dd] text-small;
   }
   .admin-order-progress .reached {
-    @apply text-forest;
+    @apply text-primary;
   }
   .admin-order-progress .reached > span {
-    @apply bg-forest text-white border-forest;
+    @apply bg-primary text-white border-primary;
   }
   .admin-order-items {
     @apply grid gap-5;
@@ -558,7 +558,7 @@
     @apply text-body;
   }
   .admin-table th {
-    @apply text-small text-[#66705e];
+    @apply text-small text-[#5e6570];
   }
   .admin-page-heading p {
     @apply text-body;
@@ -625,13 +625,13 @@
     }
   }
   .admin-rail.workspace-sidebar nav.sidebar-navigation a {
-    @apply flex min-h-12 min-w-0 flex-1 flex-row items-center justify-start gap-3 rounded-xl px-3 py-3 text-left text-body font-medium leading-snug text-[#576253] no-underline transition-colors;
+    @apply flex min-h-12 min-w-0 flex-1 flex-row items-center justify-start gap-3 rounded-xl px-3 py-3 text-left text-body font-medium leading-snug text-[#535962] no-underline transition-colors;
   }
   .admin-rail.workspace-sidebar nav.sidebar-navigation a.active {
-    @apply bg-forest text-white shadow-sm;
+    @apply bg-primary text-white shadow-sm;
   }
   .admin-rail.workspace-sidebar nav.sidebar-navigation a:hover:not(.active) {
-    @apply bg-[#edf1e8] text-forest;
+    @apply bg-[#e8ebf1] text-primary;
   }
   .admin-rail.workspace-sidebar nav.sidebar-navigation a > svg:last-child {
     @apply ml-auto block opacity-0;
@@ -652,22 +652,22 @@
     @apply mt-4 border-t border-line pt-4;
   }
   .workspace-store-link {
-    @apply flex min-h-11 items-center gap-3 rounded-xl border border-line bg-white px-3 text-small font-medium text-forest no-underline transition-colors hover:bg-[#edf1e8];
+    @apply flex min-h-11 items-center gap-3 rounded-xl border border-line bg-white px-3 text-small font-medium text-primary no-underline transition-colors hover:bg-[#e8ebf1];
   }
   .workspace-store-link > svg:last-child {
     @apply ml-auto;
   }
   .workspace-profile {
-    @apply mt-4 flex items-center gap-2 rounded-xl bg-[#f0f3eb] p-2.5;
+    @apply mt-4 flex items-center gap-2 rounded-xl bg-[#ebeef3] p-2.5;
   }
   .workspace-avatar {
-    @apply flex size-9 shrink-0 items-center justify-center rounded-full border border-forest/15 bg-white text-small font-semibold text-forest;
+    @apply flex size-9 shrink-0 items-center justify-center rounded-full border border-primary/15 bg-white text-small font-semibold text-primary;
   }
   .workspace-signout {
     @apply flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-transparent text-muted transition-colors hover:border-line hover:bg-white hover:text-accent;
   }
   .workspace-sidebar :is(a, button):focus-visible {
-    @apply outline-2 outline-offset-2 outline-forest;
+    @apply outline-2 outline-offset-2 outline-primary;
   }
   @media (max-width: 900px) {
     .admin-rail.workspace-sidebar nav.sidebar-navigation {
@@ -687,7 +687,7 @@
     @apply grid grid-cols-[minmax(240px,0.85fr)_minmax(0,1.4fr)] items-start gap-7;
   }
   .product-editor-media {
-    @apply min-w-0 rounded-2xl border border-line bg-[#f7f8f2] p-4;
+    @apply min-w-0 rounded-2xl border border-line bg-[#f2f4f8] p-4;
   }
   .product-editor-media > h3,
   .product-editor-details > h3 {
@@ -706,7 +706,7 @@
     @apply flex items-start gap-2 rounded-xl bg-white p-3;
   }
   .product-editor-note svg {
-    @apply mt-1 shrink-0 text-forest;
+    @apply mt-1 shrink-0 text-primary;
   }
   .product-editor-details {
     @apply min-w-0;

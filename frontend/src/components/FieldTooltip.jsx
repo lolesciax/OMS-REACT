@@ -46,7 +46,7 @@ export default function FieldTooltip({
       <label htmlFor={htmlFor}>{label}</label>
       <button
         type="button"
-        className={`relative mb-[6px] inline-flex size-6 shrink-0 items-center justify-center rounded-full border text-small font-semibold before:absolute before:-inset-2 ${invalid ? "border-[#c98d83] text-[#943b2c] bg-[#fff1ed]" : available ? "border-[#b7cbb1] text-forest bg-[#edf3e9]" : "border-line text-muted bg-paper"}`}
+        className={`relative mb-[6px] inline-flex size-6 shrink-0 items-center justify-center rounded-full border text-small font-semibold before:absolute before:-inset-2 ${invalid ? "border-[#c98d83] text-[#943b2c] bg-[#fff1ed]" : available ? "border-[#b1bbcb] text-primary bg-primary-soft" : "border-line text-muted bg-paper"}`}
         aria-label={`${invalid ? "Validation" : "Help"} for ${label.toLowerCase()}`}
         aria-describedby={id}
         aria-expanded={visible}
