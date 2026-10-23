@@ -14,13 +14,13 @@
     @apply mb-7 inline-flex items-center gap-3 text-small font-semibold tracking-[0.12em] text-primary;
   }
   .landing-kicker > span {
-    @apply size-2 rounded-full bg-tangerine;
+    @apply size-2 rounded-full bg-leaf;
   }
   .landing-hero h1 {
     @apply m-0 font-sans text-[clamp(56px,5.8vw,88px)] font-bold leading-[1.02] tracking-[-0.065em];
   }
   .landing-hero h1 > span {
-    @apply text-primary underline decoration-tangerine decoration-[5px] underline-offset-8;
+    @apply text-primary underline decoration-leaf decoration-[5px] underline-offset-8;
   }
   .landing-hero-copy > p {
     @apply mb-8 mt-6 max-w-100 text-lead leading-relaxed text-muted;
@@ -29,7 +29,7 @@
     @apply flex flex-wrap items-center gap-x-6 gap-y-3;
   }
   .landing-shop-link {
-    @apply inline-flex min-h-14 items-center justify-between gap-7 rounded-lg bg-tangerine px-6 py-3 text-body font-bold text-ink no-underline transition-colors hover:bg-[#f46112];
+    @apply inline-flex min-h-14 items-center justify-between gap-7 rounded-lg bg-primary px-6 py-3 text-body font-bold text-cream no-underline transition-colors hover:bg-ink;
   }
   .landing-help-link {
     @apply inline-flex min-h-11 items-center gap-2 text-body font-medium text-primary underline decoration-primary/30 underline-offset-4 hover:decoration-primary;
@@ -44,7 +44,7 @@
     @apply min-w-0;
   }
   .landing-showcase-heading {
-    @apply mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-cotton px-4 py-3 text-small font-semibold tracking-[0.1em] text-primary;
+    @apply mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-sage px-4 py-3 text-small font-semibold tracking-[0.1em] text-primary;
   }
   .landing-showcase-heading > span:last-child {
     @apply inline-flex items-center gap-2 font-normal tracking-normal text-muted;
@@ -59,10 +59,10 @@
     @apply flex min-w-0 flex-col overflow-hidden rounded-xl border border-line bg-white text-left text-ink no-underline transition-transform duration-300 hover:-translate-y-1 focus-visible:outline-primary;
   }
   .landing-rack-photo {
-    @apply block aspect-[4/5] w-full min-w-0 overflow-hidden bg-cotton;
+    @apply block aspect-[4/5] w-full min-w-0 overflow-hidden bg-sage;
   }
   .landing-rack-photo .product-media {
-    @apply bg-cotton;
+    @apply bg-sage;
   }
   .landing-rack-photo img {
     @apply size-full object-contain p-3;
@@ -270,7 +270,7 @@
     }
   }
   .shop-benefits {
-    @apply flex justify-center gap-20 py-[22px] px-6 border-y border-line text-small text-muted bg-cotton/45;
+    @apply flex justify-center gap-20 py-[22px] px-6 border-y border-line text-small text-muted bg-sage/45;
   }
   .shop-benefits span {
     @apply flex items-center gap-[10px];
@@ -294,7 +294,7 @@
     @apply flex justify-between items-center min-h-7 [margin:12px_0_20px] text-small text-muted;
   }
   .shop-result-line button {
-    @apply flex items-center gap-[6px] min-h-11 rounded-lg border-0 bg-transparent px-3 text-accent text-small hover:bg-cotton;
+    @apply flex items-center gap-[6px] min-h-11 rounded-lg border-0 bg-transparent px-3 text-accent text-small hover:bg-sage;
   }
   .shop-product {
     @apply flex flex-col p-0 text-left text-ink min-w-0 rounded-[12px] overflow-hidden border border-line bg-white [transition:border-color_0.2s,_box-shadow_0.2s];
@@ -310,7 +310,7 @@
     @apply flex items-center justify-between gap-2 mb-3 text-muted;
   }
   .shop-product-badge {
-    @apply py-1 px-2 bg-cotton text-small rounded-lg text-primary;
+    @apply py-1 px-2 bg-sage text-small rounded-lg text-primary;
   }
   .shop-product-meta {
     @apply flex flex-col flex-1 w-full p-4;
@@ -328,7 +328,7 @@
     @apply opacity-[0.65] [filter:saturate(0.5)];
   }
   .shop-join-note {
-    @apply flex justify-between items-center gap-6 bg-cotton border border-line py-7 px-8 mt-12 rounded-2xl;
+    @apply flex justify-between items-center gap-6 bg-sage border border-line py-7 px-8 mt-12 rounded-2xl;
   }
   .shop-join-note h3 {
     @apply font-serif font-normal not-italic text-[23px] leading-[normal] mb-[7px];
@@ -593,7 +593,7 @@
     @apply min-h-12 justify-center rounded-xl border-control;
   }
   .shop-collection-controls .shop-liked-filter[aria-pressed="true"] {
-    @apply border-primary bg-cotton text-primary;
+    @apply border-primary bg-sage text-primary;
   }
   .shop-availability {
     @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-surface-soft px-3 text-small font-medium text-primary;

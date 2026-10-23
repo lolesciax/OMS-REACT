@@ -76,7 +76,7 @@ export default function AdminMaintenance() {
                 data-maintenance-link=""
                 to="/admin/maintenance"
                 className={({ isActive }) =>
-                  `mb-4 flex min-h-11 items-center gap-3 rounded-lg px-3 text-body font-semibold ${isActive ? "bg-primary text-white" : "text-primary hover:bg-cotton/60"}`
+                  `mb-4 flex min-h-11 items-center gap-3 rounded-lg px-3 text-body font-semibold ${isActive ? "bg-primary text-white" : "text-primary hover:bg-sage/60"}`
                 }
               >
                 <Icon name="settings" size={18} />
@@ -95,7 +95,7 @@ export default function AdminMaintenance() {
                         data-maintenance-link={key}
                         to={`/admin/maintenance/${key}`}
                         className={({ isActive }) =>
-                          `flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-small font-semibold ${isActive ? "bg-primary text-white" : "text-ink hover:bg-cotton/60"}`
+                          `flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-small font-semibold ${isActive ? "bg-primary text-white" : "text-ink hover:bg-sage/60"}`
                         }
                       >
                         <Icon name={value.icon} size={17} />
@@ -131,7 +131,7 @@ export default function AdminMaintenance() {
                             className="flex flex-col rounded-2xl border border-line bg-white p-6 shadow-sm"
                             key={key}
                           >
-                            <span className="mb-5 flex size-12 items-center justify-center rounded-xl bg-cotton/60 text-primary">
+                            <span className="mb-5 flex size-12 items-center justify-center rounded-xl bg-sage/60 text-primary">
                               <Icon name={value.icon} size={23} />
                             </span>
                             <h3 className="text-lead font-semibold">

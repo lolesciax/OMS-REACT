@@ -302,7 +302,7 @@ function NotificationInbox({ admin = false }) {
               {items.map((item) => (
                 <li
                   key={item._id}
-                  className={`my-2 flex gap-3 rounded-xl p-4 sm:gap-4 sm:p-5 ${!item.readAt ? "border-l-4 border-tangerine bg-cotton/30" : "border-l-4 border-transparent"}`}
+                  className={`my-2 flex gap-3 rounded-xl p-4 sm:gap-4 sm:p-5 ${!item.readAt ? "border-l-4 border-leaf bg-sage/30" : "border-l-4 border-transparent"}`}
                 >
                   <span
                     className={`mt-1 flex size-10 shrink-0 items-center justify-center rounded-xl ${!item.readAt ? "bg-white text-primary" : "bg-[#f3f3ed] text-muted"}`}

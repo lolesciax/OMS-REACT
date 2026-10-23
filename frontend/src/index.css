@@ -8,23 +8,23 @@
   --font-sans: "Segoe UI", Arial, sans-serif;
   --font-serif: Georgia, serif;
   /* Brand palette; semantic roles below keep components consistent. */
-  --color-linen: #faf3e1;
-  --color-tangerine: #ff6d1f;
-  --color-charcoal: #222222;
-  --color-cotton: #f5e7c6;
-  --color-ink: #222222;
-  --color-muted: #6b6254;
-  --color-paper: var(--color-linen);
+  --color-cream: #fcfbf7;
+  --color-leaf: #b9c89d;
+  --color-forest: #344c3c;
+  --color-sage: #e7eddc;
+  --color-ink: #292d26;
+  --color-muted: #687064;
+  --color-paper: var(--color-cream);
   --color-surface: #ffffff;
-  --color-surface-soft: #fffaf0;
-  --color-line: #d8cbb2;
-  --color-control: #8b7d67;
-  /* Deeper orange is reserved for small text on light surfaces. */
-  --color-accent: #a33c08;
-  --color-accent-soft: #ffe1cc;
-  --color-primary: var(--color-charcoal);
-  --color-primary-soft: #f5e7c6;
-  --color-sand: var(--color-linen);
+  --color-surface-soft: #f5f6ef;
+  --color-line: #e2e3d9;
+  --color-control: #7c8776;
+  /* Warm terracotta complements the forest palette for links and prices. */
+  --color-accent: #a34c32;
+  --color-accent-soft: #f4e7dc;
+  --color-primary: var(--color-forest);
+  --color-primary-soft: #e7eddc;
+  --color-sand: var(--color-cream);
   --text-small: 0.875rem;
   --text-body: 1rem;
   --text-lead: 1.125rem;
