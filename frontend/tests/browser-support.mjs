@@ -117,7 +117,7 @@ export async function connect() {
     await wait(
       `${q("altcha-widget")}.textContent.includes('Verified') || ${q("altcha-widget")}.shadowRoot?.textContent.includes('Verified')`,
     );
-    await click("form button[type=submit]");
+    await click("form:has(#login-username) button[type=submit]");
     await wait(`!location.pathname.startsWith('/login')`);
   };
   await send("Runtime.enable");

@@ -42,7 +42,17 @@ export default function ShoppingWindow() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);
-  const [search, setSearch] = useState("");
+  const search = params.get("q") || "";
+  const setSearch = (value) =>
+    setParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        if (value) next.set("q", value);
+        else next.delete("q");
+        return next;
+      },
+      { replace: true },
+    );
   const [category, setCategory] = useState("All");
   const [sort, setSort] = useState("featured");
   const [selected, setSelected] = useState(null);
@@ -191,13 +201,13 @@ export default function ShoppingWindow() {
     );
   }, [loading, error, requestedProduct, availableProducts, setParams]);
   const resetFilters = () => {
-    setSearch("");
     setCategory("All");
     setSort("featured");
     setParams(
       (previous) => {
         const next = new URLSearchParams(previous);
         next.delete("liked");
+        next.delete("q");
         return next;
       },
       { replace: true },
@@ -257,7 +267,11 @@ export default function ShoppingWindow() {
         Skip to collection
       </a>
       <div className="landing-intro">
-        <StoreHeader cartCount={cartCount} />
+        <StoreHeader
+          cartCount={cartCount}
+          searchValue={search}
+          onSearchChange={setSearch}
+        />
         <LandingHero
           products={availableProducts}
           loading={loading}
@@ -297,23 +311,7 @@ export default function ShoppingWindow() {
           </div>
           <p>Different pieces. Same good feeling.</p>
         </div>
-        <div className="shop-toolbar flex items-center justify-between gap-6 max-[700px]:flex-wrap max-[700px]:gap-4">
-          <div className="shop-search">
-            <Icon name="search" />
-            <input
-              type="search"
-              aria-label="Search the collection"
-              placeholder="Try a style, size, or something you love…"
-              value={search}
-              autoComplete="off"
-              onChange={(event) => setSearch(event.target.value)}
-            />
-            {search && (
-              <button aria-label="Clear search" onClick={() => setSearch("")}>
-                <Icon name="close" size={17} />
-              </button>
-            )}
-          </div>
+        <div className="shop-toolbar flex items-center justify-end gap-6 max-[700px]:flex-wrap max-[700px]:gap-4">
           <label className="shop-sort flex items-center gap-[10px] whitespace-nowrap text-small text-muted max-[700px]:ml-auto">
             Sort by
             <select

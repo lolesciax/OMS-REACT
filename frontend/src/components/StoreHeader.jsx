@@ -6,8 +6,14 @@ import { BACKEND_URL } from "../services/config";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import Icon from "./Icon";
+import StoreSearch from "./StoreSearch";
 
-export default function StoreHeader({ cartCount, compact = false }) {
+export default function StoreHeader({
+  cartCount,
+  compact = false,
+  searchValue,
+  onSearchChange,
+}) {
   const { user, isLoggedIn, logout } = useAuth();
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
@@ -121,7 +127,7 @@ export default function StoreHeader({ cartCount, compact = false }) {
       ref={headerRef}
       className="store-header relative z-30 border-b border-line bg-paper"
     >
-      <div className="mx-auto grid min-h-[88px] max-w-[1328px] grid-cols-[auto_1fr_auto] items-center gap-x-2 px-4 py-4 sm:gap-x-6 sm:px-6">
+      <div className="mx-auto grid min-h-[88px] max-w-[1328px] grid-cols-[auto_1fr_auto] items-center gap-x-2 px-4 py-4 sm:gap-x-6 sm:px-6 min-[1280px]:grid-cols-[auto_minmax(180px,1fr)_auto_auto]">
         <Link
           className="store-brand shrink-0"
           to="/"
@@ -133,9 +139,15 @@ export default function StoreHeader({ cartCount, compact = false }) {
             Old Goods<span className="brand-second">Thrift.</span>
           </span>
         </Link>
+        <StoreSearch
+          key={pathname}
+          value={searchValue}
+          onChange={onSearchChange}
+          onSubmit={closeMenus}
+        />
         {!compact && (
           <nav
-            className="hidden items-center justify-center gap-2 min-[901px]:flex"
+            className="col-start-2 row-start-1 hidden items-center justify-center gap-2 min-[901px]:flex min-[1280px]:col-start-3"
             aria-label="Main navigation"
           >
             {primaryLinks.map(([path, label]) => (
@@ -151,7 +163,7 @@ export default function StoreHeader({ cartCount, compact = false }) {
             ))}
           </nav>
         )}
-        <div className="col-start-3 flex items-center justify-end gap-1.5 sm:gap-3">
+        <div className="col-start-3 row-start-1 flex items-center justify-end gap-1.5 sm:gap-3 min-[1280px]:col-start-4">
           {isLoggedIn ? (
             <>
               <NotificationBell />
