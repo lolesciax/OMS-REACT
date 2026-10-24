@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, g
 from flask_cors import CORS
 from pymongo import MongoClient
 import os
@@ -86,7 +86,7 @@ def create_app():
             # Route failures must not expose database URLs, credentials or traces.
             response.set_data(app.json.dumps({'success': False, 'error': 'The server is temporarily unavailable. Please try again shortly.'}))
             response.content_type = 'application/json'
-        if request.path.startswith('/api/') and response.headers.get('Cache-Control') != 'private, no-store':
+        if request.path.startswith('/api/') and not getattr(g, 'public_cache_response', False) and response.headers.get('Cache-Control') != 'private, no-store':
             response.headers['Cache-Control'] = 'no-store'
         return response
 
@@ -99,8 +99,8 @@ def create_app():
     CORS(app,
          origins=app.config['CORS_ORIGINS'],
          methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-         allow_headers=["Content-Type", "X-CSRF-Token", "Accept"],
-         expose_headers=['Retry-After', 'RateLimit-Limit', 'RateLimit-Remaining'],
+         allow_headers=["Content-Type", "X-CSRF-Token", "Accept", "If-None-Match", "Cache-Control"],
+         expose_headers=['Retry-After', 'RateLimit-Limit', 'RateLimit-Remaining', 'ETag', 'X-Store-Cache'],
          supports_credentials=True)
 
     # MongoDB Atlas Connection
@@ -198,6 +198,8 @@ def create_app():
             }
         })
 
+    from .public_cache import configure_public_cache
+    configure_public_cache(app)
     return app
 
 def get_db():

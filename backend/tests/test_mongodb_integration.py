@@ -81,6 +81,36 @@ class MongoIntegrationTests(unittest.TestCase):
         self.csrf = response.json['csrfToken']
         return response
 
+    def test_public_response_cache_tracks_stock_and_published_content(self):
+        from app.public_cache import REVISION_ID
+        first = self.client.get('/api/products')
+        self.assertEqual(first.headers['X-Store-Cache'], 'MISS')
+        self.assertEqual(self.client.get('/api/products').headers['X-Store-Cache'], 'HIT')
+        etag = first.headers['ETag']
+        self.assertEqual(self.client.get('/api/products', headers={'If-None-Match': etag}).status_code, 304)
+        self.client.get(f'/api/products/{self.pid}')
+        self.db.users.update_one({'_id': self.uid}, {'$set': {'roleId': self.admin_role}})
+        self.login()
+        headers = {'X-CSRF-Token': self.csrf}
+        changed = self.client.put(f'/api/products/update-stock/{self.pid}', json={'stock': 0}, headers=headers)
+        self.assertEqual(changed.status_code, 200, changed.json)
+        self.assertGreater(self.db.settings.find_one({'_id': REVISION_ID})['revision'], 0)
+        fresh = self.client.get('/api/products', headers={'If-None-Match': etag})
+        self.assertEqual(fresh.status_code, 200)
+        self.assertEqual(fresh.headers['X-Store-Cache'], 'MISS')
+        self.assertEqual(fresh.json['products'], [])
+        self.assertEqual(self.client.get(f'/api/products/{self.pid}').status_code, 404)
+        published = self.client.get('/api/content/support')
+        self.assertEqual(self.client.get('/api/content/support').headers['X-Store-Cache'], 'HIT')
+        content = published.json['content']
+        content['data']['email'] = 'cache-test@example.com'
+        saved = self.client.put('/api/admin/maintenance/content/support', json={'revision': content['revision'], 'data': content['data']}, headers=headers)
+        self.assertEqual(saved.status_code, 200, saved.json)
+        self.assertEqual(self.client.get('/api/content/support').json['content']['data']['email'], 'cache-test@example.com')
+        anonymous = self.app.test_client()
+        self.assertEqual(anonymous.get('/api/orders').headers['Cache-Control'], 'no-store')
+        self.assertNotIn('ETag', anonymous.get('/api/auth/captcha').headers)
+
     def test_captcha_requires_browser_binding_purpose_integrity_and_single_use(self):
         payload = captcha_payload(self.client)
         credentials = {'username': 'integration-user', 'password': 'Example-123!', 'captcha': payload}

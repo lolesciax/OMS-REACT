@@ -66,6 +66,14 @@ py -m unittest discover -s tests
 
 Database integration tests use disposable test databases and require explicit opt-in; see `backend/tests/test_mongodb_integration.py`.
 
+## Public response caching
+
+The API caches successful public product responses for 15 seconds and published help/policy responses for 60 seconds. Each worker uses a thread-safe LRU capped at 64 entries and 4 MiB total (1 MiB per response). `PUBLIC_CACHE_ENABLED=0` disables it.
+
+Successful product, order, checkout, or admin mutations clear the local cache and increment a shared `settings.public_cache_revision` document in MongoDB. Workers check that revision before using a cached response. A failed revision read bypasses the cache; an invalidation-write failure is logged and other workers' entries expire within their short TTL. Direct database edits also become visible by TTL, or immediately with a `Cache-Control: no-cache` request.
+
+Public JSON responses include ETags and use `private, no-cache, max-age=0, must-revalidate`: the browser can reuse unchanged bytes after a 304 response, while shared/CDN caching remains disabled. `X-Store-Cache: HIT` or `MISS` makes server-cache behavior visible in browser network tools. Errors, health checks, authentication/CAPTCHA, account/admin data, protected catalog options, carts, checkout, orders, notifications, and private attachments remain uncached. Authoritative stock, price, payment, and policy-version validation still reads MongoDB directly. No localStorage or service-worker cache is added.
+
 ## Deployment
 
 `render.yaml` configures the Flask API. The root `vercel.json` builds the frontend workspace into `frontend/dist` and proxies API/upload requests to Render. Import the repository root (`./`) for new Vercel projects so the shared validation rules are included in the build.
