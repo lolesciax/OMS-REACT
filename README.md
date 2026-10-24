@@ -90,4 +90,6 @@ The shared Tailwind theme lives in `frontend/src/index.css`.
 
 Use semantic tokens (`paper`, `primary`, `accent`, `muted`, `control`) in components. Charts read their colors from the same CSS theme. Keep error and warning states distinct from brand decoration.
 
+Shared commerce navigation lives in `CustomerNavigation` and `Breadcrumbs`. Customer account links, help navigation, checkout steps, and mobile-menu styling use `frontend/src/styles/commerce.css`; customer and admin content styles stay in their area stylesheets. Add customer route labels to `CustomerNavigation` when adding a page. `useHashNavigation` resolves in-page destinations after lazy routes render, including search and saved-item links into the collection.
+
 The responsive browser audit covers public pages, customer account/checkout pages, admin pages, and every maintenance module. Run `npm run test:responsive` with the disposable browser fixture described in `backend/tests/browser_fixture.py`; it never requires production account data. `npm run test:catalog` checks the category selector, reset/sort/search, product details, liked-item sign-in, and desktop signup alignment against that same fixture.

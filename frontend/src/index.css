@@ -3,6 +3,7 @@
 @import "./styles/motion.css";
 @import "./styles/skeleton.css";
 @import "./styles/responsive.css";
+@import "./styles/commerce.css";
 
 @theme {
   --font-sans: "Segoe UI", Arial, sans-serif;

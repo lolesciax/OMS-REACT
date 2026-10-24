@@ -182,7 +182,6 @@ export default function Cart() {
     <CustomerLayout cartCount={count}>
       <div className="customer-heading flex justify-between items-center gap-6 mb-7 max-[760px]:items-start max-[760px]:flex-col max-[760px]:gap-3">
         <div>
-          <span className="ui-eyebrow">Your good finds</span>
           <h1>
             Your bag
             <span className="heading-count">
@@ -249,7 +248,7 @@ export default function Cart() {
               </div>
               {items.map((item) => (
                 <article
-                  className={`bag-item grid grid-cols-[18px_92px_minmax(0,_1fr)_108px] gap-[18px] items-center py-[26px] px-0 border-b border-line max-[1000px]:grid-cols-[16px_76px_minmax(0,_1fr)] max-[1000px]:gap-[14px] max-[760px]:grid-cols-[16px_76px_minmax(0,_1fr)] ${Number(item.currentStock) <= 0 ? "unavailable" : ""}`}
+                  className={`bag-item grid grid-cols-[18px_92px_minmax(0,_1fr)_136px] gap-[18px] items-center py-[26px] px-0 border-b border-line max-[1000px]:grid-cols-[16px_76px_minmax(0,_1fr)] max-[1000px]:gap-[14px] max-[760px]:grid-cols-[16px_76px_minmax(0,_1fr)] ${Number(item.currentStock) <= 0 ? "unavailable" : ""}`}
                   key={item.id}
                 >
                   <input
@@ -314,7 +313,6 @@ export default function Cart() {
               ))}
             </section>
             <aside className="customer-summary border-t-4 border-t-leaf sticky top-6 p-7 bg-white border border-line rounded-[12px] max-[760px]:static max-[760px]:mt-6 max-[760px]:p-6">
-              <span className="ui-eyebrow">The little details</span>
               <h2>Your order summary</h2>
               <div className="summary-row">
                 <span>Selected pieces</span>

@@ -305,29 +305,57 @@ export default function StoreHeader({
         {mobileOpen && (
           <nav
             id={menuId}
-            className="col-span-full mt-4 border-t border-line pt-3 min-[901px]:hidden"
+            className="store-mobile-panel min-[901px]:hidden"
             aria-label="Mobile navigation"
+            onBlur={(event) => {
+              if (
+                !event.currentTarget.contains(event.relatedTarget) &&
+                event.relatedTarget !== mobileButton.current
+              )
+                setMobileOpen(false);
+            }}
           >
             {!compact && (
-              <div className="grid gap-1">
-                {primaryLinks.map(([path, label, icon]) => (
-                  <NavLink
-                    key={path}
-                    to={path}
-                    end={path === "/"}
-                    className={primaryClass(path)}
+              <div>
+                <p className="store-menu-label">Browse the store</p>
+                <div className="store-mobile-links">
+                  {primaryLinks.map(([path, label, icon]) => (
+                    <NavLink
+                      key={path}
+                      to={path}
+                      end={path === "/"}
+                      className={primaryClass(path)}
+                      onClick={closeMenus}
+                    >
+                      <Icon name={icon} size={19} />
+                      {label}
+                    </NavLink>
+                  ))}
+                  <NavLink to="/cart" className={navClass} onClick={closeMenus}>
+                    <Icon name="bag" size={19} />
+                    Your bag
+                  </NavLink>
+                  <Link
+                    to={isLoggedIn ? "/?liked=true#collection" : "/login"}
+                    state={
+                      isLoggedIn
+                        ? undefined
+                        : { from: "/?liked=true#collection" }
+                    }
+                    className="store-nav-link"
                     onClick={closeMenus}
                   >
-                    <Icon name={icon} size={19} />
-                    {label}
-                  </NavLink>
-                ))}
+                    <Icon name="heart" size={19} />
+                    Saved finds
+                  </Link>
+                </div>
               </div>
             )}
             {isLoggedIn ? (
               <div
                 className={`${!compact ? "mt-3 border-t border-line pt-3" : ""} grid gap-1`}
               >
+                <p className="store-menu-label">Your account</p>
                 {accountLinks.map(([path, label, icon]) => (
                   <NavLink
                     key={path}

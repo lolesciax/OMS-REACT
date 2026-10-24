@@ -111,7 +111,6 @@ export default function OrderHistory() {
     <CustomerLayout>
       <div className="customer-heading flex justify-between items-center gap-6 mb-7 max-[760px]:items-start max-[760px]:flex-col max-[760px]:gap-3">
         <div>
-          <span className="ui-eyebrow">The journey of your finds</span>
           <h1>Your orders</h1>
           <p>From a good find to a new favorite. Follow every step here.</p>
         </div>

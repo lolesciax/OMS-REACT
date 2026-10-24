@@ -688,7 +688,9 @@ export default function ShoppingWindow() {
               )}
               <p className="shop-dialog-footnote">
                 Shipping is calculated at checkout. Payment is reviewed by our
-                team.
+                team. <Link to="/policies/shipping">Delivery information</Link>
+                {" · "}
+                <Link to="/policies/returns">Returns & order issues</Link>
               </p>
             </div>
           </section>

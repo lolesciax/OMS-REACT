@@ -8,13 +8,13 @@
     @apply outline-2 outline-offset-2 outline-primary;
   }
   .admin-page-heading h1 {
-    @apply font-serif font-normal not-italic text-[34px] leading-[1.2] tracking-[-0.8px] [margin:14px_0_12px];
+    @apply font-sans font-semibold not-italic text-[32px] leading-[1.2] tracking-[-0.8px] [margin:0_0_10px];
   }
   .admin-page-heading p {
     @apply text-body text-muted max-w-150 leading-[1.8];
   }
   .admin-heading-actions {
-    @apply flex gap-[10px] shrink-0;
+    @apply flex flex-wrap gap-[10px] shrink-0;
   }
   .admin-heading-actions .ui-button {
     @apply text-small py-[11px] px-4 min-h-10;
@@ -272,7 +272,7 @@
     @apply text-small text-muted no-underline;
   }
   .admin-search {
-    @apply flex items-center gap-[10px] border border-line rounded-[6px] py-0 px-3 w-[350px] max-w-full text-muted bg-surface-soft;
+    @apply flex min-h-11 items-center gap-[10px] border border-control rounded-xl py-0 px-3 w-[350px] max-w-full text-muted bg-white;
   }
   .admin-search input {
     @apply border-0 outline-none bg-transparent py-[11px] px-0 text-small w-full min-w-0;
@@ -287,7 +287,7 @@
     @apply flex items-center gap-[10px] text-small text-muted;
   }
   .admin-toolbar select {
-    @apply bg-white border border-line p-[10px] text-ink text-small rounded-[5px] max-w-50;
+    @apply min-h-11 bg-white border border-control p-[10px] text-ink text-small rounded-xl max-w-50;
   }
   .admin-table-scroll {
     @apply relative w-full overflow-x-auto;
@@ -299,7 +299,7 @@
     @apply bg-sage/45;
   }
   .admin-table th {
-    @apply py-[13px] px-[22px] border-b border-line text-primary uppercase text-small tracking-[1px] font-semibold whitespace-nowrap;
+    @apply py-4 px-[22px] border-b border-line text-primary text-small tracking-normal font-semibold whitespace-nowrap;
   }
   .admin-table td {
     @apply py-[19px] px-[22px] border-b border-line text-ink [vertical-align:middle];
@@ -543,10 +543,23 @@
   }
   @media (max-width: 480px) {
     .admin-stat-grid {
-      @apply grid-cols-1;
+      @apply grid-cols-2;
+    }
+    .admin-stat,
+    .dashboard-stat-grid .admin-stat {
+      @apply min-h-0 p-4;
+    }
+    .dashboard-stat-grid .admin-stat-label {
+      @apply flex-wrap gap-2;
+    }
+    .dashboard-stat-grid .admin-stat-icon {
+      @apply size-8;
     }
   }
   @media (max-width: 650px) {
+    .admin-topbar {
+      @apply min-h-16 py-3;
+    }
     .admin-order-progress {
       @apply grid grid-cols-5 gap-2 overflow-visible;
     }

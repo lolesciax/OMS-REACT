@@ -1,8 +1,11 @@
 @reference "../index.css";
 
 @layer components {
+  .customer-main {
+    @apply mx-auto w-full max-w-320 px-7 pb-18 pt-6;
+  }
   .customer-heading h1 {
-    @apply font-serif font-normal not-italic text-[42px] leading-[1.15] tracking-[-1px] my-3 mx-0 flex items-center gap-[14px];
+    @apply font-sans font-semibold not-italic text-[38px] leading-[1.15] tracking-[-1px] my-3 mx-0 flex flex-wrap items-center gap-3;
   }
   .customer-heading p {
     @apply text-muted text-body;
@@ -11,7 +14,7 @@
     @apply inline-flex justify-center items-center w-[30px] h-[30px] [font:500_16px_"Segoe_UI",_sans-serif] tracking-[0] text-primary border border-[#d9d0c9] bg-primary-soft rounded-full;
   }
   .customer-back {
-    @apply flex items-center gap-2 text-muted text-small no-underline;
+    @apply inline-flex min-h-11 items-center gap-2 rounded-full border border-line bg-white px-4 text-primary text-small font-medium no-underline;
   }
   .customer-back:hover {
     @apply text-accent;
@@ -29,7 +32,7 @@
     @apply font-serif font-normal not-italic text-[25px] leading-[1.25] [margin:12px_0_24px];
   }
   .summary-row {
-    @apply flex justify-between gap-4 my-[14px] mx-0 text-muted text-small;
+    @apply flex justify-between gap-4 my-[14px] mx-0 text-muted text-body;
   }
   .summary-row > :last-child {
     @apply text-right text-ink;
@@ -94,13 +97,13 @@
     @apply opacity-[0.5];
   }
   .quantity-stepper {
-    @apply flex w-27 min-h-9 border border-line rounded-[6px] overflow-hidden;
+    @apply flex w-34 min-h-11 shrink-0 border border-control rounded-xl overflow-hidden;
   }
   .quantity-stepper button {
-    @apply w-8 border-0 bg-[#f5f5ef] text-ink text-lead;
+    @apply min-w-11 min-h-11 border-0 bg-surface-soft text-primary text-lead hover:bg-sage;
   }
   .quantity-stepper input {
-    @apply min-w-0 w-[42px] text-center border-0 bg-white text-small py-[5px] px-0 [appearance:textfield] text-ink;
+    @apply min-w-0 w-11 text-center border-0 bg-white text-body py-[5px] px-0 [appearance:textfield] text-ink;
   }
   .quantity-stepper input::-webkit-inner-spin-button {
     @apply [appearance:none];
@@ -109,7 +112,7 @@
     @apply border border-line rounded-[12px] p-7 bg-white mb-6;
   }
   .customer-panel h2 {
-    @apply font-serif font-normal not-italic text-[25px] leading-[1.2] [margin:0_0_20px];
+    @apply font-sans font-semibold not-italic text-[22px] leading-[1.3] [margin:0_0_20px];
   }
   .customer-panel h3 {
     @apply text-body mb-3;
@@ -132,10 +135,13 @@
       @apply size-19;
     }
     .bag-item-actions {
-      @apply [grid-column:2/-1] flex-row items-center justify-between;
+      @apply [grid-column:2/-1] flex-row flex-wrap items-center justify-between;
     }
   }
   @media (max-width: 760px) {
+    .customer-main {
+      @apply px-5 pb-12 pt-4;
+    }
     .customer-heading h1 {
       @apply text-[length:35px];
     }
@@ -643,7 +649,7 @@
 
 @layer components {
   .customer-summary {
-    @apply border-t-4 border-t-leaf;
+    @apply border-t-4 border-t-primary;
   }
   .profile-identity {
     @apply border-t-4 border-t-leaf rounded-2xl;

@@ -243,14 +243,7 @@ export default function HelpPage() {
             : "Let’s make things clear.";
   return (
     <CustomerLayout>
-      <Link
-        to="/"
-        className="inline-flex min-h-11 items-center gap-2 text-small font-semibold text-primary"
-      >
-        <Icon name="arrow" size={16} className="rotate-180" /> Back to the store
-      </Link>
-      <header className="mb-7 mt-5">
-        <span className="ui-eyebrow">Old Goods / Help & information</span>
+      <header className="help-page-heading">
         <h1 className="my-4 font-serif text-4xl sm:text-5xl leading-tight">
           {title}
         </h1>
@@ -259,14 +252,14 @@ export default function HelpPage() {
           to you.
         </p>
       </header>
-      <nav className="mb-8 flex flex-wrap gap-2" aria-label="Help navigation">
+      <nav className="help-navigation" aria-label="Help navigation">
         {helpLinks.map(([path, label]) => (
           <NavLink
             key={path}
             to={path}
             end={path !== "/policies"}
             className={({ isActive }) =>
-              `ui-button ${isActive ? "ui-button-dark" : "ui-button-light"}`
+              `help-navigation-link${isActive ? " is-active" : ""}`
             }
           >
             {label}

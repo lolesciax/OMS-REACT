@@ -638,6 +638,21 @@
   .shop-dialog-details {
     @apply px-7 pb-7 pt-14;
   }
+  .shop-dialog-details h2 {
+    @apply font-sans text-[30px] font-semibold leading-tight tracking-tight;
+  }
+  .shop-dialog .shop-specs {
+    @apply grid grid-cols-2 gap-2 my-6;
+  }
+  .shop-dialog .shop-specs > div {
+    @apply flex min-w-0 flex-col items-start gap-1 rounded-xl border border-line bg-white p-3;
+  }
+  .shop-dialog .shop-specs dd {
+    @apply max-w-full text-left text-body font-semibold text-primary break-words;
+  }
+  .shop-dialog .shop-specs dt {
+    @apply text-small text-muted;
+  }
   .shop-dialog-price-row {
     @apply mb-5 flex flex-wrap items-center justify-between gap-3;
   }

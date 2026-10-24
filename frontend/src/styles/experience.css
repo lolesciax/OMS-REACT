@@ -209,7 +209,7 @@
     @apply inline-flex items-center gap-2 mt-2 text-[inherit] font-bold underline;
   }
   .ui-empty {
-    @apply text-center py-16 px-6 [border:1px_dashed_var(--line)] rounded-[var(--radius)] bg-white;
+    @apply text-center py-16 px-6 border border-dashed border-line rounded-2xl bg-white;
   }
   .ui-empty > svg {
     @apply text-accent mb-4;

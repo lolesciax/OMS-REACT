@@ -244,7 +244,6 @@ export default function Profile() {
     <CustomerLayout>
       <div className="customer-heading flex justify-between items-center gap-6 mb-7 max-[760px]:items-start max-[760px]:flex-col max-[760px]:gap-3">
         <div>
-          <span className="ui-eyebrow">Your corner of the thrift</span>
           <h1>Your account</h1>
           <p>A few details to help your good finds get home.</p>
         </div>

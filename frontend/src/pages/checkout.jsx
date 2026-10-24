@@ -368,7 +368,6 @@ export default function CheckoutPage() {
           <span className="checkout-success-icon">
             <Icon name="check" size={32} />
           </span>
-          <span className="ui-eyebrow">A new chapter begins</span>
           <h1>Payment proof received.</h1>
           <p>
             Your payment proof has been received. Our team will review it and
@@ -395,7 +394,6 @@ export default function CheckoutPage() {
     <CustomerLayout>
       <div className="customer-heading flex justify-between items-center gap-6 mb-7 max-[760px]:items-start max-[760px]:flex-col max-[760px]:gap-3">
         <div>
-          <span className="ui-eyebrow">Almost yours</span>
           <h1>Let’s bring it home.</h1>
           <p>
             {step === "review"
@@ -469,9 +467,7 @@ export default function CheckoutPage() {
                         }
                       }}
                     >
-                      <option value="">
-                        Choose an address or enter details below
-                      </option>
+                      <option value="">Choose a saved address</option>
                       {user.addresses.map((item) => (
                         <option key={item.id} value={item.id}>
                           {item.title || item.recipient} · {item.city},{" "}
@@ -559,7 +555,6 @@ export default function CheckoutPage() {
           ) : (
             <>
               <section className="customer-panel">
-                <span className="ui-eyebrow">Order {order.orderNumber}</span>
                 <h2 className="checkout-payment-title">
                   A quick scan, then it’s over to us.
                 </h2>
@@ -598,7 +593,6 @@ export default function CheckoutPage() {
                           "Check the merchant in your wallet app"}
                       </strong>
                     </p>
-                    <span className="ui-eyebrow">Amount to pay</span>
                     <strong className="checkout-pay-amount">
                       {formatPrice(order.total)}
                     </strong>
@@ -650,7 +644,6 @@ export default function CheckoutPage() {
           )}
         </div>
         <aside className="customer-summary border-t-4 border-t-leaf sticky top-6 p-7 bg-white border border-line rounded-[12px] max-[760px]:static max-[760px]:mt-6 max-[760px]:p-6">
-          <span className="ui-eyebrow">Your good finds</span>
           <h2>Order summary</h2>
           <div className="checkout-summary-items">
             {items.map((item) => (

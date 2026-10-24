@@ -1,6 +1,7 @@
 import RouteSkeleton from "./components/RouteSkeleton";
 import StartupLoading from "./components/StartupLoading";
 import useViewportMetrics from "./hooks/useViewportMetrics";
+import useHashNavigation from "./hooks/useHashNavigation";
 import React, { useLayoutEffect, lazy, Suspense } from "react";
 import {
   BrowserRouter as Router,
@@ -76,6 +77,7 @@ const PublicRoute = ({ children }) => {
 
 // Main App Component
 function AppContent() {
+  useHashNavigation();
   const { pathname } = useLocation();
   useLayoutEffect(() => {
     const title =

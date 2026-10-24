@@ -4,7 +4,7 @@ import { progressState, progressSteps } from "../utils/orderProgress";
 function ProgressSteps({ steps, current, complete = false, label }) {
   return (
     <ol
-      className={`grid grid-cols-1 gap-3 p-0 list-none sm:grid-cols-3 ${steps.length === 6 ? "xl:grid-cols-6" : ""}`}
+      className={`order-progress-steps grid grid-cols-2 gap-3 p-0 list-none sm:grid-cols-3 ${steps.length === 6 ? "xl:grid-cols-6" : ""}`}
       aria-label={label}
     >
       {steps.map((step, index) => {
@@ -107,16 +107,25 @@ export default function OrderProgress({
 export function CheckoutProgress({ step }) {
   const current = step === "review" ? 0 : step === "payment" ? 1 : 2;
   return (
-    <div className="mb-7">
-      <ProgressSteps
-        steps={[
-          { label: "Review & delivery" },
-          { label: "Payment & proof" },
-          { label: "Awaiting store review" },
-        ]}
-        current={current}
-        label="Checkout progress"
-      />
-    </div>
+    <ol className="checkout-journey" aria-label="Checkout progress">
+      {["Delivery", "Payment", "Store review"].map((label, index) => (
+        <li
+          key={label}
+          className={
+            index === current
+              ? "is-current"
+              : index < current
+                ? "is-complete"
+                : ""
+          }
+          aria-current={index === current ? "step" : undefined}
+        >
+          <span>
+            {index < current ? <Icon name="check" size={16} /> : index + 1}
+          </span>
+          <strong>{label}</strong>
+        </li>
+      ))}
+    </ol>
   );
 }

@@ -35,3 +35,7 @@ frontend/.env
 # Generated portfolio deliverables
 /portfolio-screenshots/
 /portfolio-screenshots.zip
+
+# Browser review artifacts
+/.playwright-cli/
+/output/playwright/

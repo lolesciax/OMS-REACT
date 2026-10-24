@@ -1,5 +1,6 @@
 import StoreHeader from "./StoreHeader";
 import Footer from "./Footer";
+import CustomerNavigation from "./CustomerNavigation";
 import "../styles/customer-pages.css";
 
 export default function CustomerLayout({ children, cartCount }) {
@@ -9,10 +10,8 @@ export default function CustomerLayout({ children, cartCount }) {
         Skip to content
       </a>
       <StoreHeader cartCount={cartCount} />
-      <main
-        className="customer-main w-full max-w-305 my-0 mx-auto [padding:48px_28px_72px] max-[760px]:[padding:32px_20px_48px]"
-        id="main-content"
-      >
+      <main className="customer-main" id="main-content">
+        <CustomerNavigation />
         {children}
       </main>
       <Footer />

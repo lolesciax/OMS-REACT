@@ -1,0 +1,145 @@
+@layer components {
+  .commerce-breadcrumbs {
+    @apply min-w-0 text-small text-muted;
+  }
+  .commerce-breadcrumbs ol {
+    @apply flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 list-none;
+  }
+  .commerce-breadcrumbs li {
+    @apply inline-flex min-w-0 items-center gap-3;
+  }
+  .commerce-breadcrumbs li > svg {
+    @apply shrink-0 opacity-60;
+  }
+  .commerce-breadcrumbs a {
+    @apply inline-flex min-h-9 items-center underline-offset-4 hover:text-primary hover:underline;
+  }
+  .commerce-breadcrumbs [aria-current] {
+    @apply font-medium text-primary break-words;
+  }
+  .customer-navigation {
+    @apply mb-6;
+  }
+  .customer-account-navigation {
+    @apply mt-5 flex flex-wrap gap-2 border-b border-line pb-4;
+  }
+  .customer-account-link {
+    @apply inline-flex min-h-11 items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-small font-semibold text-muted transition-colors hover:border-primary/40 hover:text-primary;
+  }
+  .customer-account-link.is-active {
+    @apply border-primary bg-primary text-white;
+  }
+  .store-mobile-panel {
+    @apply absolute left-0 right-0 top-full z-40 max-h-[calc(100dvh-160px)] overflow-y-auto overscroll-contain border-b border-line bg-paper p-5 shadow-[0_16px_24px_#20382d18];
+  }
+  .store-menu-label {
+    @apply mb-3 text-small font-semibold text-muted;
+  }
+  .store-mobile-links {
+    @apply grid grid-cols-2 gap-2;
+  }
+  .store-mobile-links .store-nav-link {
+    @apply min-h-13 border border-line bg-white px-3 text-small;
+  }
+  .store-mobile-links .store-nav-link.is-active {
+    @apply border-primary/40 bg-sage;
+  }
+  .help-page-heading {
+    @apply mb-7;
+  }
+  .help-navigation {
+    @apply mb-8 flex flex-wrap gap-1 border-b border-line;
+  }
+  .help-navigation-link {
+    @apply inline-flex min-h-12 items-center border-b-2 border-transparent px-4 py-3 text-small font-semibold text-muted transition-colors hover:text-primary hover:bg-sage/40;
+  }
+  .help-navigation-link.is-active {
+    @apply border-primary text-primary;
+  }
+  .checkout-journey {
+    @apply mb-8 grid grid-cols-3 gap-3 list-none rounded-2xl border border-line bg-white p-4;
+  }
+  .checkout-journey li {
+    @apply relative flex min-w-0 flex-col items-center gap-2 text-center;
+  }
+  .checkout-journey li:not(:last-child)::after {
+    content: "";
+    @apply absolute left-[calc(50%+24px)] right-[calc(-50%+12px)] top-[17px] h-px bg-line;
+  }
+  .checkout-journey li.is-complete::after {
+    @apply bg-primary;
+  }
+  .checkout-journey li > span {
+    @apply relative z-10 grid size-9 shrink-0 place-items-center rounded-full border border-line bg-surface-soft text-small font-semibold text-muted;
+  }
+  .checkout-journey strong {
+    @apply text-small font-medium text-muted;
+  }
+  .checkout-journey .is-current > span {
+    @apply border-primary bg-primary text-white ring-4 ring-sage;
+  }
+  .checkout-journey .is-complete > span {
+    @apply border-primary bg-sage text-primary;
+  }
+  .checkout-journey .is-current strong {
+    @apply font-semibold text-primary;
+  }
+  @media (max-width: 639px) {
+    .admin-topbar .commerce-breadcrumbs li:first-child:not(:last-child) {
+      @apply hidden;
+    }
+    .admin-topbar .commerce-breadcrumbs li:nth-child(2) > svg {
+      @apply hidden;
+    }
+    .customer-account-navigation {
+      @apply gap-2;
+    }
+    .customer-account-link {
+      @apply px-3;
+    }
+    .help-navigation-link {
+      @apply px-3;
+    }
+    .checkout-journey {
+      @apply gap-2 p-3;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .store-mobile-panel,
+    .store-account-panel,
+    #notification-dropdown {
+      animation: commerce-menu-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      transform-origin: top;
+    }
+    .customer-navigation,
+    .admin-page-heading {
+      animation: goods-arrive 320ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+    }
+    .checkout-journey .is-current > span {
+      animation: commerce-step-in 260ms ease-out;
+    }
+    .order-progress-steps li {
+      transition:
+        background-color 200ms,
+        border-color 200ms;
+    }
+  }
+}
+@keyframes commerce-menu-in {
+  from {
+    opacity: 0;
+    translate: 0 -6px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@keyframes commerce-step-in {
+  from {
+    transform: scale(0.88);
+  }
+  to {
+    transform: scale(1);
+  }
+}

@@ -4,6 +4,8 @@ import NotificationBell from "./NotificationBell";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import Icon from "./Icon";
+import Breadcrumbs from "./Breadcrumbs";
+import { maintenanceModules } from "./maintenance/registry";
 import "../styles/admin-workspace.css";
 
 export default function AdminLayout({ children, title, description, actions }) {
@@ -14,6 +16,16 @@ export default function AdminLayout({ children, title, description, actions }) {
     (pathname === "/admin/out-of-stock" && "Products") ||
     workspaceLinks.find(([path]) => pathname.includes("/" + path))?.[1] ||
     "Order details";
+  const module = pathname.startsWith("/admin/maintenance/")
+    ? maintenanceModules[pathname.split("/")[3]]
+    : null;
+  const detailParent = module
+    ? { to: "/admin/maintenance", label: "Maintenance" }
+    : pathname.startsWith("/admin/view-orders/")
+      ? { to: "/admin/orders", label: "Orders" }
+      : pathname === "/admin/out-of-stock"
+        ? { to: "/admin/products", label: "Products" }
+        : null;
   return (
     <div className="admin-shell flex min-h-dvh bg-surface-soft text-ink max-[900px]:block">
       <a className="skip-link" href="#admin-content">
@@ -22,25 +34,19 @@ export default function AdminLayout({ children, title, description, actions }) {
       <AdminSidebar key={user?._id} />
       <div className="admin-workspace min-w-0 flex-1 flex flex-col">
         <header className="admin-topbar">
-          <nav
-            aria-label="Breadcrumb"
-            className="flex min-w-0 items-center gap-3 text-small text-muted"
-          >
-            <Link
-              to="/admin/dashboard"
-              className="hidden shrink-0 no-underline hover:text-primary sm:inline"
-            >
-              Workspace
-            </Link>
-            <Icon
-              name="chevron"
-              size={12}
-              className="hidden shrink-0 sm:block"
-            />
-            <span aria-current="page" className="truncate font-medium text-ink">
-              {current}
-            </span>
-          </nav>
+          <Breadcrumbs
+            items={[
+              { to: "/admin/dashboard", label: "Workspace" },
+              ...(detailParent ? [detailParent] : []),
+              {
+                label:
+                  module?.title ||
+                  (pathname === "/admin/out-of-stock"
+                    ? "Out of stock"
+                    : current),
+              },
+            ]}
+          />
           <div className="flex shrink-0 items-center gap-3">
             <NotificationBell />
             <Link
@@ -59,7 +65,6 @@ export default function AdminLayout({ children, title, description, actions }) {
         >
           <div className="admin-page-heading flex items-center justify-between gap-6 mb-[30px] max-[1150px]:items-start max-[650px]:flex-col max-[650px]:gap-[18px]">
             <div>
-              <span className="ui-eyebrow">Old Goods / {current}</span>
               <h1>{title}</h1>
               {description && <p>{description}</p>}
             </div>
