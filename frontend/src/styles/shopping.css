@@ -21,7 +21,7 @@
     @apply relative z-10 min-w-0 py-5;
   }
   .landing-kicker {
-    @apply mb-6 inline-flex items-center gap-3 text-small font-semibold tracking-[0.15em] text-sage;
+    @apply mb-6 inline-flex items-center gap-3 text-small font-semibold text-sage;
   }
   .landing-kicker > span {
     @apply size-2 rounded-full bg-leaf;
@@ -30,7 +30,7 @@
     @apply m-0 font-sans text-[clamp(60px,6.5vw,100px)] font-bold leading-[0.98] tracking-[-0.065em];
   }
   .landing-hero h1 > span {
-    @apply font-serif font-normal italic text-leaf;
+    @apply font-sans font-bold not-italic text-leaf;
   }
   .landing-hero-copy > p {
     @apply mb-8 mt-6 max-w-100 text-lead leading-relaxed text-cream/85;
@@ -60,7 +60,7 @@
     @apply font-semibold;
   }
   .landing-showcase-heading a {
-    @apply inline-flex min-h-11 items-center gap-2 text-[12px] text-cream/80 underline underline-offset-4 hover:text-cream;
+    @apply inline-flex min-h-11 items-center gap-2 text-small text-cream/80 underline underline-offset-4 hover:text-cream;
   }
   .landing-rack {
     @apply grid min-w-0 grid-cols-2 items-stretch gap-4;
@@ -81,7 +81,7 @@
     @apply flex min-w-0 flex-1 flex-col gap-2 p-4;
   }
   .landing-rack-category {
-    @apply truncate text-[12px] text-muted;
+    @apply truncate text-small text-muted;
   }
   .landing-rack-caption strong {
     @apply line-clamp-2 text-body font-semibold leading-snug;
@@ -141,7 +141,7 @@
     @apply mb-6 flex flex-wrap items-end justify-between gap-4;
   }
   .storefront-section-heading h2 {
-    @apply mt-2 font-serif text-[clamp(28px,3vw,38px)] leading-tight text-primary;
+    @apply mt-2 font-sans font-semibold tracking-tight text-[clamp(28px,3vw,38px)] leading-tight text-primary;
   }
   .storefront-section-heading > a {
     @apply inline-flex min-h-11 items-center gap-2 text-small font-semibold text-primary underline underline-offset-4;
@@ -186,10 +186,10 @@
     @apply bg-primary text-cream;
   }
   .storefront-promo-overline {
-    @apply text-[12px] font-semibold tracking-[0.14em];
+    @apply text-small font-semibold tracking-[0.08em];
   }
   .storefront-promo h2 {
-    @apply mb-4 mt-5 font-serif text-[clamp(32px,3.5vw,48px)] leading-[1.08] tracking-tight;
+    @apply mb-4 mt-5 font-sans font-semibold text-[clamp(32px,3.5vw,48px)] leading-[1.08] tracking-tight;
   }
   .storefront-promo p {
     @apply mb-5 max-w-80 text-body leading-relaxed;
@@ -369,10 +369,10 @@
     @apply flex items-end justify-between gap-6 mb-[30px];
   }
   .shop-collection-heading h2 {
-    @apply font-serif font-normal not-italic text-[36px] leading-[1.2] tracking-[-1px] mt-3;
+    @apply font-sans text-[clamp(28px,3vw,40px)] font-semibold tracking-tight leading-tight;
   }
   .shop-collection-heading p {
-    @apply mt-3 text-muted text-body;
+    @apply mt-3 text-muted text-body leading-relaxed;
   }
   .shop-sort select {
     @apply border border-control bg-white [padding:12px_28px_12px_12px] rounded-xl text-ink text-small;

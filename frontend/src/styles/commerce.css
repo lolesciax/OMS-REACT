@@ -1,4 +1,22 @@
 @layer components {
+  .startup-error {
+    @apply grid min-h-dvh place-items-center bg-sage px-5 py-12;
+  }
+  .startup-error-card {
+    @apply w-full max-w-120 rounded-3xl border border-line bg-paper p-7 text-center sm:p-10;
+  }
+  .startup-error-icon {
+    @apply mx-auto mb-6 grid size-16 place-items-center rounded-2xl bg-sage text-primary;
+  }
+  .startup-error h1 {
+    @apply mb-4 text-3xl font-semibold tracking-tight text-primary;
+  }
+  .startup-error p {
+    @apply mb-6 text-body leading-relaxed text-muted;
+  }
+  .startup-error .startup-error-note {
+    @apply mb-0 mt-6 text-small;
+  }
   .commerce-breadcrumbs {
     @apply min-w-0 text-small text-muted;
   }

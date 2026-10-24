@@ -38,13 +38,15 @@ export const AuthProvider = ({ children }) => {
         return inFlight.current.promise;
       const version = epoch.current;
       const startup = !restored.current;
-      if (startup || !signal) setLoading(true);
+      // A background check must not unmount the current page or its forms.
+      if (startup) setLoading(true);
       setSessionError("");
       const promise = (async () => {
         try {
           const response = await fetchSession({ signal, startup });
           if (version !== epoch.current || signal?.aborted) return;
           const data = await response.json();
+          if (version !== epoch.current || signal?.aborted) return;
           if (
             response.status === 401 ||
             (response.ok && data.authenticated === false && data.user === null)

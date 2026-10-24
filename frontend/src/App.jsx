@@ -14,6 +14,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import ShoppingWindow from "./pages/shopping_window";
 import PageErrorBoundary from "./components/PageErrorBoundary";
+import Icon from "./components/Icon";
 const Login = lazy(() => import("./pages/Login"));
 const SignUp = lazy(() => import("./pages/SignUp"));
 const Cart = lazy(() => import("./pages/cart"));
@@ -132,15 +133,25 @@ function AppContent() {
 
   if (sessionError)
     return (
-      <div className="ui-empty" role="alert">
-        <p>{sessionError}</p>
-        <button
-          className="ui-button ui-button-dark"
-          onClick={() => checkAuthStatus()}
-        >
-          Try again
-        </button>
-      </div>
+      <main className="startup-error" role="alert">
+        <div className="startup-error-card">
+          <span className="startup-error-icon">
+            <Icon name="bag" size={28} />
+          </span>
+          <h1>Let’s get you back to the store.</h1>
+          <p>{sessionError}</p>
+          <button
+            className="ui-button ui-button-dark"
+            onClick={() => checkAuthStatus()}
+          >
+            Try again
+          </button>
+          <p className="startup-error-note">
+            Check your connection, then try again. Your saved items and orders
+            are safe.
+          </p>
+        </div>
+      </main>
     );
 
   return (

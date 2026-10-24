@@ -332,9 +332,8 @@ export default function ShoppingWindow() {
         )}
         <div className="shop-collection-heading" data-reveal>
           <div>
-            <span className="ui-eyebrow">The collection</span>
-            <h2>Find your next favorite.</h2>
-            <p>Different pieces. Same good feeling.</p>
+            <h2>Shop the collection</h2>
+            <p>Pre-loved pieces, ready for their next chapter.</p>
           </div>
           <label className="shop-sort flex items-center gap-[10px] whitespace-nowrap text-small text-muted max-[700px]:ml-auto">
             Sort by

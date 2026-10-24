@@ -3,8 +3,12 @@ import { apiFetch } from "../services/http";
 import { API_BASE_URL } from "../services/config";
 
 export default function usePublicContent(path, listenForUpdates = true) {
-  const [data, setData] = useState(null);
-  const [error, setError] = useState("");
+  const [state, setState] = useState({
+    path,
+    data: null,
+    error: "",
+    loading: true,
+  });
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     const updated = (event) => {
@@ -16,8 +20,14 @@ export default function usePublicContent(path, listenForUpdates = true) {
   }, [path, listenForUpdates]);
   useEffect(() => {
     const controller = new AbortController();
-    setData(null);
-    setError("");
+    // Keep the same document visible during refresh, but never show a different
+    // policy's text while its replacement is loading.
+    setState((previous) => ({
+      path,
+      data: previous.path === path ? previous.data : null,
+      error: "",
+      loading: true,
+    }));
     apiFetch(`${API_BASE_URL}${path}`, { signal: controller.signal })
       .then(async (response) => {
         const result = await response.json();
@@ -25,12 +35,23 @@ export default function usePublicContent(path, listenForUpdates = true) {
           throw new Error(
             result.error || "This information could not be loaded.",
           );
-        if (!controller.signal.aborted) setData(result);
+        if (!controller.signal.aborted)
+          setState({ path, data: result, error: "", loading: false });
       })
       .catch((failure) => {
-        if (!controller.signal.aborted) setError(failure.message);
+        if (!controller.signal.aborted)
+          setState((previous) => ({
+            ...previous,
+            error: failure.message,
+            loading: false,
+          }));
       });
     return () => controller.abort();
   }, [path, attempt]);
-  return { data, error, reload: () => setAttempt((value) => value + 1) };
+  return {
+    data: state.path === path ? state.data : null,
+    error: state.path === path ? state.error : "",
+    loading: state.path !== path || state.loading,
+    reload: () => setAttempt((value) => value + 1),
+  };
 }

@@ -66,6 +66,12 @@ py -m unittest discover -s tests
 
 Database integration tests use disposable test databases and require explicit opt-in; see `backend/tests/test_mongodb_integration.py`.
 
+## Loading behavior
+
+The initial session check allows up to 90 seconds for a sleeping API to wake, retries only the read-only bootstrap request, and shows a retry screen if that deadline expires. Startup skeletons follow the green storefront and workspace layouts. The startup status appears after 1.2 seconds to avoid flashing on fast connections; the wake-up explanation appears after 8 seconds.
+
+Session refreshes keep the current page mounted. Public content refreshes retain the same document while loading, clear it when changing document paths, and ignore canceled responses. Run `npm run test:startup` with the local browser fixture and Chrome debugging session to verify delayed startup, session restoration, refresh continuity, and stale-response handling.
+
 ## Public response caching
 
 The API caches successful public product responses for 15 seconds and published help/policy responses for 60 seconds. Each worker uses a thread-safe LRU capped at 64 entries and 4 MiB total (1 MiB per response). `PUBLIC_CACHE_ENABLED=0` disables it.

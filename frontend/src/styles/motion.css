@@ -15,11 +15,11 @@
     .landing-hero-copy > :nth-child(5) {
       animation-delay: 320ms;
     }
-    .landing-rack-card {
+    button.landing-rack-card {
       animation: goods-product-reveal 500ms 120ms cubic-bezier(0.22, 1, 0.36, 1)
         backwards;
     }
-    .landing-rack-card:nth-child(2) {
+    button.landing-rack-card:nth-child(2) {
       animation-delay: 220ms;
     }
     .landing-showcase {

@@ -45,7 +45,7 @@ export default function LandingHero({ products, loading, onSelect }) {
       <section className="landing-hero" aria-labelledby="shop-title">
         <div className="landing-hero-copy">
           <span className="landing-kicker">
-            <span /> THE PRE-LOVED EDIT
+            <span /> The pre-loved edit
           </span>
           <h1 id="shop-title">
             Good style.
@@ -92,19 +92,18 @@ export default function LandingHero({ products, loading, onSelect }) {
             </a>
           </div>
           {loading ? (
-            <SkeletonRegion
-              label="Loading featured pieces"
-              className="landing-rack"
-            >
-              {[0, 1].map((index) => (
-                <div className="landing-rack-card" key={index}>
-                  <Skeleton className="landing-rack-photo" />
-                  <div className="space-y-3 p-4">
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
+            <SkeletonRegion label="Loading featured pieces">
+              <div className="landing-rack">
+                {[0, 1].map((index) => (
+                  <div className="landing-rack-card" key={index}>
+                    <Skeleton className="landing-rack-photo" />
+                    <div className="space-y-3 p-4">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </SkeletonRegion>
           ) : featured.length ? (
             <div
