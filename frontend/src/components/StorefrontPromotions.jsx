@@ -26,9 +26,8 @@ export default function StorefrontPromotions({
         <section
           aria-labelledby="shop-labels-title"
           className="storefront-labels"
-          data-reveal
         >
-          <div className="storefront-section-heading">
+          <div className="storefront-section-heading" data-reveal>
             <div>
               <span className="ui-eyebrow">Find your favorites</span>
               <h2 id="shop-labels-title">
@@ -50,7 +49,7 @@ export default function StorefrontPromotions({
             </SkeletonRegion>
           ) : (
             <div className="storefront-label-grid">
-              {labels.map((label) => {
+              {labels.map((label, index) => {
                 const pieces = available.filter((p) => p.category === label);
                 return (
                   <button
@@ -58,6 +57,8 @@ export default function StorefrontPromotions({
                     className="storefront-label-card"
                     key={label}
                     onClick={() => onCategory(label)}
+                    data-reveal
+                    data-reveal-delay={index * 70}
                   >
                     <div className="storefront-label-photo">
                       <ProductMedia

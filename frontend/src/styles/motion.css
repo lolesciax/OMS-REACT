@@ -16,11 +16,46 @@
       animation-delay: 320ms;
     }
     .landing-rack-card {
-      animation: goods-arrive 750ms 120ms cubic-bezier(0.22, 1, 0.36, 1)
+      animation: goods-product-reveal 500ms 120ms cubic-bezier(0.22, 1, 0.36, 1)
         backwards;
     }
     .landing-rack-card:nth-child(2) {
       animation-delay: 220ms;
+    }
+    .landing-showcase {
+      animation: goods-showcase-reveal 850ms 120ms
+        cubic-bezier(0.22, 1, 0.36, 1) backwards;
+    }
+    .landing-showcase-heading,
+    .campaign-price-tag,
+    .landing-bottom {
+      animation: goods-arrive 650ms 350ms cubic-bezier(0.22, 1, 0.36, 1)
+        backwards;
+    }
+    .landing-rack-photo img {
+      transition: transform 450ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .landing-shop-link {
+      transition:
+        translate 220ms ease,
+        box-shadow 220ms ease,
+        background-color 220ms ease;
+    }
+    .landing-shop-link:focus-visible {
+      translate: 0 -2px;
+      box-shadow: 0 8px 22px #15251b30;
+    }
+    .landing-rack-price svg,
+    .storefront-circle-arrow svg,
+    .storefront-promo a svg,
+    .storefront-promo button svg {
+      transition: translate 220ms ease;
+    }
+    .landing-rack-card:focus-visible .landing-rack-price svg,
+    .storefront-label-card:focus-visible .storefront-circle-arrow svg,
+    .storefront-promo a:focus-visible svg,
+    .storefront-promo button:focus-visible svg {
+      translate: 3px 0;
     }
     .shop-dialog,
     .ui-dialog,
@@ -58,6 +93,19 @@
       translate: 0 -3px;
     }
     @media (hover: hover) and (pointer: fine) {
+      .landing-shop-link:hover {
+        translate: 0 -2px;
+        box-shadow: 0 8px 22px #15251b30;
+      }
+      .landing-rack-card:hover .landing-rack-photo img {
+        transform: scale(1.04);
+      }
+      .landing-rack-card:hover .landing-rack-price svg,
+      .storefront-label-card:hover .storefront-circle-arrow svg,
+      .storefront-promo a:hover svg,
+      .storefront-promo button:hover svg {
+        translate: 3px 0;
+      }
       .shop-product:hover {
         translate: 0 -4px;
       }
@@ -66,6 +114,10 @@
   @media (prefers-reduced-motion: reduce) {
     .landing-hero-copy > *,
     .landing-rack-card,
+    .landing-showcase,
+    .landing-showcase-heading,
+    .campaign-price-tag,
+    .landing-bottom,
     .shop-dialog,
     .ui-dialog,
     .auth-recovery,
@@ -92,5 +144,27 @@
   }
   50% {
     translate: 0 5px;
+  }
+}
+
+@keyframes goods-showcase-reveal {
+  from {
+    opacity: 0;
+    translate: 22px 0;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes goods-product-reveal {
+  from {
+    opacity: 0;
+    transform: scale(0.975);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
